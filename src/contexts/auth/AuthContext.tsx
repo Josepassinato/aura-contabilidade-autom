@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { UserProfile } from '@/lib/supabase';
 
@@ -18,7 +18,20 @@ export interface AuthContextType {
   isAdmin: boolean;
 }
 
-// Create the context with null as default
-const AuthContext = createContext<AuthContextType | null>(null);
+// Create the context with default values to avoid null issues
+const defaultContextValue: AuthContextType = {
+  session: null,
+  user: null,
+  profile: null,
+  isLoading: true,
+  signIn: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signUp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signOut: async () => {},
+  isAuthenticated: false,
+  isClient: false,
+  isAccountant: false,
+  isAdmin: false
+};
 
-export { AuthContext };
+// Create the context with default values
+export const AuthContext = createContext<AuthContextType>(defaultContextValue);

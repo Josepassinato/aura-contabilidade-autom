@@ -17,6 +17,7 @@ interface DashboardSidebarProps {
 }
 
 const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
+  // Get permissions, with a fallback for when auth context is not available
   const { isAccountantOrAdmin } = useSidebarPermissions();
 
   return (
@@ -27,6 +28,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
         <SidebarMenu>
           <CommonSection />
           
+          {/* Only show accountant section when permissions are available and valid */}
           {isAccountantOrAdmin && (
             <AccountantSection />
           )}
