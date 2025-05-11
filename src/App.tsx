@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import ClientAccess from "./pages/ClientAccess";
 import ClientPortal from "./pages/ClientPortal";
+import ClientDocuments from "./pages/ClientDocuments";
 import GerenciarClientes from "./pages/GerenciarClientes";
 import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
 import ObrigacoesFiscais from "./pages/ObrigacoesFiscais";
@@ -54,6 +56,7 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/client-access" element={<ClientAccess />} />
               <Route path="/client-portal" element={<ClientPortal />} />
+              <Route path="/client-documents" element={<ClientDocuments />} />
               <Route path="/clientes" element={<GerenciarClientes />} />
               <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
               <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
