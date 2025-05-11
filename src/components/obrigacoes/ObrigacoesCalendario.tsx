@@ -1,18 +1,8 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-interface Obrigacao {
-  id: number;
-  nome: string;
-  tipo: string;
-  prazo: string;
-  empresa: string;
-  status: "pendente" | "atrasado" | "concluido";
-  prioridade: "baixa" | "media" | "alta";
-}
+import { Obrigacao } from "@/types/obrigacoes";
 
 interface ObrigacoesCalendarioProps {
   mes: number;
