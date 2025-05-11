@@ -24,7 +24,8 @@ import {
   HelpCircle, 
   Mic,
   Database,
-  Calculator
+  Calculator,
+  FileBarChart
 } from "lucide-react";
 
 interface SidebarProps {
@@ -79,6 +80,15 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
                   <Link to="/apuracao-automatica">
                     <Calculator className="h-5 w-5" />
                     <span>Apuração Automática</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Relatórios Financeiros" asChild isActive={window.location.pathname === "/relatorios-financeiros"}>
+                  <Link to="/relatorios-financeiros">
+                    <FileBarChart className="h-5 w-5" />
+                    <span>Relatórios Financeiros</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
