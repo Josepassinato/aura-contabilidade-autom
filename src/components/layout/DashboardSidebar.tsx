@@ -12,7 +12,8 @@ import {
   Building,
   PiggyBank,
   Landmark,
-  Briefcase 
+  Briefcase,
+  Brain
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -166,6 +167,24 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
                   >
                     <Landmark className="h-5 w-5" />
                     <span>Automação Bancária</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              {/* Nova seção de Análises Preditivas com IA */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/analises-preditivas"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                        isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                      )
+                    }
+                  >
+                    <Brain className="h-5 w-5" />
+                    <span>Análises Preditivas</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
