@@ -6,23 +6,54 @@ import { FiscalCalendar } from "@/components/dashboard/FiscalCalendar";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DocumentsTable } from "@/components/dashboard/DocumentsTable";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
-import { BarChart, FileText, DollarSign, BarChart3, BarChart4 } from "lucide-react";
+import { BarChart, FileText, DollarSign, Calendar, Building } from "lucide-react";
+
+// Tipos de dados para os componentes
+type ClientStatus = 'regular' | 'pendente' | 'atrasado';
+type DocumentStatus = 'pendente' | 'recebido' | 'processado' | 'arquivado';
+type ObligationStatus = 'pendente' | 'atrasado' | 'concluído';
+type PriorityLevel = 'alta' | 'média' | 'baixa';
+
+interface Client {
+  name: string;
+  status: ClientStatus;
+  documentsPending: number;
+  upcomingDeadlines: number;
+}
+
+interface ObligationEvent {
+  id: string;
+  title: string;
+  client: string;
+  dueDate: string;
+  status: ObligationStatus;
+  priority: PriorityLevel;
+}
+
+interface Document {
+  id: string;
+  name: string;
+  client: string;
+  type: string;
+  date: string;
+  status: DocumentStatus;
+}
 
 // Dados de exemplo
-const clients = [
+const clients: Client[] = [
   { name: 'Empresa ABC Ltda', status: 'regular', documentsPending: 2, upcomingDeadlines: 3 },
   { name: 'XYZ Comércio S.A.', status: 'pendente', documentsPending: 5, upcomingDeadlines: 2 },
   { name: 'Tech Solutions', status: 'atrasado', documentsPending: 7, upcomingDeadlines: 4 },
 ];
 
-const fiscalEvents = [
+const fiscalEvents: ObligationEvent[] = [
   { id: '1', title: 'DARF PIS/COFINS', client: 'Empresa ABC Ltda', dueDate: '25/05/2025', status: 'pendente', priority: 'alta' },
   { id: '2', title: 'DARF IRPJ', client: 'XYZ Comércio S.A.', dueDate: '30/05/2025', status: 'pendente', priority: 'média' },
   { id: '3', title: 'GFIP', client: 'Tech Solutions', dueDate: '20/05/2025', status: 'atrasado', priority: 'alta' },
   { id: '4', title: 'ICMS-ST', client: 'XYZ Comércio S.A.', dueDate: '15/05/2025', status: 'concluído', priority: 'baixa' }
 ];
 
-const recentDocuments = [
+const recentDocuments: Document[] = [
   { id: '1', name: 'Balanço Patrimonial', client: 'Empresa ABC Ltda', type: 'Contábil', date: '10/05/2025', status: 'processado' },
   { id: '2', name: 'Notas Fiscais Abril', client: 'XYZ Comércio S.A.', type: 'Fiscal', date: '05/05/2025', status: 'recebido' },
   { id: '3', name: 'Folha de Pagamento', client: 'Tech Solutions', type: 'RH', date: '01/05/2025', status: 'pendente' },
@@ -75,7 +106,7 @@ const Index = () => {
               <ClientSummaryCard
                 key={index}
                 name={client.name}
-                status={client.status as 'regular' | 'pendente' | 'atrasado'}
+                status={client.status}
                 documentsPending={client.documentsPending}
                 upcomingDeadlines={client.upcomingDeadlines}
               />
@@ -91,7 +122,9 @@ const Index = () => {
       </div>
       
       {/* Componente do assistente de voz */}
-      <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
+      {isVoiceActive && (
+        <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
+      )}
     </DashboardLayout>
   );
 };
