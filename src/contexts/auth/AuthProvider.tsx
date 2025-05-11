@@ -1,111 +1,112 @@
 
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { useSupabaseClient, UserProfile } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
 import { AuthContext } from './AuthContext';
 import { signInWithCredentials, signUpWithCredentials, handleSignOut } from './authUtils';
+import { UserProfile, initializeSupabase } from '@/lib/supabase';
+import { toast } from '@/hooks/use-toast';
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [supabase] = useState(() => initializeSupabase());
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = useSupabaseClient();
-  const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+  const [isAccountant, setIsAccountant] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
-    
-    // Check for active session
-    const checkSession = async () => {
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      setIsLoading(false);
+      return;
+    }
+
+    // Get initial session
+    const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
         
-        if (error) {
-          console.error('Error fetching session:', error);
-          return;
-        }
-        
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-          
-          // Fetch user profile
-          const { data: profileData, error: profileError } = await supabase
+        if (data.session?.user) {
+          const { data: profileData, error } = await supabase
             .from('user_profiles')
             .select('*')
-            .eq('user_id', session.user.id)
+            .eq('user_id', data.session.user.id)
             .single();
-          
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
+            
+          if (error) {
+            console.error('Error fetching user profile:', error);
           } else {
             setProfile(profileData);
+            setIsClient(profileData?.role === 'client');
+            setIsAccountant(profileData?.role === 'accountant');
+            setIsAdmin(profileData?.role === 'admin');
           }
         }
       } catch (error) {
-        console.error('Session check failed:', error);
+        console.error('Error getting initial session:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    checkSession();
-    
-    // Set up auth state change listener
+
+    getInitialSession();
+
+    // Set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        setIsLoading(true);
+      async (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         
-        if (newSession?.user) {
-          // Fetch user profile when auth state changes
-          const { data: profileData } = await supabase
+        if (currentSession?.user) {
+          const { data: profileData, error } = await supabase
             .from('user_profiles')
             .select('*')
-            .eq('user_id', newSession.user.id)
+            .eq('user_id', currentSession.user.id)
             .single();
             
-          setProfile(profileData);
+          if (error) {
+            console.error('Error fetching user profile:', error);
+          } else {
+            setProfile(profileData);
+            setIsClient(profileData?.role === 'client');
+            setIsAccountant(profileData?.role === 'accountant');
+            setIsAdmin(profileData?.role === 'admin');
+          }
         } else {
+          // Clear user state when signed out
           setProfile(null);
+          setIsClient(false);
+          setIsAccountant(false);
+          setIsAdmin(false);
         }
-        
-        setIsLoading(false);
       }
     );
-    
+
+    // Cleanup the subscription
     return () => {
-      subscription?.unsubscribe();
+      subscription.unsubscribe();
     };
   }, [supabase]);
-  
-  // Sign in with email and password
+
   const signIn = async (email: string, password: string) => {
-    return signInWithCredentials(supabase, email, password, toast);
+    if (!supabase) return { error: new Error('Supabase client not initialized') };
+    return await signInWithCredentials(supabase, email, password, toast);
   };
-  
-  // Sign up with email and password
+
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
-    return signUpWithCredentials(supabase, email, password, userData, toast);
+    if (!supabase) return { error: new Error('Supabase client not initialized') };
+    return await signUpWithCredentials(supabase, email, password, userData, toast);
   };
-  
-  // Sign out
+
   const signOut = async () => {
+    if (!supabase) return;
     await handleSignOut(supabase, toast);
   };
-  
-  const isAuthenticated = !!session;
-  const isClient = profile?.role === 'client';
-  const isAccountant = profile?.role === 'accountant';
-  const isAdmin = profile?.role === 'admin';
-  
+
   const value = {
     session,
     user,
@@ -114,11 +115,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signUp,
     signOut,
-    isAuthenticated,
+    isAuthenticated: !!session,
     isClient,
     isAccountant,
-    isAdmin,
+    isAdmin
   };
-  
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};

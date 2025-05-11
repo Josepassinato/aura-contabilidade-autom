@@ -1,83 +1,63 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { SupabaseContext, initializeSupabase } from "./lib/supabase";
-import { AuthProvider } from "./contexts/auth";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Settings from "./pages/Settings";
-import Login from "./pages/Login";
-import ClientAccess from "./pages/ClientAccess";
-import ClientPortal from "./pages/ClientPortal";
-import ClientDocuments from "./pages/ClientDocuments";
-import GerenciarClientes from "./pages/GerenciarClientes";
-import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
-import ObrigacoesFiscais from "./pages/ObrigacoesFiscais";
-import RelatoriosFinanceiros from "./pages/RelatoriosFinanceiros";
-import GuiasFiscais from "./pages/GuiasFiscais";
-import FolhaPagamento from "./pages/FolhaPagamento";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import './App.css';
 
-const queryClient = new QueryClient();
+import { AuthProvider } from './contexts/auth';
+import { Toaster } from './components/ui/toaster';
 
-const App = () => {
-  const [supabaseClient, setSupabaseClient] = useState(null);
-  const [supabaseError, setSupabaseError] = useState<string | null>(null);
-  
-  useEffect(() => {
-    try {
-      const client = initializeSupabase();
-      setSupabaseClient(client);
-      
-      if (!client) {
-        setSupabaseError("Configuração do Supabase incompleta. O aplicativo funcionará com funcionalidade limitada.");
-      }
-    } catch (error) {
-      console.error("Erro ao inicializar Supabase:", error);
-      setSupabaseError("Falha ao conectar com Supabase.");
-    }
-  }, []);
+// Páginas
+import Index from './pages/Index';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+import ClientPortal from './pages/ClientPortal';
+import ClientAccess from './pages/ClientAccess';
+import ClientDocuments from './pages/ClientDocuments';
+import GerenciarClientes from './pages/GerenciarClientes';
+import ObrigacoesFiscais from './pages/ObrigacoesFiscais';
+import FolhaPagamento from './pages/FolhaPagamento';
+import GuiasFiscais from './pages/GuiasFiscais';
+import RelatoriosFinanceiros from './pages/RelatoriosFinanceiros';
+import ApuracaoAutomatica from './pages/ApuracaoAutomatica';
+import Settings from './pages/Settings';
 
+// Novas páginas implementadas
+import CalculosFiscais from './pages/CalculosFiscais';
+import AutomacaoBancaria from './pages/AutomacaoBancaria';
+
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SupabaseContext.Provider value={supabaseClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            {supabaseError && (
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 fixed top-0 left-0 right-0 z-50">
-                <p className="font-medium">Aviso</p>
-                <p>{supabaseError}</p>
-                <p className="text-sm">Configure suas credenciais Supabase no arquivo .env para ativar todas as funcionalidades.</p>
-              </div>
-            )}
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/client-access" element={<ClientAccess />} />
-                <Route path="/client-portal" element={<ClientPortal />} />
-                <Route path="/client-documents" element={<ClientDocuments />} />
-                <Route path="/clientes" element={<GerenciarClientes />} />
-                <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
-                <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
-                <Route path="/guias-fiscais" element={<GuiasFiscais />} />
-                <Route path="/folha-pagamento" element={<FolhaPagamento />} />
-                <Route path="/relatorios-financeiros" element={<RelatoriosFinanceiros />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </SupabaseContext.Provider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* Rotas do Portal do Cliente */}
+          <Route path="/portal-cliente" element={<ClientPortal />} />
+          <Route path="/portal-cliente/documentos" element={<ClientDocuments />} />
+          <Route path="/acesso-cliente" element={<ClientAccess />} />
+          
+          {/* Rotas do Sistema Contábil */}
+          <Route path="/clientes" element={<GerenciarClientes />} />
+          <Route path="/obrigacoes" element={<ObrigacoesFiscais />} />
+          <Route path="/folha-pagamento" element={<FolhaPagamento />} />
+          <Route path="/guias-fiscais" element={<GuiasFiscais />} />
+          <Route path="/relatorios-financeiros" element={<RelatoriosFinanceiros />} />
+          <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
+          <Route path="/settings" element={<Settings />} />
+          
+          {/* Novas rotas */}
+          <Route path="/calculos-fiscais" element={<CalculosFiscais />} />
+          <Route path="/automacao-bancaria" element={<AutomacaoBancaria />} />
+          
+          {/* Rota de fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+      
+      <Toaster />
+    </AuthProvider>
   );
-};
+}
 
 export default App;

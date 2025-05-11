@@ -1,163 +1,204 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { NavLink } from "react-router-dom";
 import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent
-} from "@/components/ui/sidebar";
-import { 
-  BarChart, 
-  FileText, 
-  Settings, 
   Users, 
-  Building, 
-  Calendar, 
-  Bell, 
-  HelpCircle, 
-  Mic,
-  Database,
-  Calculator,
-  FileBarChart
+  CalendarClock, 
+  Receipt, 
+  FileText, 
+  BarChart3, 
+  Calculator, 
+  Settings,
+  Building,
+  PiggyBank,
+  Landmark,
+  Briefcase 
 } from "lucide-react";
+import { Sidebar } from "../ui/sidebar";
+import { useAuth } from "@/contexts/auth";
+import { cn } from "@/lib/utils";
 
-interface SidebarProps {
-  isVoiceActive: boolean;
-  toggleVoiceAssistant: () => void;
-}
+const DashboardSidebar = () => {
+  const { isAccountant, isAdmin } = useAuth();
 
-export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: SidebarProps) {
+  // Somente accountants e admins podem ver essas seções
+  const isAccountantOrAdmin = isAccountant || isAdmin;
+
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center justify-center">
-          <h1 className="text-xl font-bold text-primary">ContaFácil</h1>
+    <Sidebar className="border-r bg-background h-full fixed left-0 top-0 bottom-0 w-64">
+      <Sidebar.Section className="flex items-center h-14 px-4 border-b">
+        <div className="flex items-center space-x-2">
+          <Building className="h-6 w-6" />
+          <span className="font-semibold">Contábil App</span>
         </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        {/* Menu principal */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Dashboard" asChild isActive={window.location.pathname === "/"}>
-                  <Link to="/">
-                    <BarChart className="h-5 w-5" />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+      </Sidebar.Section>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Gerenciar Clientes" asChild isActive={window.location.pathname === "/clientes"}>
-                  <Link to="/clientes">
-                    <Building className="h-5 w-5" />
-                    <span>Clientes</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+      <Sidebar.Section className="p-2 flex-1 overflow-auto">
+        <Sidebar.Nav>
+          <Sidebar.NavLink asChild className="hover:bg-accent">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                  isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                )
+              }
+            >
+              <PiggyBank className="h-5 w-5" />
+              <span>Dashboard</span>
+            </NavLink>
+          </Sidebar.NavLink>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Obrigações Fiscais" asChild isActive={window.location.pathname === "/obrigacoes-fiscais"}>
-                  <Link to="/obrigacoes-fiscais">
-                    <Calendar className="h-5 w-5" />
-                    <span>Obrigações Fiscais</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Apuração Automática" asChild isActive={window.location.pathname === "/apuracao-automatica"}>
-                  <Link to="/apuracao-automatica">
-                    <Calculator className="h-5 w-5" />
-                    <span>Apuração Automática</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Relatórios Financeiros" asChild isActive={window.location.pathname === "/relatorios-financeiros"}>
-                  <Link to="/relatorios-financeiros">
-                    <FileBarChart className="h-5 w-5" />
-                    <span>Relatórios Financeiros</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Documentos">
-                  <FileText className="h-5 w-5" />
-                  <span>Documentos</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Colaboradores">
+          {isAccountantOrAdmin && (
+            <>
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/clientes"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
                   <Users className="h-5 w-5" />
-                  <span>Colaboradores</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  <span>Clientes</span>
+                </NavLink>
+              </Sidebar.NavLink>
 
-        {/* Ferramentas */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Ferramentas</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Notificações">
-                  <Bell className="h-5 w-5" />
-                  <span>Notificações</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/obrigacoes"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
+                  <CalendarClock className="h-5 w-5" />
+                  <span>Obrigações Fiscais</span>
+                </NavLink>
+              </Sidebar.NavLink>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Assistente de Voz" isActive={isVoiceActive} onClick={toggleVoiceAssistant}>
-                  <Mic className="h-5 w-5" />
-                  <span>Assistente de Voz</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/guias-fiscais"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
+                  <Receipt className="h-5 w-5" />
+                  <span>Guias Fiscais</span>
+                </NavLink>
+              </Sidebar.NavLink>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="API e Conexões" asChild isActive={window.location.pathname === "/settings"}>
-                  <Link to="/settings">
-                    <Database className="h-5 w-5" />
-                    <span>API e Conexões</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="p-4">
-        <div className="flex flex-col gap-2">
-          <SidebarMenuButton asChild>
-            <Link to="/settings">
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/folha-pagamento"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
+                  <Briefcase className="h-5 w-5" />
+                  <span>Folha de Pagamento</span>
+                </NavLink>
+              </Sidebar.NavLink>
+
+              {/* Novas seções */}
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/calculos-fiscais"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
+                  <Calculator className="h-5 w-5" />
+                  <span>Cálculos Fiscais</span>
+                </NavLink>
+              </Sidebar.NavLink>
+
+              <Sidebar.NavLink asChild className="hover:bg-accent">
+                <NavLink
+                  to="/automacao-bancaria"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                      isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                    )
+                  }
+                >
+                  <Landmark className="h-5 w-5" />
+                  <span>Automação Bancária</span>
+                </NavLink>
+              </Sidebar.NavLink>
+            </>
+          )}
+
+          <Sidebar.NavLink asChild className="hover:bg-accent">
+            <NavLink
+              to="/relatorios-financeiros"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                  isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                )
+              }
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>Relatórios Financeiros</span>
+            </NavLink>
+          </Sidebar.NavLink>
+
+          {isAccountantOrAdmin && (
+            <Sidebar.NavLink asChild className="hover:bg-accent">
+              <NavLink
+                to="/apuracao-automatica"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                    isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                  )
+                }
+              >
+                <FileText className="h-5 w-5" />
+                <span>Apuração Automática</span>
+              </NavLink>
+            </Sidebar.NavLink>
+          )}
+        </Sidebar.Nav>
+      </Sidebar.Section>
+
+      <Sidebar.Section className="p-2">
+        <Sidebar.Nav>
+          <Sidebar.NavLink asChild className="hover:bg-accent">
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                  isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
+                )
+              }
+            >
               <Settings className="h-5 w-5" />
               <span>Configurações</span>
-            </Link>
-          </SidebarMenuButton>
-          <SidebarMenuButton>
-            <HelpCircle className="h-5 w-5" />
-            <span>Ajuda</span>
-          </SidebarMenuButton>
-        </div>
-      </SidebarFooter>
+            </NavLink>
+          </Sidebar.NavLink>
+        </Sidebar.Nav>
+      </Sidebar.Section>
     </Sidebar>
   );
-}
+};
 
 export default DashboardSidebar;

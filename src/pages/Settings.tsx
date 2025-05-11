@@ -1,13 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APIConfigForm } from "@/components/settings/APIConfigForm";
 import { DatabaseConfigForm } from "@/components/settings/DatabaseConfigForm";
 import { GovAPIConfigForm } from "@/components/settings/GovAPIConfigForm";
 import { SupabaseConfig } from "@/components/settings/SupabaseConfig";
+import { BancoConfigForm } from "@/components/settings/BancoConfigForm";
 
 const Settings = () => {
+  const [activeTab, setActiveTab] = useState("supabase");
+  
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -18,12 +21,13 @@ const Settings = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="supabase" className="w-full">
-          <TabsList className="w-full md:w-auto grid grid-cols-4 mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full md:w-auto grid grid-cols-5 mb-6">
             <TabsTrigger value="supabase">Supabase</TabsTrigger>
             <TabsTrigger value="openai">OpenAI API</TabsTrigger>
             <TabsTrigger value="database">Banco de Dados</TabsTrigger>
             <TabsTrigger value="govapi">APIs Governamentais</TabsTrigger>
+            <TabsTrigger value="bancos">Integração Bancária</TabsTrigger>
           </TabsList>
           <div className="p-4 border rounded-lg">
             <TabsContent value="supabase" className="space-y-4">
@@ -37,6 +41,9 @@ const Settings = () => {
             </TabsContent>
             <TabsContent value="govapi" className="space-y-4">
               <GovAPIConfigForm />
+            </TabsContent>
+            <TabsContent value="bancos" className="space-y-4">
+              <BancoConfigForm />
             </TabsContent>
           </div>
         </Tabs>
