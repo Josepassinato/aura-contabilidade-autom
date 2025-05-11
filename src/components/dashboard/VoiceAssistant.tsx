@@ -3,19 +3,22 @@ import React, { useState, useEffect } from 'react';
 import { Mic, MicOff, X, Send } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input"; 
+import { useSupabaseClient } from "@/lib/supabase";
 
 interface VoiceAssistantProps {
   isActive: boolean;
   onToggle: () => void;
+  clientInfo?: { id: string; name: string; cnpj: string } | null;
 }
 
-export function VoiceAssistant({ isActive, onToggle }: VoiceAssistantProps) {
+export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistantProps) {
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
   const [conversations, setConversations] = useState<Array<{type: 'user' | 'bot', text: string}>>([]);
-
+  const supabase = useSupabaseClient();
+  
   // Efeito para simular o reconhecimento de voz quando está ativo
   useEffect(() => {
     if (!isActive) {
@@ -24,15 +27,64 @@ export function VoiceAssistant({ isActive, onToggle }: VoiceAssistantProps) {
 
     // Exibir mensagem de boas-vindas quando o assistente é ativado
     if (conversations.length === 0) {
+      const welcomeMessage = clientInfo 
+        ? `Olá! Sou sua assistente contábil para ${clientInfo.name}. Como posso ajudar você hoje?`
+        : 'Olá! Sou seu assistente de voz contábil. Como posso ajudar você hoje?';
+      
       setConversations([{
         type: 'bot',
-        text: 'Olá! Sou seu assistente de voz contábil. Como posso ajudar você hoje?'
+        text: welcomeMessage
       }]);
     }
-  }, [isActive, conversations.length]);
+  }, [isActive, conversations.length, clientInfo]);
 
-  // Função para simular o processamento do comando de voz ou texto digitado
-  const processCommand = (command: string) => {
+  // Função para buscar dados contábeis do cliente
+  const fetchClientData = async (clientId: string, dataType: string) => {
+    if (!supabase) return null;
+    
+    try {
+      switch (dataType) {
+        case 'financial':
+          // Buscar dados financeiros resumidos
+          const { data: financialData } = await supabase
+            .from('client_financial_data')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('period', { ascending: false })
+            .limit(1)
+            .single();
+          return financialData;
+          
+        case 'taxes':
+          // Buscar obrigações fiscais
+          const { data: taxData } = await supabase
+            .from('tax_obligations')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('due_date', { ascending: true });
+          return taxData;
+          
+        case 'documents':
+          // Buscar documentos
+          const { data: documentsData } = await supabase
+            .from('client_documents')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('created_at', { ascending: false })
+            .limit(5);
+          return documentsData;
+          
+        default:
+          return null;
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados do cliente:", error);
+      return null;
+    }
+  };
+
+  // Função para processar o comando de voz ou texto digitado
+  const processCommand = async (command: string) => {
     if (!command.trim()) return;
     
     // Adiciona o comando do usuário ao histórico de conversas
@@ -40,33 +92,90 @@ export function VoiceAssistant({ isActive, onToggle }: VoiceAssistantProps) {
     setIsProcessing(true);
     setManualInput('');
     
-    // Simulação de processamento do comando
-    setTimeout(() => {
+    try {
+      // Verificar se temos informações do cliente para personalizar as respostas
       let responseText = '';
       
-      // Lógica baseada em palavras-chave para simular respostas inteligentes
-      if (command.toLowerCase().includes('obrigações') || command.toLowerCase().includes('fiscal')) {
-        responseText = 'A empresa ABC Ltda possui as seguintes obrigações fiscais para este mês: DARF PIS/COFINS com vencimento em 25/05, DARF IRPJ com vencimento em 30/05, e GFIP com vencimento em 20/05.';
-      } else if (command.toLowerCase().includes('faturamento') || command.toLowerCase().includes('receita')) {
-        responseText = 'O faturamento da empresa ABC no último mês foi de R$ 152.789,45, representando um aumento de 12% em relação ao mês anterior.';
-      } else if (command.toLowerCase().includes('folha') || command.toLowerCase().includes('pagamento')) {
-        responseText = 'A folha de pagamento da empresa XYZ para este mês está em R$ 67.890,32. Há 3 admissões pendentes de processamento.';
-      } else if (command.toLowerCase().includes('cliente') || command.toLowerCase().includes('empresa')) {
-        responseText = 'Você tem 42 clientes ativos no momento. Destes, 5 estão com documentações pendentes e 3 com obrigações fiscais atrasadas.';
+      // Se temos um clientInfo, podemos tentar buscar dados reais
+      if (clientInfo && clientInfo.id) {
+        // Em produção, aqui poderíamos usar uma AI real para processar a linguagem natural
+        // e determinar a intenção do usuário. Para este exemplo, usaremos palavras-chave
+        
+        if (command.toLowerCase().includes('obrigações') || command.toLowerCase().includes('fiscal') || command.toLowerCase().includes('impostos')) {
+          // Tente buscar dados reais, mas use dados simulados como fallback
+          const taxData = await fetchClientData(clientInfo.id, 'taxes') || [
+            { name: 'DARF PIS/COFINS', due_date: '25/05/2025', amount: 4271.61 },
+            { name: 'DARF IRPJ', due_date: '30/05/2025', amount: 6814.82 },
+            { name: 'GFIP', due_date: '20/05/2025', amount: 1728.40 }
+          ];
+          
+          responseText = `${clientInfo.name} possui as seguintes obrigações fiscais para este mês: `;
+          taxData.forEach((tax: any, index: number) => {
+            responseText += `${tax.name} com vencimento em ${tax.due_date} no valor de R$ ${typeof tax.amount === 'number' ? tax.amount.toFixed(2) : tax.amount}`;
+            if (index < taxData.length - 1) responseText += ', ';
+          });
+        } 
+        else if (command.toLowerCase().includes('faturamento') || command.toLowerCase().includes('receita')) {
+          // Tente buscar dados financeiros, use simulados como fallback
+          const financialData = await fetchClientData(clientInfo.id, 'financial') || {
+            revenue: 85432.18,
+            previous_revenue: 76279.45,
+            period: '04/2025'
+          };
+          
+          const percentChange = ((financialData.revenue - financialData.previous_revenue) / financialData.previous_revenue) * 100;
+          
+          responseText = `O faturamento de ${clientInfo.name} no mês ${financialData.period} foi de R$ ${financialData.revenue.toFixed(2)}, representando um ${percentChange > 0 ? 'aumento' : 'redução'} de ${Math.abs(percentChange).toFixed(1)}% em relação ao mês anterior.`;
+        }
+        else if (command.toLowerCase().includes('documentos') || command.toLowerCase().includes('arquivos')) {
+          // Busque documentos do cliente ou use simulados
+          const documents = await fetchClientData(clientInfo.id, 'documents') || [
+            { name: 'Balanço Patrimonial', created_at: '10/05/2025', type: 'contábil' },
+            { name: 'DRE', created_at: '10/05/2025', type: 'contábil' },
+            { name: 'Notas Fiscais Abril', created_at: '05/05/2025', type: 'fiscal' }
+          ];
+          
+          responseText = `Os documentos recentes de ${clientInfo.name} incluem: `;
+          documents.forEach((doc: any, index: number) => {
+            responseText += `${doc.name} (${doc.type}) de ${doc.created_at}`;
+            if (index < documents.length - 1) responseText += ', ';
+          });
+        }
+        else {
+          responseText = `Olá! Sou sua assistente contábil para ${clientInfo.name}. Posso ajudar com informações sobre obrigações fiscais, faturamento, documentos contábeis e muito mais. Como posso te ajudar hoje?`;
+        }
       } else {
-        responseText = 'Desculpe, não consegui entender completamente sua solicitação. Poderia reformular ou ser mais específico sobre qual informação contábil você precisa?';
+        // Respostas genéricas quando não temos informações do cliente
+        if (command.toLowerCase().includes('obrigações') || command.toLowerCase().includes('fiscal')) {
+          responseText = 'A empresa possui as seguintes obrigações fiscais para este mês: DARF PIS/COFINS com vencimento em 25/05, DARF IRPJ com vencimento em 30/05, e GFIP com vencimento em 20/05.';
+        } else if (command.toLowerCase().includes('faturamento') || command.toLowerCase().includes('receita')) {
+          responseText = 'O faturamento da empresa no último mês foi de R$ 152.789,45, representando um aumento de 12% em relação ao mês anterior.';
+        } else if (command.toLowerCase().includes('folha') || command.toLowerCase().includes('pagamento')) {
+          responseText = 'A folha de pagamento da empresa para este mês está em R$ 67.890,32. Há 3 admissões pendentes de processamento.';
+        } else if (command.toLowerCase().includes('cliente') || command.toLowerCase().includes('empresa')) {
+          responseText = 'Você tem 42 clientes ativos no momento. Destes, 5 estão com documentações pendentes e 3 com obrigações fiscais atrasadas.';
+        } else {
+          responseText = 'Desculpe, não consegui entender completamente sua solicitação. Poderia reformular ou ser mais específico sobre qual informação contábil você precisa?';
+        }
       }
       
       // Adiciona a resposta do bot ao histórico de conversas
       setConversations(prev => [...prev, {type: 'bot', text: responseText}]);
-      setIsProcessing(false);
       
       // Notificar o usuário
       toast({
-        title: "Assistente de Voz",
+        title: "Assistente de IA",
         description: "Nova resposta disponível",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Erro ao processar comando:", error);
+      setConversations(prev => [...prev, {
+        type: 'bot', 
+        text: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.'
+      }]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Função para lidar com a submissão do comando por texto
@@ -84,12 +193,24 @@ export function VoiceAssistant({ isActive, onToggle }: VoiceAssistantProps) {
     
     // Simular reconhecimento após 3 segundos
     setTimeout(() => {
-      const simulatedCommands = [
-        "Quais são as obrigações fiscais deste mês?",
-        "Qual foi o faturamento do último trimestre?",
-        "Mostre a situação da folha de pagamento",
-        "Quantos clientes estão com documentação pendente?"
-      ];
+      // Comandos contextuais baseados no cliente
+      let simulatedCommands;
+      
+      if (clientInfo) {
+        simulatedCommands = [
+          "Quais são minhas obrigações fiscais deste mês?",
+          "Qual foi meu faturamento no último trimestre?",
+          "Mostre meus documentos contábeis recentes",
+          "Qual a situação dos meus impostos?"
+        ];
+      } else {
+        simulatedCommands = [
+          "Quais são as obrigações fiscais deste mês?",
+          "Qual foi o faturamento do último trimestre?",
+          "Mostre a situação da folha de pagamento",
+          "Quantos clientes estão com documentação pendente?"
+        ];
+      }
       
       // Escolher um comando aleatório
       const randomCommand = simulatedCommands[Math.floor(Math.random() * simulatedCommands.length)];
@@ -109,7 +230,9 @@ export function VoiceAssistant({ isActive, onToggle }: VoiceAssistantProps) {
           ) : (
             <Mic className="h-5 w-5 text-primary" />
           )}
-          <span className="font-medium">Assistente de Voz</span>
+          <span className="font-medium">
+            {clientInfo ? `Assistente de ${clientInfo.name}` : "Assistente de Voz"}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onToggle} className="p-1 rounded-full hover:bg-muted">
