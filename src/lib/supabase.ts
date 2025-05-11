@@ -41,6 +41,20 @@ export const initializeSupabase = () => {
   }
 };
 
+// User and authentication types
+export type UserRole = 'accountant' | 'client' | 'admin';
+
+export type UserProfile = {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  role: UserRole;
+  company_id?: string;
+  created_at?: string;
+  avatar_url?: string;
+}
+
 // Define types for database tables
 export type AccountingClient = {
   id: string;
@@ -107,4 +121,50 @@ export type TaxGuideRecord = {
   bar_code?: string;
   file_path?: string; 
   created_at: string;
+}
+
+// Payroll types
+export type Employee = {
+  id: string;
+  client_id: string;
+  name: string;
+  cpf: string;
+  position: string;
+  department?: string;
+  hire_date: string;
+  base_salary: number;
+  status: 'active' | 'inactive' | 'vacation' | 'leave';
+  created_at?: string;
+}
+
+export type PayrollEntry = {
+  id: string;
+  client_id: string;
+  employee_id: string;
+  period: string; // YYYY-MM format
+  base_salary: number;
+  gross_salary: number;
+  deductions: number;
+  net_salary: number;
+  status: 'draft' | 'processing' | 'approved' | 'paid';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type PayrollDeduction = {
+  id: string;
+  payroll_entry_id: string;
+  type: 'inss' | 'irrf' | 'fgts' | 'loan' | 'advance' | 'other';
+  description: string;
+  amount: number;
+  created_at?: string;
+}
+
+export type PayrollBenefit = {
+  id: string;
+  payroll_entry_id: string;
+  type: 'transport' | 'meal' | 'health' | 'education' | 'other';
+  description: string;
+  amount: number;
+  created_at?: string;
 }

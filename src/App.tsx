@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,9 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { SupabaseContext, initializeSupabase } from "./lib/supabase";
+import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 import ClientAccess from "./pages/ClientAccess";
 import ClientPortal from "./pages/ClientPortal";
 import ClientDocuments from "./pages/ClientDocuments";
@@ -16,6 +19,7 @@ import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
 import ObrigacoesFiscais from "./pages/ObrigacoesFiscais";
 import RelatoriosFinanceiros from "./pages/RelatoriosFinanceiros";
 import GuiasFiscais from "./pages/GuiasFiscais";
+import FolhaPagamento from "./pages/FolhaPagamento";
 
 const queryClient = new QueryClient();
 
@@ -40,33 +44,37 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SupabaseContext.Provider value={supabaseClient}>
-        <TooltipProvider>
-          {supabaseError && (
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 fixed top-0 left-0 right-0 z-50">
-              <p className="font-medium">Aviso</p>
-              <p>{supabaseError}</p>
-              <p className="text-sm">Configure suas credenciais Supabase no arquivo .env para ativar todas as funcionalidades.</p>
-            </div>
-          )}
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/client-access" element={<ClientAccess />} />
-              <Route path="/client-portal" element={<ClientPortal />} />
-              <Route path="/client-documents" element={<ClientDocuments />} />
-              <Route path="/clientes" element={<GerenciarClientes />} />
-              <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
-              <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
-              <Route path="/guias-fiscais" element={<GuiasFiscais />} />
-              <Route path="/relatorios-financeiros" element={<RelatoriosFinanceiros />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            {supabaseError && (
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 fixed top-0 left-0 right-0 z-50">
+                <p className="font-medium">Aviso</p>
+                <p>{supabaseError}</p>
+                <p className="text-sm">Configure suas credenciais Supabase no arquivo .env para ativar todas as funcionalidades.</p>
+              </div>
+            )}
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/client-access" element={<ClientAccess />} />
+                <Route path="/client-portal" element={<ClientPortal />} />
+                <Route path="/client-documents" element={<ClientDocuments />} />
+                <Route path="/clientes" element={<GerenciarClientes />} />
+                <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
+                <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
+                <Route path="/guias-fiscais" element={<GuiasFiscais />} />
+                <Route path="/folha-pagamento" element={<FolhaPagamento />} />
+                <Route path="/relatorios-financeiros" element={<RelatoriosFinanceiros />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </SupabaseContext.Provider>
     </QueryClientProvider>
   );
