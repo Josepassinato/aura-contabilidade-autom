@@ -16,16 +16,33 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [supabaseClient, setSupabaseClient] = useState(null);
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
   
   useEffect(() => {
-    const client = initializeSupabase();
-    setSupabaseClient(client);
+    try {
+      const client = initializeSupabase();
+      setSupabaseClient(client);
+      
+      if (!client) {
+        setSupabaseError("Configuração do Supabase incompleta. O aplicativo funcionará com funcionalidade limitada.");
+      }
+    } catch (error) {
+      console.error("Erro ao inicializar Supabase:", error);
+      setSupabaseError("Falha ao conectar com Supabase.");
+    }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <SupabaseContext.Provider value={supabaseClient}>
         <TooltipProvider>
+          {supabaseError && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 fixed top-0 left-0 right-0 z-50">
+              <p className="font-medium">Aviso</p>
+              <p>{supabaseError}</p>
+              <p className="text-sm">Configure suas credenciais Supabase no arquivo .env para ativar todas as funcionalidades.</p>
+            </div>
+          )}
           <Toaster />
           <Sonner />
           <BrowserRouter>
