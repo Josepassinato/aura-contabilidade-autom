@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { X, ArrowRight, ArrowLeft } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,14 +34,39 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [elementFound, setElementFound] = useState(true);
+  const [animateTooltip, setAnimateTooltip] = useState(false);
+
+  // Adicionar rolagem suave até o elemento destacado
+  useEffect(() => {
+    if (!isActive || steps.length === 0) return;
+
+    const target = document.querySelector(steps[currentStep].element);
+    
+    if (target) {
+      // Garantir que o elemento é visível
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Adicionar animação quando o tooltip mudar
+      setAnimateTooltip(true);
+      setTimeout(() => setAnimateTooltip(false), 300);
+    } else {
+      console.warn(`Elemento não encontrado: ${steps[currentStep].element}`);
+      setElementFound(false);
+    }
+  }, [currentStep, isActive, steps]);
 
   // Posicionar o tooltip próximo ao elemento selecionado
   useEffect(() => {
     if (!isActive || steps.length === 0) return;
 
     const target = document.querySelector(steps[currentStep].element);
-    if (!target) return;
-
+    if (!target) {
+      setElementFound(false);
+      return;
+    }
+    
+    setElementFound(true);
     const rect = target.getBoundingClientRect();
     const position = steps[currentStep].position;
 
@@ -50,7 +75,7 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
 
     switch (position) {
       case "top":
-        top = rect.top - 10 - 150; // altura estimada do tooltip
+        top = rect.top - 10 - 180; // altura estimada do tooltip
         left = rect.left + rect.width / 2 - 150; // metade da largura do tooltip
         break;
       case "bottom":
@@ -58,11 +83,11 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
         left = rect.left + rect.width / 2 - 150;
         break;
       case "left":
-        top = rect.top + rect.height / 2 - 75;
+        top = rect.top + rect.height / 2 - 90;
         left = rect.left - 10 - 300; // largura estimada do tooltip
         break;
       case "right":
-        top = rect.top + rect.height / 2 - 75;
+        top = rect.top + rect.height / 2 - 90;
         left = rect.right + 10;
         break;
     }
@@ -74,16 +99,16 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
     if (left < 10) left = 10;
     if (left + 300 > windowWidth) left = windowWidth - 310;
     if (top < 10) top = 10;
-    if (top + 150 > windowHeight) top = windowHeight - 160;
+    if (top + 180 > windowHeight) top = windowHeight - 190;
 
     setTooltipPosition({ top, left });
 
-    // Adiciona destaque ao elemento alvo
-    target.classList.add("tour-highlight");
+    // Adiciona destaque ao elemento alvo com um efeito de pulsação
+    target.classList.add("tour-highlight", "tour-pulse");
 
     return () => {
       // Remove destaque ao mudar de passo
-      target.classList.remove("tour-highlight");
+      target.classList.remove("tour-highlight", "tour-pulse");
     };
   }, [currentStep, isActive, steps]);
 
@@ -103,14 +128,20 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
     }
   };
 
+  const skipToStep = (stepIndex: number) => {
+    setCurrentStep(stepIndex);
+  };
+
   return (
     <>
-      {/* Overlay escuro */}
+      {/* Overlay escuro com transparência para poder clicar nos elementos */}
       <div className="fixed inset-0 bg-black/50 z-50 pointer-events-none" />
 
       {/* Tooltip do tour */}
       <Card
-        className="fixed z-[60] w-[300px] shadow-lg"
+        className={`fixed z-[60] w-[300px] shadow-lg ${
+          animateTooltip ? "animate-fade-in" : ""
+        }`}
         style={{
           top: `${tooltipPosition.top}px`,
           left: `${tooltipPosition.left}px`,
@@ -135,7 +166,31 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm">{steps[currentStep].description}</p>
+          {!elementFound ? (
+            <p className="text-sm text-yellow-500">
+              Elemento não encontrado. Este passo pode não estar disponível no momento.
+            </p>
+          ) : (
+            <p className="text-sm">{steps[currentStep].description}</p>
+          )}
+          
+          {/* Indicadores de passo */}
+          <div className="flex justify-center mt-4 gap-1">
+            {steps.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => skipToStep(index)}
+                className={`h-2 w-2 rounded-full transition-all ${
+                  index === currentStep
+                    ? "bg-primary w-4"
+                    : index < currentStep
+                    ? "bg-primary/60"
+                    : "bg-muted"
+                }`}
+                aria-label={`Ir para o passo ${index + 1}`}
+              />
+            ))}
+          </div>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
@@ -147,11 +202,42 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
             <ArrowLeft className="h-4 w-4 mr-2" /> Anterior
           </Button>
           <Button size="sm" onClick={nextStep}>
-            {currentStep === steps.length - 1 ? "Concluir" : "Próximo"}{" "}
-            {currentStep !== steps.length - 1 && <ArrowRight className="h-4 w-4 ml-2" />}
+            {currentStep === steps.length - 1 ? (
+              <>
+                <Check className="h-4 w-4 mr-2" /> Concluir
+              </>
+            ) : (
+              <>
+                Próximo <ArrowRight className="h-4 w-4 ml-2" />
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>
+
+      {/* Adicionar estilos CSS para o highlight */}
+      <style jsx global>{`
+        .tour-highlight {
+          position: relative;
+          z-index: 51;
+          box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.5);
+          border-radius: 4px;
+        }
+        .tour-pulse {
+          animation: tour-pulse 2s infinite;
+        }
+        @keyframes tour-pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 6px rgba(124, 58, 237, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+          }
+        }
+      `}</style>
     </>
   );
 };

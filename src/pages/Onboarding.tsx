@@ -24,7 +24,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Building2, Users, Calendar, FileText, Mic } from "lucide-react";
+import { ArrowRight, Building2, Users, Calendar, FileText, Mic, Server, Wallet } from "lucide-react";
+import { IntegracaoFiscalForm } from "@/components/onboarding/IntegracaoFiscalForm";
+import { IntegracaoBancariaForm } from "@/components/onboarding/IntegracaoBancariaForm";
+import { toast } from "@/hooks/use-toast";
 
 const onboardingSteps = [
   {
@@ -32,6 +35,18 @@ const onboardingSteps = [
     title: "Informações do Escritório",
     description: "Vamos começar com informações básicas sobre o seu escritório contábil",
     icon: <Building2 className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "fiscal-integration",
+    title: "Integrações Fiscais",
+    description: "Configure as credenciais para acessar portais governamentais",
+    icon: <Server className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "banking-integration",
+    title: "Integração Bancária",
+    description: "Configure a integração com seu banco para automatizar processos",
+    icon: <Wallet className="h-8 w-8 text-primary" />,
   },
   {
     id: "team-info",
@@ -73,6 +88,9 @@ type OfficeFormValues = z.infer<typeof officeFormSchema>;
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [officeData, setOfficeData] = useState<OfficeFormValues | null>(null);
+  const [fiscalData, setFiscalData] = useState(null);
+  const [bancariaData, setBancariaData] = useState(null);
   const navigate = useNavigate();
   
   const form = useForm<OfficeFormValues>({
@@ -88,17 +106,39 @@ const Onboarding = () => {
     },
   });
 
+  const handleOfficeFormSubmit = (data: OfficeFormValues) => {
+    setOfficeData(data);
+    toast({
+      title: "Informações salvas",
+      description: "As informações do escritório foram salvas com sucesso.",
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleFiscalFormSubmit = (data: any) => {
+    setFiscalData(data);
+    toast({
+      title: "Integrações configuradas",
+      description: "As integrações fiscais foram configuradas com sucesso.",
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handleBancariaFormSubmit = (data: any) => {
+    setBancariaData(data);
+    toast({
+      title: "Integração bancária configurada",
+      description: "A integração bancária foi configurada com sucesso.",
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
   const nextStep = () => {
-    if (currentStep === 0) {
-      form.handleSubmit((data) => {
-        console.log("Office data submitted:", data);
-        setCurrentStep(currentStep + 1);
-      })();
-    } else if (currentStep < onboardingSteps.length - 1) {
+    if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       // Complete onboarding
-      navigate("/dashboard");
+      navigate("/");
     }
   };
 
@@ -107,7 +147,7 @@ const Onboarding = () => {
       case 0:
         return (
           <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+            <form onSubmit={form.handleSubmit(handleOfficeFormSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="officeName"
@@ -215,35 +255,55 @@ const Onboarding = () => {
                   </FormItem>
                 )}
               />
+
+              <div className="flex justify-end">
+                <Button type="submit">Continuar</Button>
+              </div>
             </form>
           </Form>
         );
       case 1:
+        return <IntegracaoFiscalForm onSubmit={handleFiscalFormSubmit} />;
+      case 2:
+        return <IntegracaoBancariaForm onSubmit={handleBancariaFormSubmit} />;
+      case 3:
         // Renderiza o formulário de equipe e colaboradores
         return (
           <div className="space-y-4">
             <p>Aqui você poderá adicionar os membros da sua equipe. Esta funcionalidade será habilitada em breve.</p>
+            <div className="flex justify-end">
+              <Button onClick={nextStep}>Continuar</Button>
+            </div>
           </div>
         );
-      case 2:
+      case 4:
         // Renderiza configuração de calendário fiscal
         return (
           <div className="space-y-4">
             <p>Configure o calendário fiscal e defina alertas para obrigações importantes. Esta funcionalidade será habilitada em breve.</p>
+            <div className="flex justify-end">
+              <Button onClick={nextStep}>Continuar</Button>
+            </div>
           </div>
         );
-      case 3:
+      case 5:
         // Renderiza configuração de gestão documental
         return (
           <div className="space-y-4">
             <p>Configure como os documentos serão armazenados e compartilhados no sistema. Esta funcionalidade será habilitada em breve.</p>
+            <div className="flex justify-end">
+              <Button onClick={nextStep}>Continuar</Button>
+            </div>
           </div>
         );
-      case 4:
+      case 6:
         // Renderiza configuração do assistente de voz
         return (
           <div className="space-y-4">
             <p>Configure o assistente de voz IA que irá ajudar você e seus clientes. Esta funcionalidade será habilitada em breve.</p>
+            <div className="flex justify-end">
+              <Button onClick={() => navigate("/")}>Concluir</Button>
+            </div>
           </div>
         );
       default:
@@ -300,9 +360,6 @@ const Onboarding = () => {
             disabled={currentStep === 0}
           >
             Voltar
-          </Button>
-          <Button onClick={nextStep}>
-            {currentStep === onboardingSteps.length - 1 ? "Concluir" : "Próximo"}
           </Button>
         </CardFooter>
       </Card>

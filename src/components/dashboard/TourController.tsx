@@ -4,38 +4,19 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import GuidedTour from '../tour/GuidedTour';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useLocation } from 'react-router-dom';
 
 export const TourController = () => {
   const [isTourActive, setIsTourActive] = useState(false);
   const [hasSeenTour, setHasSeenTour] = useLocalStorage('contaflix-has-seen-tour', false);
   const [showTourButton, setShowTourButton] = useState(true);
+  const location = useLocation();
 
-  useEffect(() => {
-    // Verificar se é a primeira visita para mostrar o tour automaticamente
-    if (!hasSeenTour) {
-      // Pequeno delay para garantir que os elementos estejam carregados
-      const timer = setTimeout(() => {
-        setIsTourActive(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasSeenTour]);
+  // Define tours específicos para diferentes páginas
+  const [currentTourSteps, setCurrentTourSteps] = useState<any[]>([]);
 
-  const handleCompleteTour = () => {
-    setIsTourActive(false);
-    setHasSeenTour(true);
-  };
-
-  const handleCloseTour = () => {
-    setIsTourActive(false);
-    setHasSeenTour(true);
-  };
-
-  const handleStartTour = () => {
-    setIsTourActive(true);
-  };
-
-  const tourSteps = [
+  // Tour steps padrão (dashboard)
+  const dashboardTourSteps = [
     {
       id: 'dashboard',
       title: 'Painel Principal',
@@ -65,6 +46,20 @@ export const TourController = () => {
       position: 'left' as const,
     },
     {
+      id: 'fiscal-integrations',
+      title: 'Integrações Fiscais',
+      description: 'Acesse suas integrações com a Receita Federal, SEFAZ e outros órgãos governamentais.',
+      element: '.fiscal-integrations',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'banking-integrations',
+      title: 'Integrações Bancárias',
+      description: 'Gerencie suas integrações bancárias para automatizar a importação de extratos e pagamentos.',
+      element: '.banking-integrations',
+      position: 'bottom' as const,
+    },
+    {
       id: 'settings',
       title: 'Configurações',
       description: 'Acesse as configurações para personalizar o sistema e configurar integrações com serviços externos.',
@@ -72,6 +67,110 @@ export const TourController = () => {
       position: 'bottom' as const,
     },
   ];
+
+  // Tour steps para a página de clientes
+  const clientsTourSteps = [
+    {
+      id: 'client-list',
+      title: 'Lista de Clientes',
+      description: 'Aqui você pode visualizar todos os seus clientes cadastrados.',
+      element: '.client-list',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'add-client',
+      title: 'Adicionar Cliente',
+      description: 'Clique aqui para adicionar um novo cliente ao sistema.',
+      element: '.add-client-button',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'client-filters',
+      title: 'Filtros de Clientes',
+      description: 'Use esses filtros para encontrar rapidamente os clientes que você procura.',
+      element: '.client-filters',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'client-actions',
+      title: 'Ações de Cliente',
+      description: 'Aqui você pode editar, visualizar detalhes ou excluir um cliente.',
+      element: '.client-actions',
+      position: 'left' as const,
+    },
+  ];
+
+  // Tour steps para a página de obrigações fiscais
+  const fiscalTourSteps = [
+    {
+      id: 'fiscal-calendar',
+      title: 'Calendário Fiscal',
+      description: 'Visualize todas as obrigações fiscais organizadas por data.',
+      element: '.fiscal-calendar',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'fiscal-filters',
+      title: 'Filtros de Obrigações',
+      description: 'Use esses filtros para visualizar obrigações por período, tipo ou status.',
+      element: '.fiscal-filters',
+      position: 'right' as const,
+    },
+    {
+      id: 'obligation-actions',
+      title: 'Ações de Obrigações',
+      description: 'Aqui você pode marcar como concluída, adiar ou delegar uma obrigação fiscal.',
+      element: '.obligation-actions',
+      position: 'left' as const,
+    },
+  ];
+
+  // Seleciona o tour adequado com base na rota atual
+  useEffect(() => {
+    if (location.pathname.includes('/clientes')) {
+      setCurrentTourSteps(clientsTourSteps);
+    } else if (location.pathname.includes('/obrigacoes')) {
+      setCurrentTourSteps(fiscalTourSteps);
+    } else {
+      setCurrentTourSteps(dashboardTourSteps);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    // Verificar se é a primeira visita para mostrar o tour automaticamente
+    if (!hasSeenTour) {
+      // Pequeno delay para garantir que os elementos estejam carregados
+      const timer = setTimeout(() => {
+        setIsTourActive(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasSeenTour]);
+
+  const handleCompleteTour = () => {
+    setIsTourActive(false);
+    setHasSeenTour(true);
+    
+    // Mostrar mensagem de conclusão
+    const completionMessage = document.createElement('div');
+    completionMessage.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-md shadow-lg z-50 transition-opacity animate-fade-in';
+    completionMessage.textContent = 'Tour concluído! Você pode iniciá-lo novamente a qualquer momento.';
+    document.body.appendChild(completionMessage);
+    
+    setTimeout(() => {
+      completionMessage.classList.add('opacity-0');
+      setTimeout(() => document.body.removeChild(completionMessage), 300);
+    }, 3000);
+  };
+
+  const handleCloseTour = () => {
+    setIsTourActive(false);
+    setHasSeenTour(true);
+  };
+
+  const handleStartTour = () => {
+    setIsTourActive(true);
+  };
 
   return (
     <>
@@ -89,7 +188,7 @@ export const TourController = () => {
       )}
 
       <GuidedTour
-        steps={tourSteps}
+        steps={currentTourSteps}
         isActive={isTourActive}
         onComplete={handleCompleteTour}
         onClose={handleCloseTour}
