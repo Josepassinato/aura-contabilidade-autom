@@ -15,7 +15,7 @@ const ObrigacoesFiscais = () => {
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [ano, setAno] = useState(new Date().getFullYear());
   
-  // Fixed the status values to match the expected "pendente", "atrasado", or "concluido" types
+  // Mock data for obrigações fiscais
   const obrigacoesMock = [
     {
       id: 1,
@@ -23,7 +23,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Federal",
       prazo: "30/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "pendente", // Corrected to use valid literal value
+      status: "pendente", 
       prioridade: "alta"
     },
     {
@@ -32,7 +32,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Federal",
       prazo: "20/05/2025",
       empresa: "XYZ Comércio S.A.",
-      status: "concluido", // Corrected to use valid literal value
+      status: "concluido", 
       prioridade: "media"
     },
     {
@@ -41,7 +41,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Federal",
       prazo: "15/05/2025",
       empresa: "Tech Solutions",
-      status: "concluido", // Corrected to use valid literal value
+      status: "concluido", 
       prioridade: "alta"
     },
     {
@@ -50,7 +50,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Estadual",
       prazo: "10/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "atrasado", // Corrected to use valid literal value
+      status: "atrasado", 
       prioridade: "alta"
     },
     {
@@ -59,7 +59,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Estadual",
       prazo: "28/05/2025",
       empresa: "XYZ Comércio S.A.",
-      status: "pendente", // Corrected to use valid literal value
+      status: "pendente", 
       prioridade: "media"
     },
     {
@@ -68,7 +68,7 @@ const ObrigacoesFiscais = () => {
       tipo: "Federal",
       prazo: "22/05/2025",
       empresa: "Tech Solutions",
-      status: "atrasado", // Corrected to use valid literal value
+      status: "atrasado", 
       prioridade: "media"
     },
     {
@@ -77,14 +77,15 @@ const ObrigacoesFiscais = () => {
       tipo: "Municipal",
       prazo: "10/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "pendente", // Corrected to use valid literal value
+      status: "pendente", 
       prioridade: "baixa"
     }
   ];
 
-  // Also fix the prioridade property to match expected type
+  // Fix both status and prioridade properties to match expected types
   const obrigacoesWithCorrectTypes = obrigacoesMock.map(obrigacao => ({
     ...obrigacao,
+    status: obrigacao.status as "pendente" | "atrasado" | "concluido",
     prioridade: obrigacao.prioridade as "baixa" | "media" | "alta"
   }));
 
@@ -222,7 +223,7 @@ const ObrigacoesFiscais = () => {
               <ObrigacoesCalendario 
                 mes={mes} 
                 ano={ano} 
-                obrigacoes={obrigacoesWithCorrectTypes} // Use the correctly typed array
+                obrigacoes={obrigacoesWithCorrectTypes}
               />
             </CardContent>
           </Card>
@@ -234,7 +235,7 @@ const ObrigacoesFiscais = () => {
               <CardTitle>Lista de Obrigações Fiscais</CardTitle>
             </CardHeader>
             <CardContent>
-              <ObrigacoesList obrigacoes={obrigacoesWithCorrectTypes} /> // Use the correctly typed array
+              <ObrigacoesList obrigacoes={obrigacoesWithCorrectTypes} />
             </CardContent>
           </Card>
         </TabsContent>
