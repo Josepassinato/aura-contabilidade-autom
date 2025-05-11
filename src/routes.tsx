@@ -22,6 +22,10 @@ import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
 import PlansAndPricing from "./pages/PlansAndPricing";
 import Notifications from "./pages/Notifications";
+import RegimeFiscal from "./pages/RegimeFiscal";
+import Colaboradores from "./pages/Colaboradores";
+import IntegracoesGov from "./pages/IntegracoesGov";
+import RelatoriosIA from "./pages/RelatoriosIA";
 
 // Configure as rotas aqui
 export const routes = [
@@ -50,6 +54,10 @@ export const routes = [
     element: <RelatoriosFinanceiros />,
   },
   {
+    path: "/relatorios-ia",
+    element: <RelatoriosIA />,
+  },
+  {
     path: "/folha-pagamento",
     element: <FolhaPagamento />,
   },
@@ -58,11 +66,11 @@ export const routes = [
     element: <GerenciarClientes />,
   },
   {
-    path: "/client-portal",
+    path: "/cliente-portal",
     element: <ClientPortal />,
   },
   {
-    path: "/client-documents",
+    path: "/cliente-documentos",
     element: <ClientDocuments />,
   },
   {
@@ -78,11 +86,11 @@ export const routes = [
     element: <ApuracaoAutomatica />,
   },
   {
-    path: "/client-access",
+    path: "/cliente-acesso/:token",
     element: <ClientAccess />,
   },
   {
-    path: "/settings",
+    path: "/configuracoes",
     element: <Settings />,
   },
   {
@@ -90,12 +98,24 @@ export const routes = [
     element: <Onboarding />,
   },
   {
-    path: "/plans-pricing",
+    path: "/planos",
     element: <PlansAndPricing />,
   },
   {
-    path: "/notifications",
+    path: "/notificacoes",
     element: <Notifications />,
+  },
+  {
+    path: "/regime-fiscal",
+    element: <RegimeFiscal />,
+  },
+  {
+    path: "/colaboradores",
+    element: <Colaboradores />,
+  },
+  {
+    path: "/integracoes-gov",
+    element: <IntegracoesGov />,
   },
   {
     path: "*",

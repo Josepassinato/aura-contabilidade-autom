@@ -16,7 +16,7 @@ import ClientAccess from "./pages/ClientAccess";
 import ClientPortal from "./pages/ClientPortal";
 import ClientDocuments from "./pages/ClientDocuments";
 import NotFound from "./pages/NotFound";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 
 // Adicionar a nova rota de análises preditivas
 import AnalisesPreditivas from "./pages/AnalisesPreditivas";
@@ -25,27 +25,37 @@ import AnalisesPreditivas from "./pages/AnalisesPreditivas";
 import PlansAndPricing from "./pages/PlansAndPricing";
 import Onboarding from "./pages/Onboarding";
 
+// Adicionar novas rotas implementadas
+import RegimeFiscal from "./pages/RegimeFiscal";
+import Colaboradores from "./pages/Colaboradores";
+import IntegracoesGov from "./pages/IntegracoesGov";
+import RelatoriosIA from "./pages/RelatoriosIA";
+
 function App() {
   return (
     <>
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/configuracoes" element={<Settings />} />
         <Route path="/clientes" element={<GerenciarClientes />} />
         <Route path="/obrigacoes" element={<ObrigacoesFiscais />} />
         <Route path="/guias-fiscais" element={<GuiasFiscais />} />
         <Route path="/relatorios-financeiros" element={<RelatoriosFinanceiros />} />
+        <Route path="/relatorios-ia" element={<RelatoriosIA />} />
         <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
         <Route path="/folha-pagamento" element={<FolhaPagamento />} />
         <Route path="/calculos-fiscais" element={<CalculosFiscais />} />
         <Route path="/automacao-bancaria" element={<AutomacaoBancaria />} />
         <Route path="/analises-preditivas" element={<AnalisesPreditivas />} />
-        <Route path="/plans" element={<PlansAndPricing />} />
+        <Route path="/regime-fiscal" element={<RegimeFiscal />} />
+        <Route path="/colaboradores" element={<Colaboradores />} />
+        <Route path="/integracoes-gov" element={<IntegracoesGov />} />
+        <Route path="/planos" element={<PlansAndPricing />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/access/:token" element={<ClientAccess />} />
-        <Route path="/client-portal" element={<ClientPortal />} />
-        <Route path="/client-documents" element={<ClientDocuments />} />
+        <Route path="/acesso/:token" element={<ClientAccess />} />
+        <Route path="/cliente-portal" element={<ClientPortal />} />
+        <Route path="/cliente-documentos" element={<ClientDocuments />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
