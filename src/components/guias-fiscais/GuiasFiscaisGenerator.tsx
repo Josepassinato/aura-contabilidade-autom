@@ -56,12 +56,18 @@ export function GuiasFiscaisGenerator({ onGenerateGuia }: GuiasFiscaisGeneratorP
   });
 
   function onSubmit(data: FormValues) {
+    // Here's the fix - ensuring all required properties are properly assigned
     const newGuia: TaxGuide = {
-      ...data,
       id: "", // This will be set by the parent component
+      clientId: data.clientId, // Explicitly assign required field
+      clientName: data.clientName, // Explicitly assign required field
       type: data.type as TaxGuideType,
+      reference: data.reference, // Explicitly assign required field
+      dueDate: data.dueDate, // Explicitly assign required field
+      amount: data.amount, // Explicitly assign required field
       status: "pendente" as TaxGuideStatus,
       generatedAt: new Date().toISOString().split('T')[0],
+      barCode: data.barCode,
     };
 
     onGenerateGuia(newGuia);
