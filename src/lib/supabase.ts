@@ -94,3 +94,17 @@ export type ClientDocument = {
   uploaded_at: string;
   url?: string;
 }
+
+export type TaxGuideRecord = {
+  id: string;
+  client_id: string;
+  client_name: string; 
+  type: string;
+  reference: string;
+  due_date: string;
+  amount: number;
+  status: 'pendente' | 'pago' | 'vencido';
+  bar_code?: string;
+  file_path?: string; 
+  created_at: string;
+}
