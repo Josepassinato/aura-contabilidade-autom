@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSummaryCard } from "@/components/dashboard/ClientSummaryCard";
@@ -8,12 +7,13 @@ import { DocumentsTable } from "@/components/dashboard/DocumentsTable";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { BarChart, FileText, DollarSign, Calendar, Building } from "lucide-react";
 
-// Tipos de dados para os componentes
+// Types for component data
 type ClientStatus = 'regular' | 'pendente' | 'atrasado';
 type DocumentStatus = 'pendente' | 'recebido' | 'processado' | 'arquivado';
 type ObligationStatus = 'pendente' | 'atrasado' | 'concluído';
 type PriorityLevel = 'alta' | 'média' | 'baixa';
 
+// Interface definitions for Client, ObligationEvent, and Document
 interface Client {
   name: string;
   status: ClientStatus;
@@ -39,7 +39,7 @@ interface Document {
   status: DocumentStatus;
 }
 
-// Dados de exemplo
+// Sample data
 const clients: Client[] = [
   { name: 'Empresa ABC Ltda', status: 'regular', documentsPending: 2, upcomingDeadlines: 3 },
   { name: 'XYZ Comércio S.A.', status: 'pendente', documentsPending: 5, upcomingDeadlines: 2 },
@@ -70,7 +70,7 @@ const Index = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Métricas */}
+        {/* Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <MetricCard 
             title="Total de Clientes" 
@@ -98,7 +98,7 @@ const Index = () => {
           />
         </div>
         
-        {/* Clientes com status de atenção */}
+        {/* Clients with attention status */}
         <div>
           <h2 className="text-lg font-semibold mb-4">Clientes com Pendências</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -114,14 +114,14 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Calendário fiscal e documentos recentes */}
+        {/* Fiscal calendar and recent documents */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FiscalCalendar events={fiscalEvents} />
           <DocumentsTable documents={recentDocuments} />
         </div>
       </div>
       
-      {/* Componente do assistente de voz */}
+      {/* Voice assistant component */}
       {isVoiceActive && (
         <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
       )}
