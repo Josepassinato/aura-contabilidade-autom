@@ -9,5 +9,11 @@ export const useAuth = (): AuthContextType => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   
-  return context;
+  return {
+    ...context,
+    // Simulando propriedades de permissões para desenvolvimento
+    isAdmin: context.isAdmin || localStorage.getItem('user_role') === 'admin',
+    isAccountant: context.isAccountant || localStorage.getItem('user_role') === 'accountant',
+    isClient: context.isClient || localStorage.getItem('user_role') === 'client'
+  };
 };

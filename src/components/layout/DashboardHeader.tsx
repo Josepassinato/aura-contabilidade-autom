@@ -3,6 +3,7 @@ import React from 'react';
 import { Mic } from "lucide-react";
 import ClientSelector from './ClientSelector';
 import { Link } from 'react-router-dom';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 
 interface DashboardHeaderProps {
   isVoiceActive: boolean;
@@ -22,6 +23,7 @@ export function DashboardHeader({ isVoiceActive, toggleVoiceAssistant }: Dashboa
             <span>Assistente de voz ativo</span>
           </div>
         )}
+        <NotificationCenter />
         <button 
           onClick={toggleVoiceAssistant}
           className={`p-2 rounded-full ${isVoiceActive ? 'bg-primary text-primary-foreground' : 'bg-secondary'} voice-assistant-button`}
