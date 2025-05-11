@@ -45,6 +45,11 @@ export function useVoiceAssistant(
     }
   }, [isActive, conversations.length, clientInfo]);
 
+  // Add a bot response to the conversation
+  const addBotResponse = (text: string) => {
+    setConversations(prev => [...prev, { type: 'bot', text }]);
+  };
+
   // Function to fetch client data
   const fetchClientData = async (clientId: string, dataType: string) => {
     if (!supabase) return null;
@@ -175,6 +180,7 @@ export function useVoiceAssistant(
     manualInput,
     setManualInput,
     handleProcessCommand,
-    startVoiceRecognition
+    startVoiceRecognition,
+    addBotResponse
   };
 }

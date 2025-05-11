@@ -216,7 +216,8 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
       </Card>
 
       {/* Adicionar estilos CSS para o highlight */}
-      <style jsx global>{`
+      <style>
+        {`
         .tour-highlight {
           position: relative;
           z-index: 51;
@@ -237,7 +238,8 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
             box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
           }
         }
-      `}</style>
+        `}
+      </style>
     </>
   );
 };
