@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import ClientAccess from "./pages/ClientAccess";
 import ClientPortal from "./pages/ClientPortal";
+import GerenciarClientes from "./pages/GerenciarClientes";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/client-access" element={<ClientAccess />} />
               <Route path="/client-portal" element={<ClientPortal />} />
+              <Route path="/clientes" element={<GerenciarClientes />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

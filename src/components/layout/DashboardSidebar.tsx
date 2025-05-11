@@ -24,7 +24,7 @@ import {
   HelpCircle, 
   Mic,
   Database,
-  Link as LinkIcon
+  Calculator
 } from "lucide-react";
 
 interface SidebarProps {
@@ -57,6 +57,15 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
               </SidebarMenuItem>
 
               <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Gerenciar Clientes" asChild isActive={window.location.pathname === "/clientes"}>
+                  <Link to="/clientes">
+                    <Building className="h-5 w-5" />
+                    <span>Clientes</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Obrigações Fiscais">
                   <Calendar className="h-5 w-5" />
                   <span>Obrigações Fiscais</span>
@@ -64,9 +73,9 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Clientes">
-                  <Building className="h-5 w-5" />
-                  <span>Clientes</span>
+                <SidebarMenuButton tooltip="Apuração Automática">
+                  <Calculator className="h-5 w-5" />
+                  <span>Apuração Automática</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
