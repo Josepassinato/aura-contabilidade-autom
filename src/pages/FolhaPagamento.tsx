@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Navigate } from 'react-router-dom';
 import { PayrollList } from '@/components/payroll/PayrollList';
 import { EmployeesList } from '@/components/payroll/EmployeesList';
