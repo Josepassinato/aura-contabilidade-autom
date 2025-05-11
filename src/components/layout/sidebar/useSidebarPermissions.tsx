@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/auth";
 
 export const useSidebarPermissions = () => {
   try {
+    // Tenta acessar o contexto de autenticação
     const { isAccountant, isAdmin } = useAuth();
     
     // Accountants and admins can view certain sections

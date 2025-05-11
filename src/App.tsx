@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
@@ -20,6 +21,10 @@ import { Toaster } from "@/components/ui/toaster"
 // Adicionar a nova rota de análises preditivas
 import AnalisesPreditivas from "./pages/AnalisesPreditivas";
 
+// Adicionar novas rotas para planos e onboarding
+import PlansAndPricing from "./pages/PlansAndPricing";
+import Onboarding from "./pages/Onboarding";
+
 function App() {
   return (
     <>
@@ -36,6 +41,8 @@ function App() {
         <Route path="/calculos-fiscais" element={<CalculosFiscais />} />
         <Route path="/automacao-bancaria" element={<AutomacaoBancaria />} />
         <Route path="/analises-preditivas" element={<AnalisesPreditivas />} />
+        <Route path="/plans" element={<PlansAndPricing />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/access/:token" element={<ClientAccess />} />
         <Route path="/client-portal" element={<ClientPortal />} />
         <Route path="/client-documents" element={<ClientDocuments />} />

@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
+import TourController from '@/components/dashboard/TourController';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -19,9 +20,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background">
-        <DashboardSidebar />
+        <div className="sidebar-nav">
+          <DashboardSidebar />
+        </div>
         
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto dashboard-main">
           <DashboardHeader 
             isVoiceActive={isVoiceActive} 
             toggleVoiceAssistant={toggleVoiceAssistant} 
@@ -35,6 +38,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {isVoiceActive && (
           <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
         )}
+        
+        <TourController />
       </div>
     </SidebarProvider>
   );
