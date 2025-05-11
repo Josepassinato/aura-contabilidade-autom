@@ -12,6 +12,7 @@ interface FileItem {
   name: string;
   size: number;
   type: string;
+  file: File; // Armazenar o arquivo real para upload
 }
 
 interface DocumentUploadProps {
@@ -23,6 +24,7 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
   const [files, setFiles] = useState<FileItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [documentType, setDocumentType] = useState("nota-fiscal");
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const supabase = useSupabaseClient();
 
@@ -34,7 +36,8 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
       id: Math.random().toString(36).substring(2, 9),
       name: file.name,
       size: file.size,
-      type: file.type
+      type: file.type,
+      file: file
     }));
     
     setFiles([...files, ...newFiles]);
@@ -54,31 +57,86 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
       return;
     }
 
+    if (!supabase) {
+      toast({
+        title: "Erro de conexão",
+        description: "Não foi possível conectar ao Supabase. Verifique sua configuração.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUploading(true);
     
-    // Simulação de upload (em um app real, aqui faria o upload para o Supabase Storage)
     try {
-      // Simulando tempo de upload
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Upload concluído!",
-        description: `${files.length} documento(s) enviado(s) com sucesso.`,
+      const uploadPromises = files.map(async (fileItem) => {
+        const fileExt = fileItem.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${clientId}/${documentType}/${fileName}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('client-documents')
+          .upload(filePath, fileItem.file);
+          
+        if (uploadError) {
+          throw new Error(`Erro ao fazer upload de ${fileItem.name}: ${uploadError.message}`);
+        }
+        
+        // Registrar o documento no banco de dados após upload bem-sucedido
+        const { error: insertError } = await supabase
+          .from('client_documents')
+          .insert({
+            client_id: clientId,
+            name: fileItem.name,
+            type: documentType,
+            size: fileItem.size,
+            file_path: filePath,
+            status: 'pendente',
+            uploaded_at: new Date().toISOString()
+          });
+          
+        if (insertError) {
+          throw new Error(`Erro ao registrar documento: ${insertError.message}`);
+        }
+        
+        return { success: true, fileName: fileItem.name };
       });
       
-      setFiles([]);
-      setUploading(false);
+      // Aguardar todos os uploads terminarem
+      const results = await Promise.all(uploadPromises.map(p => p.catch(e => ({ success: false, error: e }))));
       
-      if (onUploadComplete) {
+      const successCount = results.filter(r => r.success).length;
+      const errorCount = results.length - successCount;
+      
+      if (successCount > 0) {
+        toast({
+          title: `${successCount} documento(s) enviado(s)`,
+          description: "Os documentos foram enviados com sucesso e estão sendo processados.",
+        });
+      }
+      
+      if (errorCount > 0) {
+        toast({
+          title: `${errorCount} documento(s) com falha`,
+          description: "Alguns documentos não puderam ser enviados. Por favor, tente novamente.",
+          variant: "destructive"
+        });
+      }
+      
+      setFiles([]);
+      setOpen(false);
+      
+      if (onUploadComplete && successCount > 0) {
         onUploadComplete();
       }
     } catch (error) {
-      console.error("Erro ao fazer upload:", error);
+      console.error("Erro geral ao fazer upload:", error);
       toast({
         title: "Falha no upload",
         description: "Ocorreu um erro ao enviar os arquivos. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
       setUploading(false);
     }
   };
@@ -90,7 +148,7 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <FileUp className="mr-2 h-4 w-4" />
