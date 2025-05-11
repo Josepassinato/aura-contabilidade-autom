@@ -88,6 +88,9 @@ export type ClientDocument = {
   client_id: string;
   name: string;
   type: string;
+  size: number;
+  file_path: string;
+  status: 'pendente' | 'processado' | 'rejeitado';
+  uploaded_at: string;
   url?: string;
-  created_at: string;
 }

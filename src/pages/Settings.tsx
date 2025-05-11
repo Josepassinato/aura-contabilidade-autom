@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APIConfigForm } from "@/components/settings/APIConfigForm";
 import { DatabaseConfigForm } from "@/components/settings/DatabaseConfigForm";
 import { GovAPIConfigForm } from "@/components/settings/GovAPIConfigForm";
+import { SupabaseConfig } from "@/components/settings/SupabaseConfig";
 
 const Settings = () => {
   return (
@@ -17,13 +18,17 @@ const Settings = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="openai" className="w-full">
-          <TabsList className="w-full md:w-auto grid grid-cols-3 mb-6">
+        <Tabs defaultValue="supabase" className="w-full">
+          <TabsList className="w-full md:w-auto grid grid-cols-4 mb-6">
+            <TabsTrigger value="supabase">Supabase</TabsTrigger>
             <TabsTrigger value="openai">OpenAI API</TabsTrigger>
             <TabsTrigger value="database">Banco de Dados</TabsTrigger>
             <TabsTrigger value="govapi">APIs Governamentais</TabsTrigger>
           </TabsList>
           <div className="p-4 border rounded-lg">
+            <TabsContent value="supabase" className="space-y-4">
+              <SupabaseConfig />
+            </TabsContent>
             <TabsContent value="openai" className="space-y-4">
               <APIConfigForm />
             </TabsContent>
