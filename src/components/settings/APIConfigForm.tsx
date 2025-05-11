@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +27,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function APIConfigForm() {
+  // Estado para controlar o teste da API
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{success: boolean; message: string} | null>(null);
+
   // Get stored values from localStorage if they exist
   const storedValues = typeof window !== "undefined" 
     ? {
@@ -59,6 +63,78 @@ export function APIConfigForm() {
       description: "As configurações da API OpenAI foram atualizadas com sucesso.",
     });
   }
+
+  // Função para testar a conexão com a API da OpenAI
+  const testApiConnection = async () => {
+    setIsTesting(true);
+    setTestResult(null);
+
+    const apiKey = form.getValues("apiKey");
+    const model = form.getValues("model");
+    
+    if (!apiKey) {
+      setTestResult({
+        success: false,
+        message: "Por favor, insira uma chave de API para testar a conexão."
+      });
+      setIsTesting(false);
+      return;
+    }
+
+    try {
+      // Chamada simples para a API da OpenAI para verificar se a chave é válida
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{
+            role: "user",
+            content: "Teste de conexão. Responda apenas com 'Conexão OK'."
+          }],
+          max_tokens: 10
+        })
+      });
+
+      if (response.ok) {
+        setTestResult({
+          success: true,
+          message: "Conexão estabelecida com sucesso! A API da OpenAI está respondendo corretamente."
+        });
+        toast({
+          title: "Conexão bem-sucedida",
+          description: "A API da OpenAI está conectada e funcionando corretamente."
+        });
+      } else {
+        const errorData = await response.json();
+        setTestResult({
+          success: false,
+          message: `Erro na conexão: ${errorData.error?.message || "Erro desconhecido"}`
+        });
+        toast({
+          title: "Falha na conexão",
+          description: errorData.error?.message || "Erro desconhecido ao conectar com a API",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao testar a conexão:", error);
+      setTestResult({
+        success: false,
+        message: `Erro ao testar a conexão: ${error instanceof Error ? error.message : "Erro desconhecido"}`
+      });
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao tentar se conectar à API. Verifique o console para mais detalhes.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -175,7 +251,26 @@ export function APIConfigForm() {
             />
           </div>
 
-          <Button type="submit">Salvar Configurações</Button>
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <Button type="submit">Salvar Configurações</Button>
+            <Button 
+              type="button" 
+              onClick={testApiConnection} 
+              variant="outline"
+              disabled={isTesting}
+            >
+              {isTesting ? "Testando..." : "Testar Conexão"}
+            </Button>
+          </div>
+          
+          {testResult && (
+            <div className={`p-4 border rounded-md mt-4 ${
+              testResult.success ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"
+            }`}>
+              <p className="font-medium">{testResult.success ? "Sucesso" : "Erro"}</p>
+              <p>{testResult.message}</p>
+            </div>
+          )}
         </form>
       </Form>
     </div>
