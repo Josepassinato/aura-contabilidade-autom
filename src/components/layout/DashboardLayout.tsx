@@ -1,5 +1,6 @@
 
 import React, { ReactNode, useState } from 'react';
+import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
@@ -16,27 +17,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <DashboardSidebar 
-        isVoiceActive={isVoiceActive}
-        toggleVoiceAssistant={toggleVoiceAssistant}
-      />
-      
-      <main className="flex-1 overflow-auto">
-        <DashboardHeader 
-          isVoiceActive={isVoiceActive} 
-          toggleVoiceAssistant={toggleVoiceAssistant} 
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-background">
+        <DashboardSidebar 
+          isVoiceActive={isVoiceActive}
+          toggleVoiceAssistant={toggleVoiceAssistant}
         />
         
-        <div className="p-6">
-          {children}
-        </div>
-      </main>
-      
-      {isVoiceActive && (
-        <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
-      )}
-    </div>
+        <main className="flex-1 overflow-auto">
+          <DashboardHeader 
+            isVoiceActive={isVoiceActive} 
+            toggleVoiceAssistant={toggleVoiceAssistant} 
+          />
+          
+          <div className="p-6">
+            {children}
+          </div>
+        </main>
+        
+        {isVoiceActive && (
+          <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
+        )}
+      </div>
+    </SidebarProvider>
   );
 }
 
