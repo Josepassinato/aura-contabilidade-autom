@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import ClientAccess from "./pages/ClientAccess";
 import ClientPortal from "./pages/ClientPortal";
 import GerenciarClientes from "./pages/GerenciarClientes";
+import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
+import ObrigacoesFiscais from "./pages/ObrigacoesFiscais";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,8 @@ const App = () => {
               <Route path="/client-access" element={<ClientAccess />} />
               <Route path="/client-portal" element={<ClientPortal />} />
               <Route path="/clientes" element={<GerenciarClientes />} />
+              <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
+              <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

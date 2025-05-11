@@ -66,16 +66,20 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Obrigações Fiscais">
-                  <Calendar className="h-5 w-5" />
-                  <span>Obrigações Fiscais</span>
+                <SidebarMenuButton tooltip="Obrigações Fiscais" asChild isActive={window.location.pathname === "/obrigacoes-fiscais"}>
+                  <Link to="/obrigacoes-fiscais">
+                    <Calendar className="h-5 w-5" />
+                    <span>Obrigações Fiscais</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Apuração Automática">
-                  <Calculator className="h-5 w-5" />
-                  <span>Apuração Automática</span>
+                <SidebarMenuButton tooltip="Apuração Automática" asChild isActive={window.location.pathname === "/apuracao-automatica"}>
+                  <Link to="/apuracao-automatica">
+                    <Calculator className="h-5 w-5" />
+                    <span>Apuração Automática</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
