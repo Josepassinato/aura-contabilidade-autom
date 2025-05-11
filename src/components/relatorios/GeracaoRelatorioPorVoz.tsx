@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mic, PlusCircle, Send, FileText, FilePlus2 } from "lucide-react";
+import { Mic, PlusCircle, FileText, FilePlus2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { ConversationContainer } from "@/components/dashboard/voice-assistant/ConversationContainer";
 import { ChatInput } from "@/components/dashboard/voice-assistant/ChatInput";

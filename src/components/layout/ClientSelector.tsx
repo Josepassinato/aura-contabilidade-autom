@@ -1,38 +1,57 @@
 
 import React, { useState } from 'react';
 import { Building } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Client {
+  id: string;
+  name: string;
+}
 
 interface ClientSelectorProps {
-  onSelectClient?: (clientId: string) => void;
+  onClientSelect?: (client: Client) => void;
   defaultValue?: string;
 }
 
-export function ClientSelector({ onSelectClient, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
+export function ClientSelector({ onClientSelect, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
   const [selectedClient, setSelectedClient] = useState(defaultValue);
-  const clients = ['Visão Geral', 'Empresa ABC Ltda', 'XYZ Comércio S.A.', 'Tech Solutions'];
+  const clients: Client[] = [
+    { id: '', name: 'Visão Geral' },
+    { id: '1', name: 'Empresa ABC Ltda' },
+    { id: '2', name: 'XYZ Comércio S.A.' },
+    { id: '3', name: 'Tech Solutions' }
+  ];
   
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  const handleChange = (value: string) => {
     setSelectedClient(value);
-    if (onSelectClient) {
-      onSelectClient(value);
+    
+    if (onClientSelect) {
+      const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
+      onClientSelect(selectedClientData);
     }
   };
   
   return (
     <div className="flex items-center space-x-2">
       <Building className="h-5 w-5 text-muted-foreground" />
-      <select 
-        value={selectedClient}
-        onChange={handleChange}
-        className="bg-transparent border-none text-lg font-medium focus:outline-none focus:ring-0"
-      >
-        {clients.map(client => (
-          <option key={client} value={client}>
-            {client}
-          </option>
-        ))}
-      </select>
+      <Select value={selectedClient} onValueChange={handleChange}>
+        <SelectTrigger className="border-none bg-transparent p-0 focus:ring-0 text-lg font-medium min-w-[200px]">
+          <SelectValue placeholder="Selecione um cliente" />
+        </SelectTrigger>
+        <SelectContent>
+          {clients.map(client => (
+            <SelectItem key={client.id || client.name} value={client.name}>
+              {client.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

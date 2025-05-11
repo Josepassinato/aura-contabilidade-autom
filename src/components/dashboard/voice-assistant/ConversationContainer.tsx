@@ -1,37 +1,41 @@
 
-import React from 'react';
-import { ChatMessage } from './ChatMessage';
-import { TypingIndicator } from './TypingIndicator';
+import React from "react";
+import { ChatMessage } from "./ChatMessage";
+import { TypingIndicator } from "./TypingIndicator";
 
-type Message = {
+interface Message {
   type: 'user' | 'bot';
   text: string;
-};
+}
 
-type ConversationContainerProps = {
+interface ConversationContainerProps {
   messages: Message[];
   isProcessing: boolean;
   transcript?: string;
-};
+}
 
 export function ConversationContainer({ 
   messages, 
-  isProcessing, 
+  isProcessing,
   transcript 
 }: ConversationContainerProps) {
   return (
-    <div className="p-4 h-64 overflow-y-auto flex flex-col gap-4">
+    <div className="flex flex-col h-full overflow-y-auto p-4">
       {messages.map((message, index) => (
         <ChatMessage key={index} type={message.type} text={message.text} />
       ))}
       
-      {isProcessing && <TypingIndicator />}
+      {isProcessing && (
+        <TypingIndicator />
+      )}
       
       {transcript && (
-        <div className="bg-muted p-3 rounded-lg rounded-br-none self-end max-w-[80%]">
+        <div className="py-2 px-4 bg-muted/30 text-muted-foreground rounded-lg self-end mt-2 animate-pulse">
           <p className="text-sm">{transcript}</p>
         </div>
       )}
+      
+      <div className="mt-auto" /> {/* Espaço para garantir que mensagens sempre fiquem no topo */}
     </div>
   );
 }
