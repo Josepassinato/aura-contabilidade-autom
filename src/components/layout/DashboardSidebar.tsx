@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -21,7 +22,9 @@ import {
   Calendar, 
   Bell, 
   HelpCircle, 
-  Mic 
+  Mic,
+  Database,
+  Link as LinkIcon
 } from "lucide-react";
 
 interface SidebarProps {
@@ -45,9 +48,11 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Dashboard" isActive={true}>
-                  <BarChart className="h-5 w-5" />
-                  <span>Dashboard</span>
+                <SidebarMenuButton tooltip="Dashboard" asChild isActive={window.location.pathname === "/"}>
+                  <Link to="/">
+                    <BarChart className="h-5 w-5" />
+                    <span>Dashboard</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
@@ -100,6 +105,15 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
                   <span>Assistente de Voz</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="API e Conexões" asChild isActive={window.location.pathname === "/settings"}>
+                  <Link to="/settings">
+                    <Database className="h-5 w-5" />
+                    <span>API e Conexões</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -107,9 +121,11 @@ export function DashboardSidebar({ isVoiceActive, toggleVoiceAssistant }: Sideba
       
       <SidebarFooter className="p-4">
         <div className="flex flex-col gap-2">
-          <SidebarMenuButton>
-            <Settings className="h-5 w-5" />
-            <span>Configurações</span>
+          <SidebarMenuButton asChild>
+            <Link to="/settings">
+              <Settings className="h-5 w-5" />
+              <span>Configurações</span>
+            </Link>
           </SidebarMenuButton>
           <SidebarMenuButton>
             <HelpCircle className="h-5 w-5" />
