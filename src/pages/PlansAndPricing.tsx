@@ -1,16 +1,29 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import PaymentCheckout, { PlanDetails } from "@/components/checkout/PaymentCheckout";
+import { 
+  Dialog,
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 
 const PlansAndPricing = () => {
+  const [checkoutPlan, setCheckoutPlan] = useState<PlanDetails | null>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
   const plans = [
     {
       name: "Básico",
       price: "R$ 199/mês",
+      priceId: "price_basic_monthly",
       description: "Ideal para escritórios pequenos com até 10 clientes",
       features: [
         "Gerenciamento de até 10 clientes",
@@ -21,11 +34,11 @@ const PlansAndPricing = () => {
       ],
       mostPopular: false,
       ctaText: "Teste grátis por 14 dias",
-      ctaLink: "/signup?plan=basic",
     },
     {
       name: "Profissional",
       price: "R$ 399/mês",
+      priceId: "price_professional_monthly",
       description: "Perfeito para escritórios em crescimento com até 50 clientes",
       features: [
         "Gerenciamento de até 50 clientes",
@@ -37,11 +50,11 @@ const PlansAndPricing = () => {
       ],
       mostPopular: true,
       ctaText: "Teste grátis por 14 dias",
-      ctaLink: "/signup?plan=professional",
     },
     {
       name: "Enterprise",
       price: "R$ 799/mês",
+      priceId: "price_enterprise_monthly",
       description: "A solução completa para grandes escritórios contábeis",
       features: [
         "Clientes ilimitados",
@@ -54,9 +67,33 @@ const PlansAndPricing = () => {
       ],
       mostPopular: false,
       ctaText: "Fale com um consultor",
-      ctaLink: "/contact?enterprise=true",
     },
   ];
+
+  const handleSelectPlan = (plan: any) => {
+    // For Enterprise plan, redirect to contact page
+    if (plan.name === "Enterprise") {
+      window.location.href = "/contact?enterprise=true";
+      return;
+    }
+    
+    // For other plans, open checkout
+    setCheckoutPlan({
+      name: plan.name,
+      priceId: plan.priceId,
+      price: plan.price,
+      interval: "month"
+    });
+  };
+
+  const handleCheckoutSuccess = () => {
+    setCheckoutPlan(null);
+    setShowSuccessDialog(true);
+  };
+
+  const handleCheckoutCancel = () => {
+    setCheckoutPlan(null);
+  };
 
   return (
     <DashboardLayout>
@@ -100,8 +137,11 @@ const PlansAndPricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full">
-                  <Link to={plan.ctaLink}>{plan.ctaText}</Link>
+                <Button 
+                  onClick={() => handleSelectPlan(plan)} 
+                  className="w-full"
+                >
+                  {plan.ctaText}
                 </Button>
               </CardFooter>
             </Card>
@@ -117,6 +157,58 @@ const PlansAndPricing = () => {
             <Link to="/contact">Agende uma demonstração</Link>
           </Button>
         </div>
+
+        {/* Checkout dialog */}
+        {checkoutPlan && (
+          <Dialog open={true} onOpenChange={() => setCheckoutPlan(null)}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Contratar plano {checkoutPlan.name}</DialogTitle>
+                <DialogDescription>
+                  Você está prestes a contratar o plano {checkoutPlan.name} por {checkoutPlan.price}.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="py-4">
+                <p className="mb-4">Ao prosseguir, você concorda com os termos de serviço e política de privacidade.</p>
+                
+                <PaymentCheckout 
+                  plan={checkoutPlan} 
+                  onSuccess={handleCheckoutSuccess}
+                  onCancel={handleCheckoutCancel}
+                />
+              </div>
+              
+              <DialogFooter className="flex flex-col gap-2 sm:gap-0">
+                <Button variant="outline" onClick={() => setCheckoutPlan(null)}>
+                  Cancelar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Success dialog */}
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Contratação realizada com sucesso!</DialogTitle>
+              <DialogDescription>
+                Seu plano foi ativado e já está disponível para uso.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <p>Agradecemos pela confiança! Você receberá um email com os detalhes da sua assinatura.</p>
+            </div>
+            
+            <DialogFooter>
+              <Button onClick={() => setShowSuccessDialog(false)}>
+                Continuar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

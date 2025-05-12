@@ -26,6 +26,8 @@ import RegimeFiscal from "./pages/RegimeFiscal";
 import Colaboradores from "./pages/Colaboradores";
 import IntegracoesGov from "./pages/IntegracoesGov";
 import RelatoriosIA from "./pages/RelatoriosIA";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
 
 // Configure as rotas aqui
 export const routes = [
@@ -116,6 +118,14 @@ export const routes = [
   {
     path: "/integracoes-gov",
     element: <IntegracoesGov />,
+  },
+  {
+    path: "/payment-success",
+    element: <PaymentSuccess />,
+  },
+  {
+    path: "/payment-canceled",
+    element: <PaymentCanceled />,
   },
   {
     path: "*",
