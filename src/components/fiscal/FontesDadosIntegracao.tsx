@@ -1,373 +1,332 @@
 
-import React, { useState } from 'react';
-import { toast } from "@/hooks/use-toast";
+/**
+ * Componente para configuração de integração com fontes de dados fiscais
+ */
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  configurarFonteDados,
-  FonteDadosConfig
-} from "@/services/fiscal/dataSourcesIntegration";
-import { FileDatabase, ServerCog, Receipt, PenLine, CircleCheck, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
+import { Database } from "lucide-react"; 
+import { configurarFonteDados, FonteDadosConfig } from "@/services/fiscal/dataSourcesIntegration";
 
-export function FontesDadosIntegracao() {
+export interface FontesDadosIntegracaoProps {
+  cnpj?: string;
+  onComplete?: () => void;
+}
+
+export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({
+  cnpj = '',
+  onComplete
+}) => {
   const [activeTab, setActiveTab] = useState<string>("erp");
-  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Estados para configurações de cada tipo de fonte
-  const [erpConfig, setErpConfig] = useState<{
-    url: string;
-    username: string;
-    password: string;
-  }>({
-    url: '',
-    username: '',
-    password: '',
-  });
+  // Campos ERP
+  const [erpUrl, setErpUrl] = useState("");
+  const [erpUsuario, setErpUsuario] = useState("");
+  const [erpSenha, setErpSenha] = useState("");
+  const [erpToken, setErpToken] = useState("");
   
-  const [nfeConfig, setNfeConfig] = useState<{
-    certificado: string;
-    senha: string;
-  }>({
-    certificado: '',
-    senha: '',
-  });
+  // Campos NFe
+  const [nfeToken, setNfeToken] = useState("");
+  const [nfeCertificado, setNfeCertificado] = useState<File | null>(null);
+  const [nfeSenhaCertificado, setNfeSenhaCertificado] = useState("");
   
-  const [contabilConfig, setContabilConfig] = useState<{
-    sistema: string;
-    token: string;
-  }>({
-    sistema: 'dominio',
-    token: '',
-  });
-
-  // Verificar se há configuração salva
-  React.useEffect(() => {
-    const loadSavedConfigs = () => {
-      try {
-        // Carregar configurações salvas do localStorage
-        const erpConfigSaved = localStorage.getItem('fonte-dados-erp');
-        const nfeConfigSaved = localStorage.getItem('fonte-dados-nfe');
-        const contabilConfigSaved = localStorage.getItem('fonte-dados-contabilidade');
-        
-        if (erpConfigSaved) {
-          const config = JSON.parse(erpConfigSaved);
-          setErpConfig({
-            url: config.endpointUrl || '',
-            username: config.credenciais?.username || '',
-            password: config.credenciais?.password || '',
-          });
-        }
-        
-        if (nfeConfigSaved) {
-          const config = JSON.parse(nfeConfigSaved);
-          setNfeConfig({
-            certificado: config.credenciais?.certificado || '',
-            senha: config.credenciais?.senha || '',
-          });
-        }
-        
-        if (contabilConfigSaved) {
-          const config = JSON.parse(contabilConfigSaved);
-          setContabilConfig({
-            sistema: config.sistema || 'dominio',
-            token: config.credenciais?.token || '',
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar configurações salvas:', error);
-      }
-    };
-    
-    loadSavedConfigs();
-  }, []);
-
-  const handleSaveConfig = async () => {
-    setIsConfiguring(true);
-    
+  // Campos Contabilidade
+  const [contabilidadeUrl, setContabilidadeUrl] = useState("");
+  const [contabilidadeUsuario, setContabilidadeUsuario] = useState("");
+  const [contabilidadeSenha, setContabilidadeSenha] = useState("");
+  const [contabilidadeIntegracao, setContabilidadeIntegracao] = useState<string>("manual");
+  
+  // Configurações gerais
+  const [periodoInicial, setPeriodoInicial] = useState("");
+  const [periodoFinal, setPeriodoFinal] = useState("");
+  const [sincronizacaoAutomatica, setSincronizacaoAutomatica] = useState(false);
+  
+  const handleSalvarConfiguracao = async () => {
     try {
-      let config: FonteDadosConfig;
+      setIsLoading(true);
+      
+      let config: FonteDadosConfig = {
+        tipo: activeTab as 'erp' | 'contabilidade' | 'nfe' | 'manual',
+        periodoInicial,
+        periodoFinal,
+        cnpj
+      };
       
       switch (activeTab) {
-        case 'erp':
-          config = {
-            tipo: 'erp',
-            endpointUrl: erpConfig.url,
-            credenciais: {
-              username: erpConfig.username,
-              password: erpConfig.password,
-            }
+        case "erp":
+          config.credenciais = {
+            url: erpUrl,
+            usuario: erpUsuario,
+            senha: erpSenha,
+            token: erpToken
           };
+          config.endpointUrl = erpUrl;
           break;
-        
-        case 'nfe':
-          config = {
-            tipo: 'nfe',
-            credenciais: {
-              certificado: nfeConfig.certificado,
-              senha: nfeConfig.senha,
-            }
+          
+        case "nfe":
+          config.credenciais = {
+            token: nfeToken,
+            senhaCertificado: nfeSenhaCertificado
           };
           break;
           
-        case 'contabilidade':
-          config = {
-            tipo: 'contabilidade',
-            credenciais: {
-              sistema: contabilConfig.sistema,
-              token: contabilConfig.token,
-            }
+        case "contabilidade":
+          config.credenciais = {
+            url: contabilidadeUrl,
+            usuario: contabilidadeUsuario,
+            senha: contabilidadeSenha,
+            tipoIntegracao: contabilidadeIntegracao
           };
+          config.endpointUrl = contabilidadeUrl;
           break;
-          
-        case 'manual':
-          config = {
-            tipo: 'manual'
-          };
-          break;
-          
-        default:
-          throw new Error("Tipo de fonte de dados inválido");
       }
       
-      const success = await configurarFonteDados(config);
+      const result = await configurarFonteDados(config);
       
-      if (success) {
+      if (result) {
         toast({
-          title: "Configuração salva",
-          description: "Integração com fonte de dados configurada com sucesso",
+          title: "Integração configurada",
+          description: `Fonte de dados ${activeTab.toUpperCase()} configurada com sucesso.`
         });
+        
+        if (onComplete) {
+          onComplete();
+        }
       }
-      
     } catch (error) {
-      console.error('Erro ao salvar configuração:', error);
+      console.error("Erro ao configurar fonte de dados:", error);
       toast({
-        title: "Erro",
+        title: "Erro na configuração",
         description: error instanceof Error ? error.message : "Ocorreu um erro ao salvar a configuração",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
-      setIsConfiguring(false);
+      setIsLoading(false);
     }
   };
-
-  const getStatusBadge = (tipo: string) => {
-    const configSaved = localStorage.getItem(`fonte-dados-${tipo}`);
-    
-    if (configSaved) {
-      return (
-        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-green-100 text-green-800 border-transparent">
-          <CircleCheck className="w-3 h-3 mr-1" />
-          Configurado
-        </div>
-      );
-    }
-    
-    return (
-      <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-gray-100 text-gray-800 border-transparent">
-        Não configurado
-      </div>
-    );
-  };
-
-  const handleTestarConexao = () => {
-    toast({
-      title: "Testando conexão",
-      description: "Teste de conexão iniciado. Aguarde...",
-    });
-    
-    // Simulação de teste
-    setTimeout(() => {
-      toast({
-        title: "Teste concluído",
-        description: "Conexão testada com sucesso.",
-      });
-    }, 2000);
-  };
-
+  
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Integração com Fontes de Dados</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Database className="h-5 w-5" />
+          Configuração de Fontes de Dados
+        </CardTitle>
         <CardDescription>
-          Configure as fontes de dados para cálculos fiscais automatizados
+          Configure as integrações com sistemas para obtenção automática de dados fiscais
         </CardDescription>
       </CardHeader>
       
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-6">
-            <TabsTrigger value="erp" className="flex items-center gap-1">
-              <ServerCog className="w-4 h-4" />
-              <span>ERP</span>
-              {getStatusBadge('erp')}
-            </TabsTrigger>
-            <TabsTrigger value="nfe" className="flex items-center gap-1">
-              <Receipt className="w-4 h-4" />
-              <span>NFe</span>
-              {getStatusBadge('nfe')}
-            </TabsTrigger>
-            <TabsTrigger value="contabilidade" className="flex items-center gap-1">
-              <FileDatabase className="w-4 h-4" />
-              <span>Contabilidade</span>
-              {getStatusBadge('contabilidade')}
-            </TabsTrigger>
-            <TabsTrigger value="manual" className="flex items-center gap-1">
-              <PenLine className="w-4 h-4" />
-              <span>Manual</span>
-              {getStatusBadge('manual')}
-            </TabsTrigger>
+          <TabsList className="grid grid-cols-4 mb-4">
+            <TabsTrigger value="erp">ERP</TabsTrigger>
+            <TabsTrigger value="nfe">NFe</TabsTrigger>
+            <TabsTrigger value="contabilidade">Contabilidade</TabsTrigger>
+            <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
           
           <TabsContent value="erp" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="erp-url">URL da API do ERP</Label>
-              <Input
-                id="erp-url"
-                placeholder="https://api.erp.exemplo.com.br"
-                value={erpConfig.url}
-                onChange={(e) => setErpConfig({...erpConfig, url: e.target.value})}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="erp-username">Usuário da API</Label>
-                <Input
-                  id="erp-username"
-                  placeholder="Usuário"
-                  value={erpConfig.username}
-                  onChange={(e) => setErpConfig({...erpConfig, username: e.target.value})}
+                <Label htmlFor="erp_url">URL da API</Label>
+                <Input 
+                  id="erp_url" 
+                  placeholder="https://api.seuerppreferido.com.br/v1" 
+                  value={erpUrl}
+                  onChange={(e) => setErpUrl(e.target.value)}
                 />
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="erp_usuario">Usuário</Label>
+                  <Input 
+                    id="erp_usuario" 
+                    placeholder="usuario_api" 
+                    value={erpUsuario}
+                    onChange={(e) => setErpUsuario(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="erp_senha">Senha</Label>
+                  <Input 
+                    id="erp_senha" 
+                    type="password" 
+                    placeholder="********" 
+                    value={erpSenha}
+                    onChange={(e) => setErpSenha(e.target.value)}
+                  />
+                </div>
+              </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="erp-password">Senha da API</Label>
-                <Input
-                  id="erp-password"
-                  type="password"
-                  placeholder="Senha"
-                  value={erpConfig.password}
-                  onChange={(e) => setErpConfig({...erpConfig, password: e.target.value})}
+                <Label htmlFor="erp_token">Token de API (se necessário)</Label>
+                <Input 
+                  id="erp_token" 
+                  placeholder="Token de acesso" 
+                  value={erpToken}
+                  onChange={(e) => setErpToken(e.target.value)}
                 />
               </div>
-            </div>
-            
-            <div className="pt-2">
-              <Button variant="outline" onClick={handleTestarConexao}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Testar Conexão
-              </Button>
             </div>
           </TabsContent>
           
           <TabsContent value="nfe" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nfe-certificado">Certificado Digital</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="nfe-certificado"
-                  placeholder="Selecione o arquivo do certificado"
-                  value={nfeConfig.certificado}
-                  onChange={(e) => setNfeConfig({...nfeConfig, certificado: e.target.value})}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nfe_token">Token de acesso</Label>
+                <Input 
+                  id="nfe_token" 
+                  placeholder="Token de API da SEFAZ ou provedor" 
+                  value={nfeToken}
+                  onChange={(e) => setNfeToken(e.target.value)}
                 />
-                <Button variant="outline" className="whitespace-nowrap">
-                  Escolher Arquivo
-                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Selecione um arquivo .pfx contendo seu certificado digital
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="nfe-senha">Senha do Certificado</Label>
-              <Input
-                id="nfe-senha"
-                type="password"
-                placeholder="Senha"
-                value={nfeConfig.senha}
-                onChange={(e) => setNfeConfig({...nfeConfig, senha: e.target.value})}
-              />
+              
+              <div className="space-y-2">
+                <Label htmlFor="nfe_certificado">Certificado Digital</Label>
+                <Input 
+                  id="nfe_certificado" 
+                  type="file" 
+                  accept=".pfx,.p12"
+                  onChange={(e) => setNfeCertificado(e.target.files ? e.target.files[0] : null)}
+                />
+                <p className="text-xs text-muted-foreground">Certificado digital no formato PFX ou P12</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="nfe_senha_certificado">Senha do Certificado</Label>
+                <Input 
+                  id="nfe_senha_certificado" 
+                  type="password" 
+                  placeholder="********" 
+                  value={nfeSenhaCertificado}
+                  onChange={(e) => setNfeSenhaCertificado(e.target.value)}
+                />
+              </div>
             </div>
           </TabsContent>
           
           <TabsContent value="contabilidade" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="contabil-sistema">Sistema Contábil</Label>
-              <Select
-                value={contabilConfig.sistema}
-                onValueChange={(value) => setContabilConfig({...contabilConfig, sistema: value})}
-              >
-                <SelectTrigger id="contabil-sistema">
-                  <SelectValue placeholder="Selecione um sistema" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dominio">Domínio Sistemas</SelectItem>
-                  <SelectItem value="fortes">Fortes Contábil</SelectItem>
-                  <SelectItem value="alterdata">Alterdata</SelectItem>
-                  <SelectItem value="contmatic">Contmatic</SelectItem>
-                  <SelectItem value="outro">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="contabil-token">Token de Integração</Label>
-              <Input
-                id="contabil-token"
-                placeholder="Token de API"
-                value={contabilConfig.token}
-                onChange={(e) => setContabilConfig({...contabilConfig, token: e.target.value})}
-              />
-              <p className="text-sm text-muted-foreground">
-                Obtenha o token de integração no painel de administração do seu sistema contábil
-              </p>
-            </div>
-            
-            <div className="pt-2">
-              <Button variant="outline" onClick={handleTestarConexao}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Verificar Conexão
-              </Button>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contabilidade_url">URL do Sistema Contábil</Label>
+                <Input 
+                  id="contabilidade_url" 
+                  placeholder="https://sistema.contabilidade.com.br/api" 
+                  value={contabilidadeUrl}
+                  onChange={(e) => setContabilidadeUrl(e.target.value)}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contabilidade_usuario">Usuário</Label>
+                  <Input 
+                    id="contabilidade_usuario" 
+                    placeholder="Usuario do sistema contábil" 
+                    value={contabilidadeUsuario}
+                    onChange={(e) => setContabilidadeUsuario(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contabilidade_senha">Senha</Label>
+                  <Input 
+                    id="contabilidade_senha" 
+                    type="password" 
+                    placeholder="********" 
+                    value={contabilidadeSenha}
+                    onChange={(e) => setContabilidadeSenha(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="contabilidade_integracao">Tipo de Integração</Label>
+                <Select 
+                  value={contabilidadeIntegracao} 
+                  onValueChange={setContabilidadeIntegracao}
+                >
+                  <SelectTrigger id="contabilidade_integracao">
+                    <SelectValue placeholder="Selecione o tipo de integração" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="api">API Direta</SelectItem>
+                    <SelectItem value="importacao">Importação de Arquivos</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </TabsContent>
           
           <TabsContent value="manual" className="space-y-4">
-            <div className="p-6 text-center border-2 border-dashed rounded-lg">
-              <PenLine className="w-12 h-12 mx-auto text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-medium">Entrada Manual de Dados</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                A entrada manual permite o uso do sistema sem integrações automáticas.
-                Os dados precisarão ser inseridos manualmente a cada período fiscal.
+            <div className="border rounded-md p-4 bg-muted/50">
+              <p className="text-sm">
+                Na configuração manual, os dados fiscais e contábeis serão inseridos diretamente no sistema
+                ou importados através de planilhas. Configure abaixo o período para busca inicial dos dados.
               </p>
             </div>
-            
-            <p className="text-sm">
-              Não são necessárias configurações adicionais para entrada manual. 
-              Os formulários de entrada de dados estarão disponíveis durante o processo de cálculo.
-            </p>
           </TabsContent>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 border-t pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="periodo_inicial">Período Inicial</Label>
+              <Input 
+                id="periodo_inicial" 
+                type="month" 
+                placeholder="YYYY-MM" 
+                value={periodoInicial}
+                onChange={(e) => setPeriodoInicial(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="periodo_final">Período Final (opcional)</Label>
+              <Input 
+                id="periodo_final" 
+                type="month" 
+                placeholder="YYYY-MM" 
+                value={periodoFinal}
+                onChange={(e) => setPeriodoFinal(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2 mt-4">
+            <Switch 
+              id="sincronizacao" 
+              checked={sincronizacaoAutomatica}
+              onCheckedChange={setSincronizacaoAutomatica}
+            />
+            <Label htmlFor="sincronizacao">Sincronização automática</Label>
+          </div>
         </Tabs>
       </CardContent>
       
       <CardFooter>
-        <Button 
-          onClick={handleSaveConfig} 
-          disabled={isConfiguring}
-          className="ml-auto"
-        >
-          {isConfiguring ? "Salvando..." : "Salvar Configuração"}
-        </Button>
+        <div className="flex justify-end w-full">
+          <Button
+            onClick={handleSalvarConfiguracao}
+            disabled={isLoading}
+          >
+            {isLoading ? "Salvando..." : "Salvar Configuração"}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
-}
+};
+
+export default FontesDadosIntegracao;
