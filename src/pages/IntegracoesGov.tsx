@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { IntegracaoGovForm } from "@/components/integracoes/IntegracaoGovForm";
+import { SimplesNacionalForm } from "@/components/integracoes/SimplesNacionalForm";
+import { IntegracaoEstadualForm } from "@/components/integracoes/IntegracaoEstadualForm";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -21,6 +23,7 @@ interface IntegracaoStatus {
 const IntegracoesGov = () => {
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
+  const [selectedClientCnpj, setSelectedClientCnpj] = useState<string>('');
   const [activeTab, setActiveTab] = useState("ecac");
   
   // Estado para simular os status de integração
@@ -47,9 +50,10 @@ const IntegracoesGov = () => {
     },
   ]);
   
-  const handleClientSelect = (client: { id: string, name: string }) => {
+  const handleClientSelect = (client: { id: string, name: string, cnpj?: string }) => {
     setSelectedClientId(client.id);
     setSelectedClientName(client.name);
+    setSelectedClientCnpj(client.cnpj || '');
     
     // Simular dados de integrações para esse cliente
     if (client.id === "1") {
@@ -230,27 +234,30 @@ const IntegracoesGov = () => {
                 </TabsContent>
                 
                 <TabsContent value="sefaz_sp">
-                  <Card className="p-6 text-center">
-                    <p className="text-muted-foreground">
-                      Configuração para SEFAZ-SP estará disponível em breve.
-                    </p>
-                  </Card>
+                  <IntegracaoEstadualForm 
+                    clientId={selectedClientId}
+                    clientName={selectedClientName}
+                    uf="SP"
+                    onSave={handleSaveIntegracao}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="sefaz_rj">
-                  <Card className="p-6 text-center">
-                    <p className="text-muted-foreground">
-                      Configuração para SEFAZ-RJ estará disponível em breve.
-                    </p>
-                  </Card>
+                  <IntegracaoEstadualForm 
+                    clientId={selectedClientId}
+                    clientName={selectedClientName}
+                    uf="RJ"
+                    onSave={handleSaveIntegracao}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="simples_nacional">
-                  <Card className="p-6 text-center">
-                    <p className="text-muted-foreground">
-                      Configuração para o Portal do Simples Nacional estará disponível em breve.
-                    </p>
-                  </Card>
+                  <SimplesNacionalForm
+                    clientId={selectedClientId}
+                    clientName={selectedClientName}
+                    cnpj={selectedClientCnpj}
+                    onSave={handleSaveIntegracao}
+                  />
                 </TabsContent>
               </div>
             </Tabs>

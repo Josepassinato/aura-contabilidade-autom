@@ -1,39 +1,39 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { IntegracaoEstadualForm } from "@/components/integracoes/IntegracaoEstadualForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UF } from "@/services/governamental/estadualIntegration";
+import { IntegracaoEstadualForm } from './IntegracaoEstadualForm';
 
 interface UfTabsProps {
   estados: Array<{uf: UF, nome: string}>;
   activeTab: UF;
-  setActiveTab: (value: UF) => void;
+  setActiveTab: (uf: UF) => void;
   clientId: string;
-  clientName: string;
+  clientName?: string;
   onSave: (data: any) => void;
 }
 
 export function UfTabs({ estados, activeTab, setActiveTab, clientId, clientName, onSave }: UfTabsProps) {
   return (
-    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as UF)}>
-      <TabsList className="grid w-full grid-cols-5">
-        {estados.map((estado) => (
-          <TabsTrigger key={estado.uf} value={estado.uf}>{estado.nome}</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={(value: UF) => setActiveTab(value)}>
+      <TabsList className="flex flex-wrap">
+        {estados.map(estado => (
+          <TabsTrigger key={estado.uf} value={estado.uf} className="flex-grow">
+            {estado.uf} - {estado.nome}
+          </TabsTrigger>
         ))}
       </TabsList>
       
-      <div className="mt-6">
-        {estados.map((estado) => (
-          <TabsContent key={estado.uf} value={estado.uf}>
-            <IntegracaoEstadualForm 
-              clientId={clientId}
-              clientName={clientName}
-              uf={estado.uf}
-              onSave={onSave}
-            />
-          </TabsContent>
-        ))}
-      </div>
+      {estados.map(estado => (
+        <TabsContent key={estado.uf} value={estado.uf}>
+          <IntegracaoEstadualForm 
+            clientId={clientId}
+            clientName={clientName}
+            uf={estado.uf}
+            onSave={onSave}
+          />
+        </TabsContent>
+      ))}
     </Tabs>
   );
 }
