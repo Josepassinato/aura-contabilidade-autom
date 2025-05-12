@@ -85,10 +85,13 @@ export async function atualizarStatusObrigacao(
   status: "pendente" | "atrasado" | "concluido"
 ): Promise<boolean> {
   try {
+    // Converter o id para string caso seja um número, já que o Supabase espera string para o id
+    const idAsString = id.toString();
+    
     const { error } = await supabase
       .from('obrigacoes_fiscais')
       .update({ status })
-      .eq('id', id);
+      .eq('id', idAsString);
     
     if (error) {
       console.error('Erro ao atualizar status da obrigação fiscal:', error);
