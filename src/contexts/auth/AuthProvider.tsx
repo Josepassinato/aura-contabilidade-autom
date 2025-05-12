@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { useSupabaseClient, UserProfile, UserRole } from '@/lib/supabase';
 import { getUserProfile, mapUserToProfile, signOut, signInWithEmail } from './authUtils';
+import { toast } from '@/hooks/use-toast';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -15,35 +17,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkSession = async () => {
       setIsLoading(true);
       try {
-        // This is a mock check since we don't have real Supabase auth
+        // Verificar role no localStorage para teste
+        const userRole = localStorage.getItem('user_role');
         const mockSessionUser = {
           id: '123',
-          email: 'user@example.com',
+          email: userRole === 'client' ? 'cliente@empresa.com.br' : 
+                userRole === 'admin' ? 'admin@contaflix.com.br' : 'contador@contaflix.com.br',
           user_metadata: {
-            name: 'Test User',
+            name: userRole === 'client' ? 'Empresa Cliente' : 
+                  userRole === 'admin' ? 'Admin Contaflix' : 'Contador Teste',
           }
         };
         
-        // Only for testing/demo purposes
-        const hasSession = localStorage.getItem('mock_session') === 'true';
+        // Para testes/demonstração
+        const hasSession = localStorage.getItem('mock_session') === 'true' || userRole !== null;
         
         if (hasSession) {
-          // Set session and user
+          // Configurar sessão e usuário
           setSession({ user: mockSessionUser });
           setUser(mockSessionUser);
           
-          // Get user profile data from database
-          const profile = await getUserProfile(mockSessionUser.id);
+          // Criar perfil baseado no role salvo no localStorage
+          const mockProfile: UserProfile = {
+            id: mockSessionUser.id,
+            email: mockSessionUser.email,
+            name: mockSessionUser.user_metadata.name,
+            role: (userRole as UserRole) || UserRole.ACCOUNTANT,
+            full_name: mockSessionUser.user_metadata.name,
+            company_id: userRole === 'client' ? 'client-123' : 'contaflix-001'
+          };
           
-          if (profile) {
-            setUserProfile(profile);
-            setIsAuthenticated(true);
-          } else {
-            // Create a basic profile if none exists
-            const basicProfile = mapUserToProfile(mockSessionUser);
-            setUserProfile(basicProfile);
-            setIsAuthenticated(true);
-          }
+          setUserProfile(mockProfile);
+          setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
           setUserProfile(null);
@@ -51,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error('Erro ao verificar autenticação:', error);
         setIsAuthenticated(false);
         setUserProfile(null);
         setSession(null);
@@ -66,90 +71,131 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      // Mock login for testing/demo
+      // Mock login para testes
       if (email && password) {
-        // Set mock session
-        localStorage.setItem('mock_session', 'true');
+        // Determinar o perfil baseado no email
+        let role = UserRole.ACCOUNTANT;
+        let name = 'Contador Teste';
         
-        // Create a mock user profile for testing
+        if (email.includes('cliente')) {
+          role = UserRole.CLIENT;
+          name = 'Empresa Cliente';
+        } else if (email.includes('admin')) {
+          role = UserRole.ADMIN;
+          name = 'Admin Contaflix';
+        }
+        
+        // Configurar sessão mock
+        localStorage.setItem('mock_session', 'true');
+        localStorage.setItem('user_role', role);
+        
+        // Criar usuário mock
         const mockUser = {
           id: '123',
           email: email,
           user_metadata: {
-            name: 'Test User',
+            name: name,
           }
         };
 
         const mockProfile: UserProfile = {
           id: '123',
           email: email,
-          name: 'Test User',
-          role: UserRole.ACCOUNTANT,
-          full_name: 'Test User Full Name',
-          company_id: '456'
+          name: name,
+          role: role,
+          full_name: name,
+          company_id: role === UserRole.CLIENT ? 'client-123' : 'contaflix-001'
         };
         
         setUser(mockUser);
         setSession({ user: mockUser });
         setUserProfile(mockProfile);
         setIsAuthenticated(true);
+        
+        toast({
+          title: "Login bem-sucedido",
+          description: `Bem-vindo, ${name}!`,
+        });
+        
         return { success: true, error: null };
       }
-      return { success: false, error: 'Invalid credentials' };
+      return { success: false, error: 'Credenciais inválidas' };
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Authentication failed' };
+      console.error('Erro no login:', error);
+      toast({
+        title: "Falha no login",
+        description: "Não foi possível efetuar o login",
+        variant: "destructive"
+      });
+      return { success: false, error: 'Falha na autenticação' };
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
       localStorage.removeItem('mock_session');
+      localStorage.removeItem('user_role');
       setIsAuthenticated(false);
       setUserProfile(null);
       setSession(null);
       setUser(null);
-      // No return value needed
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso",
+      });
     } catch (error) {
-      console.error('Logout error:', error);
-      // Still no return value needed, but log the error
+      console.error('Erro no logout:', error);
+      toast({
+        title: "Erro no logout",
+        description: "Ocorreu um erro ao tentar desconectar",
+        variant: "destructive"
+      });
     }
   };
 
-  // Implement signIn to match AuthContextType
+  // Implementar signIn para corresponder ao AuthContextType
   const signIn = async (email: string, password: string) => {
     try {
       const result = await login(email, password);
       return { error: result.success ? null : new Error(result.error) };
     } catch (error) {
-      console.error('SignIn error:', error);
-      return { error: new Error('Authentication failed') };
+      console.error('Erro no SignIn:', error);
+      return { error: new Error('Falha na autenticação') };
     }
   };
 
-  // Implement signUp to match AuthContextType
+  // Implementar signUp para corresponder ao AuthContextType
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      // Mock signup for testing/demo
+      // Mock signup para testes
       if (email && password) {
+        toast({
+          title: "Conta criada",
+          description: "Sua conta foi criada com sucesso",
+        });
+        
         await login(email, password);
         return { error: null };
       }
-      return { error: new Error('Invalid credentials') };
+      return { error: new Error('Credenciais inválidas') };
     } catch (error) {
-      console.error('SignUp error:', error);
-      return { error: new Error('SignUp failed') };
+      console.error('Erro no SignUp:', error);
+      toast({
+        title: "Erro no cadastro",
+        description: "Não foi possível criar sua conta",
+        variant: "destructive"
+      });
+      return { error: new Error('Falha no cadastro') };
     }
   };
 
-  // Update handleSignOut to match the void return type
+  // Atualizar handleSignOut para corresponder ao tipo de retorno void
   const handleSignOut = async (): Promise<void> => {
     try {
       await logout();
-      // No return value needed
     } catch (error) {
-      console.error('SignOut error:', error);
-      // Log the error but don't return anything
+      console.error('Erro no SignOut:', error);
     }
   };
 

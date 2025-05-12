@@ -114,6 +114,49 @@ const Login = () => {
     }
   };
   
+  // Função para login rápido como contador para teste
+  const loginAsAccountant = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signIn("contador@contaflix.com.br", "senha123");
+      
+      if (!error) {
+        // A página será redirecionada automaticamente no useEffect
+        localStorage.setItem('user_role', 'accountant');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Função para login rápido como cliente para teste
+  const loginAsClient = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signIn("cliente@empresa.com.br", "senha123");
+      
+      if (!error) {
+        localStorage.setItem('user_role', 'client');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Função para login rápido como admin para teste
+  const loginAsAdmin = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await signIn("admin@contaflix.com.br", "senha123");
+      
+      if (!error) {
+        localStorage.setItem('user_role', 'admin');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const formatCNPJ = (value: string) => {
     // Remove caracteres não numéricos
     const numbers = value.replace(/\D/g, "");
@@ -208,6 +251,36 @@ const Login = () => {
                     </Button>
                   </form>
                 </Form>
+                
+                <div className="mt-6 border-t pt-4">
+                  <p className="text-sm text-muted-foreground mb-2">Acesso rápido para testes:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={loginAsAccountant} 
+                      disabled={isLoading}
+                    >
+                      Contador
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={loginAsClient} 
+                      disabled={isLoading}
+                    >
+                      Cliente
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={loginAsAdmin} 
+                      disabled={isLoading}
+                    >
+                      Admin
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
               
               <TabsContent value="signup">
