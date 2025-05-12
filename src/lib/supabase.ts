@@ -61,13 +61,20 @@ export interface AccountingClient extends Tables<"accounting_clients"> {
   // Campos adicionais que não estão na tabela do Supabase
 }
 
+// Criar uma instância do cliente Supabase para uso global
+const SUPABASE_URL = "https://watophocqlcyimirzrpe.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdG9waG9jcWxjeWltaXJ6cnBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5OTUyNjQsImV4cCI6MjA2MjU3MTI2NH0.aTF2XWWUhxtrrp4V08BvM5WAGQULlppgkIhXnCSLXrg";
+
+// Criando o cliente que será utilizado em toda a aplicação
+export const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 export const initializeSupabase = () => {
-  // Este é um mock - em produção usará o cliente real do Supabase
-  return createClient;
+  // Retorna o cliente já inicializado
+  return supabaseClient;
 };
 
-// Um hook falso para usar como mock
+// Hook para usar o cliente Supabase
 export function useSupabaseClient() {
-  // Aqui retornamos o cliente do Supabase da integração oficial
-  return createClient;
+  // Retorna a instância do cliente Supabase já inicializado
+  return supabaseClient;
 }
