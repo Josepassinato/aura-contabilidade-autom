@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { useSupabaseClient, UserProfile, UserRole } from '@/lib/supabase';
@@ -103,17 +102,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       localStorage.removeItem('mock_session');
       setIsAuthenticated(false);
       setUserProfile(null);
       setSession(null);
       setUser(null);
-      return { success: true };
+      // No return value needed
     } catch (error) {
       console.error('Logout error:', error);
-      return { success: false, error: 'Logout failed' };
+      // Still no return value needed, but log the error
     }
   };
 
@@ -143,12 +142,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock auth signOut function
-  const handleSignOut = async () => {
+  // Update handleSignOut to match the void return type
+  const handleSignOut = async (): Promise<void> => {
     try {
       await logout();
+      // No return value needed
     } catch (error) {
       console.error('SignOut error:', error);
+      // Log the error but don't return anything
     }
   };
 
