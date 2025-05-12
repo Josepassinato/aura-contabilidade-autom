@@ -3,13 +3,12 @@
  * Componente para configuração de integração com fontes de dados fiscais
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
 import { Database } from "lucide-react"; 
-import { configurarFonteDados, FonteDadosConfig } from "@/services/fiscal/integration";
+import { useFonteDadosForm } from "@/hooks/useFonteDadosForm";
 
 // Import sub-components
 import ErpTabContent from "./fontesdados/ErpTabContent";
@@ -23,98 +22,15 @@ export interface FontesDadosIntegracaoProps {
   onComplete?: () => void;
 }
 
-export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({
-  cnpj = '',
-  onComplete
-}) => {
-  const [activeTab, setActiveTab] = useState<string>("erp");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Campos ERP
-  const [erpUrl, setErpUrl] = useState("");
-  const [erpUsuario, setErpUsuario] = useState("");
-  const [erpSenha, setErpSenha] = useState("");
-  const [erpToken, setErpToken] = useState("");
-  
-  // Campos NFe
-  const [nfeToken, setNfeToken] = useState("");
-  const [nfeCertificado, setNfeCertificado] = useState<File | null>(null);
-  const [nfeSenhaCertificado, setNfeSenhaCertificado] = useState("");
-  
-  // Campos Contabilidade
-  const [contabilidadeUrl, setContabilidadeUrl] = useState("");
-  const [contabilidadeUsuario, setContabilidadeUsuario] = useState("");
-  const [contabilidadeSenha, setContabilidadeSenha] = useState("");
-  const [contabilidadeIntegracao, setContabilidadeIntegracao] = useState<string>("manual");
-  
-  // Configurações gerais
-  const [periodoInicial, setPeriodoInicial] = useState("");
-  const [periodoFinal, setPeriodoFinal] = useState("");
-  const [sincronizacaoAutomatica, setSincronizacaoAutomatica] = useState(false);
-  
-  const handleSalvarConfiguracao = async () => {
-    try {
-      setIsLoading(true);
-      
-      let config: FonteDadosConfig = {
-        tipo: activeTab as 'erp' | 'contabilidade' | 'nfe' | 'manual',
-        periodoInicial,
-        periodoFinal,
-        cnpj
-      };
-      
-      switch (activeTab) {
-        case "erp":
-          config.credenciais = {
-            url: erpUrl,
-            usuario: erpUsuario,
-            senha: erpSenha,
-            token: erpToken
-          };
-          config.endpointUrl = erpUrl;
-          break;
-          
-        case "nfe":
-          config.credenciais = {
-            token: nfeToken,
-            senhaCertificado: nfeSenhaCertificado
-          };
-          break;
-          
-        case "contabilidade":
-          config.credenciais = {
-            url: contabilidadeUrl,
-            usuario: contabilidadeUsuario,
-            senha: contabilidadeSenha,
-            tipoIntegracao: contabilidadeIntegracao
-          };
-          config.endpointUrl = contabilidadeUrl;
-          break;
-      }
-      
-      const result = await configurarFonteDados(config);
-      
-      if (result) {
-        toast({
-          title: "Integração configurada",
-          description: `Fonte de dados ${activeTab.toUpperCase()} configurada com sucesso.`
-        });
-        
-        if (onComplete) {
-          onComplete();
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao configurar fonte de dados:", error);
-      toast({
-        title: "Erro na configuração",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao salvar a configuração",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({ cnpj = '', onComplete }) => {
+  const { 
+    activeTab, 
+    setActiveTab, 
+    isLoading, 
+    formState, 
+    updateField, 
+    handleSalvarConfiguracao 
+  } = useFonteDadosForm({ cnpj, onComplete });
   
   return (
     <Card className="w-full">
@@ -139,38 +55,38 @@ export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({
           
           <TabsContent value="erp" className="space-y-4">
             <ErpTabContent
-              erpUrl={erpUrl}
-              setErpUrl={setErpUrl}
-              erpUsuario={erpUsuario}
-              setErpUsuario={setErpUsuario}
-              erpSenha={erpSenha}
-              setErpSenha={setErpSenha}
-              erpToken={erpToken}
-              setErpToken={setErpToken}
+              erpUrl={formState.erpUrl}
+              setErpUrl={(value) => updateField('erpUrl', value)}
+              erpUsuario={formState.erpUsuario}
+              setErpUsuario={(value) => updateField('erpUsuario', value)}
+              erpSenha={formState.erpSenha}
+              setErpSenha={(value) => updateField('erpSenha', value)}
+              erpToken={formState.erpToken}
+              setErpToken={(value) => updateField('erpToken', value)}
             />
           </TabsContent>
           
           <TabsContent value="nfe" className="space-y-4">
             <NfeTabContent
-              nfeToken={nfeToken}
-              setNfeToken={setNfeToken}
-              nfeCertificado={nfeCertificado}
-              setNfeCertificado={setNfeCertificado}
-              nfeSenhaCertificado={nfeSenhaCertificado}
-              setNfeSenhaCertificado={setNfeSenhaCertificado}
+              nfeToken={formState.nfeToken}
+              setNfeToken={(value) => updateField('nfeToken', value)}
+              nfeCertificado={formState.nfeCertificado}
+              setNfeCertificado={(value) => updateField('nfeCertificado', value)}
+              nfeSenhaCertificado={formState.nfeSenhaCertificado}
+              setNfeSenhaCertificado={(value) => updateField('nfeSenhaCertificado', value)}
             />
           </TabsContent>
           
           <TabsContent value="contabilidade" className="space-y-4">
             <ContabilidadeTabContent
-              contabilidadeUrl={contabilidadeUrl}
-              setContabilidadeUrl={setContabilidadeUrl}
-              contabilidadeUsuario={contabilidadeUsuario}
-              setContabilidadeUsuario={setContabilidadeUsuario}
-              contabilidadeSenha={contabilidadeSenha}
-              setContabilidadeSenha={setContabilidadeSenha}
-              contabilidadeIntegracao={contabilidadeIntegracao}
-              setContabilidadeIntegracao={setContabilidadeIntegracao}
+              contabilidadeUrl={formState.contabilidadeUrl}
+              setContabilidadeUrl={(value) => updateField('contabilidadeUrl', value)}
+              contabilidadeUsuario={formState.contabilidadeUsuario}
+              setContabilidadeUsuario={(value) => updateField('contabilidadeUsuario', value)}
+              contabilidadeSenha={formState.contabilidadeSenha}
+              setContabilidadeSenha={(value) => updateField('contabilidadeSenha', value)}
+              contabilidadeIntegracao={formState.contabilidadeIntegracao}
+              setContabilidadeIntegracao={(value) => updateField('contabilidadeIntegracao', value)}
             />
           </TabsContent>
           
@@ -179,12 +95,12 @@ export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({
           </TabsContent>
           
           <PeriodoSelector 
-            periodoInicial={periodoInicial}
-            setPeriodoInicial={setPeriodoInicial}
-            periodoFinal={periodoFinal}
-            setPeriodoFinal={setPeriodoFinal}
-            sincronizacaoAutomatica={sincronizacaoAutomatica}
-            setSincronizacaoAutomatica={setSincronizacaoAutomatica}
+            periodoInicial={formState.periodoInicial}
+            setPeriodoInicial={(value) => updateField('periodoInicial', value)}
+            periodoFinal={formState.periodoFinal}
+            setPeriodoFinal={(value) => updateField('periodoFinal', value)}
+            sincronizacaoAutomatica={formState.sincronizacaoAutomatica}
+            setSincronizacaoAutomatica={(value) => updateField('sincronizacaoAutomatica', value)}
           />
         </Tabs>
       </CardContent>
