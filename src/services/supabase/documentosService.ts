@@ -12,7 +12,7 @@ export interface ClientDocument {
   size?: number;
   file_path?: string;
   date?: string;
-  status: 'pendente' | 'processado' | 'rejeitado'; // Making status required and defining its possible values
+  status: 'pendente' | 'processado' | 'rejeitado'; // Ensure status is properly typed
   created_at?: string;
 }
 
