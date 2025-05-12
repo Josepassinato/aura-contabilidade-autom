@@ -18,7 +18,7 @@ export interface AuthContextType {
   isAccountant: boolean;
   isAdmin: boolean;
   login?: (email: string, password: string) => Promise<{success: boolean, error: any | null}>; // Optional property to support existing implementations
-  logout?: () => Promise<{success: boolean, error?: any | null}>; // Optional property to support existing implementations
+  logout?: () => Promise<void>; // Updated to match the expected return type
 }
 
 // Create the context with default values to avoid null issues
