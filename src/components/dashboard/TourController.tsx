@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
@@ -125,12 +124,257 @@ export const TourController = () => {
     },
   ];
 
+  // Novo tour para automação bancária
+  const bankingTourSteps = [
+    {
+      id: 'banking-header',
+      title: 'Automação Bancária',
+      description: 'Gerencie todas as operações bancárias da sua empresa e seus clientes em um só lugar.',
+      element: '.banco-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'banking-tabs',
+      title: 'Funcionalidades Bancárias',
+      description: 'Acesse diferentes funcionalidades bancárias: pagamentos PIX, tributos, folha de pagamento e extratos.',
+      element: '.banco-tabs',
+      position: 'top' as const,
+    },
+    {
+      id: 'payment-scheduling',
+      title: 'Agendamento de Pagamentos',
+      description: 'Agende pagamentos únicos ou em lote para seus clientes, com integração bancária automatizada.',
+      element: '.payment-scheduling',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'batch-import',
+      title: 'Importação em Lote',
+      description: 'Importe pagamentos em lote de arquivos CSV ou JSON para processar múltiplos pagamentos de uma vez.',
+      element: '.batch-import',
+      position: 'top' as const,
+    },
+  ];
+
+  // Novo tour para folha de pagamento
+  const payrollTourSteps = [
+    {
+      id: 'payroll-header',
+      title: 'Folha de Pagamento',
+      description: 'Gerencie a folha de pagamento dos seus clientes com facilidade.',
+      element: '.payroll-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'employee-list',
+      title: 'Lista de Funcionários',
+      description: 'Visualize e gerencie todos os funcionários cadastrados.',
+      element: '.employees-list',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'payroll-filter',
+      title: 'Filtros de Folha',
+      description: 'Use esses filtros para encontrar rapidamente informações específicas da folha de pagamento.',
+      element: '.payroll-filter',
+      position: 'right' as const,
+    },
+    {
+      id: 'payroll-generation',
+      title: 'Geração de Folha',
+      description: 'Gere a folha de pagamento mensal com apenas alguns cliques.',
+      element: '.payroll-generation',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'payroll-reports',
+      title: 'Relatórios de Folha',
+      description: 'Acesse relatórios detalhados sobre a folha de pagamento.',
+      element: '.payroll-reports',
+      position: 'left' as const,
+    },
+  ];
+
+  // Novo tour para guias fiscais
+  const taxGuidesTourSteps = [
+    {
+      id: 'tax-guides-header',
+      title: 'Guias Fiscais',
+      description: 'Gerencie todas as guias fiscais dos seus clientes em um só lugar.',
+      element: '.tax-guides-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'tax-guides-list',
+      title: 'Lista de Guias',
+      description: 'Visualize todas as guias fiscais organizadas por vencimento.',
+      element: '.tax-guides-list',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'tax-guides-generation',
+      title: 'Geração de Guias',
+      description: 'Gere novas guias fiscais com cálculos automáticos baseados em regimes tributários.',
+      element: '.tax-guides-generation',
+      position: 'right' as const,
+    },
+    {
+      id: 'tax-guide-payment',
+      title: 'Pagamento de Guias',
+      description: 'Agende o pagamento de guias fiscais diretamente pelo sistema.',
+      element: '.tax-guide-payment',
+      position: 'left' as const,
+    },
+  ];
+
+  // Novo tour para relatórios financeiros
+  const financialReportsTourSteps = [
+    {
+      id: 'reports-header',
+      title: 'Relatórios Financeiros',
+      description: 'Acesse relatórios financeiros detalhados para seus clientes.',
+      element: '.reports-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'balance-sheet',
+      title: 'Balanço Patrimonial',
+      description: 'Visualize o balanço patrimonial completo com análises automatizadas.',
+      element: '.balance-sheet',
+      position: 'right' as const,
+    },
+    {
+      id: 'income-statement',
+      title: 'DRE',
+      description: 'Acesse a Demonstração do Resultado do Exercício com gráficos interativos.',
+      element: '.income-statement',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'cash-flow',
+      title: 'Fluxo de Caixa',
+      description: 'Analise o fluxo de caixa com projeções e comparativos.',
+      element: '.cash-flow',
+      position: 'left' as const,
+    },
+    {
+      id: 'financial-indexes',
+      title: 'Índices Financeiros',
+      description: 'Visualize indicadores financeiros importantes para tomada de decisão.',
+      element: '.financial-indexes',
+      position: 'right' as const,
+    },
+  ];
+
+  // Novo tour para análises preditivas
+  const predictiveAnalyticsTourSteps = [
+    {
+      id: 'analytics-header',
+      title: 'Análises Preditivas',
+      description: 'Utilize inteligência artificial para prever tendências financeiras.',
+      element: '.analytics-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'anomaly-detector',
+      title: 'Detector de Anomalias',
+      description: 'Identifique automaticamente transações suspeitas ou inconsistências contábeis.',
+      element: '.anomaly-detector',
+      position: 'right' as const,
+    },
+    {
+      id: 'predictive-analysis',
+      title: 'Análises Preditivas',
+      description: 'Visualize previsões de receitas, despesas e fluxo de caixa para os próximos meses.',
+      element: '.predictive-analysis',
+      position: 'bottom' as const,
+    },
+  ];
+
+  // Novo tour para integrações governamentais
+  const govIntegrationsTourSteps = [
+    {
+      id: 'gov-integrations-header',
+      title: 'Integrações Governamentais',
+      description: 'Gerencie suas integrações com sistemas governamentais.',
+      element: '.gov-integrations-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'ecac-integration',
+      title: 'Integração e-CAC',
+      description: 'Configure e monitore a integração com o portal e-CAC da Receita Federal.',
+      element: '.ecac-integration',
+      position: 'right' as const,
+    },
+    {
+      id: 'sefaz-integration',
+      title: 'Integração SEFAZ',
+      description: 'Gerencie a integração com portais das Secretarias de Fazenda estaduais.',
+      element: '.sefaz-integration',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'certificates',
+      title: 'Certificados Digitais',
+      description: 'Gerencie seus certificados digitais utilizados nas integrações.',
+      element: '.certificates-section',
+      position: 'left' as const,
+    },
+  ];
+  
+  // Novo tour para apuração automática
+  const autoCalculationTourSteps = [
+    {
+      id: 'auto-calculation-header',
+      title: 'Apuração Automática',
+      description: 'Configure e execute apurações automáticas de impostos.',
+      element: '.apuracao-header',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'calculation-config',
+      title: 'Configuração de Apuração',
+      description: 'Configure regras e parâmetros para a apuração automática de impostos.',
+      element: '.apuracao-config',
+      position: 'right' as const,
+    },
+    {
+      id: 'processing-status',
+      title: 'Status de Processamento',
+      description: 'Acompanhe o status do processamento das apurações automáticas.',
+      element: '.processing-status',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'calculation-results',
+      title: 'Resultados da Apuração',
+      description: 'Visualize os resultados detalhados das apurações automáticas.',
+      element: '.apuracao-results',
+      position: 'left' as const,
+    },
+  ];
+
   // Seleciona o tour adequado com base na rota atual
   useEffect(() => {
     if (location.pathname.includes('/clientes')) {
       setCurrentTourSteps(clientsTourSteps);
     } else if (location.pathname.includes('/obrigacoes')) {
       setCurrentTourSteps(fiscalTourSteps);
+    } else if (location.pathname.includes('/automacao-bancaria')) {
+      setCurrentTourSteps(bankingTourSteps);
+    } else if (location.pathname.includes('/folha-pagamento')) {
+      setCurrentTourSteps(payrollTourSteps);
+    } else if (location.pathname.includes('/guias-fiscais')) {
+      setCurrentTourSteps(taxGuidesTourSteps);
+    } else if (location.pathname.includes('/relatorios-financeiros')) {
+      setCurrentTourSteps(financialReportsTourSteps);
+    } else if (location.pathname.includes('/analises-preditivas')) {
+      setCurrentTourSteps(predictiveAnalyticsTourSteps);
+    } else if (location.pathname.includes('/integracoes-gov')) {
+      setCurrentTourSteps(govIntegrationsTourSteps);
+    } else if (location.pathname.includes('/apuracao-automatica')) {
+      setCurrentTourSteps(autoCalculationTourSteps);
     } else {
       setCurrentTourSteps(dashboardTourSteps);
     }

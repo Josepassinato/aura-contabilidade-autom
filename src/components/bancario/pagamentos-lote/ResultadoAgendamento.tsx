@@ -19,7 +19,7 @@ interface ResultadoAgendamentoProps {
 
 export function ResultadoAgendamento({ resultado, totalPagamentos }: ResultadoAgendamentoProps) {
   return (
-    <Card>
+    <Card className="payment-scheduling">
       <CardHeader>
         <CardTitle>Resultado do Agendamento</CardTitle>
       </CardHeader>

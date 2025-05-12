@@ -13,7 +13,7 @@ interface ImportacaoDadosProps {
 
 export function ImportacaoDados({ loteImportado, setLoteImportado, handleImportarLote }: ImportacaoDadosProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 batch-import">
       <Label htmlFor="importacao">Importar de CSV ou JSON (opcional)</Label>
       <Textarea
         id="importacao"

@@ -36,6 +36,7 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [elementFound, setElementFound] = useState(true);
   const [animateTooltip, setAnimateTooltip] = useState(false);
+  const [isSkippable, setIsSkippable] = useState(true);
 
   // Adicionar rolagem suave até o elemento destacado
   useEffect(() => {
@@ -193,14 +194,26 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={currentStep === 0}
-            onClick={prevStep}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" /> Anterior
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentStep === 0}
+              onClick={prevStep}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" /> Anterior
+            </Button>
+            {isSkippable && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onComplete}
+                className="text-muted-foreground"
+              >
+                Pular tour
+              </Button>
+            )}
+          </div>
           <Button size="sm" onClick={nextStep}>
             {currentStep === steps.length - 1 ? (
               <>
