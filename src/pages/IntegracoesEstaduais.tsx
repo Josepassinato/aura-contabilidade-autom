@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { UF } from "@/services/governamental/estadualIntegration";
@@ -8,39 +8,158 @@ import { UfTabs } from "@/components/integracoes/UfTabs";
 import { EmptyClientState } from "@/components/integracoes/EmptyClientState";
 import { 
   ESTADOS,
-  getDefaultIntegracoes,
-  getClientOneIntegracoes,
   IntegracaoEstadualStatus 
 } from "@/components/integracoes/constants";
+import { supabase } from '@/integrations/supabase/client';
+import { Toast, ToastTitle, ToastDescription } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 
 const IntegracoesEstaduais = () => {
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedClientName, setSelectedClientName] = useState<string>('');
   const [activeTab, setActiveTab] = useState<UF>("SP");
-  const [integracoes, setIntegracoes] = useState<IntegracaoEstadualStatus[]>(getDefaultIntegracoes());
+  const [integracoes, setIntegracoes] = useState<IntegracaoEstadualStatus[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   
-  const handleClientSelect = (client: { id: string, name: string }) => {
+  const handleClientSelect = async (client: { id: string, name: string }) => {
     setSelectedClientId(client.id);
     setSelectedClientName(client.name);
     
-    // Simular dados de integrações para esse cliente
-    if (client.id === "1") {
-      setIntegracoes(getClientOneIntegracoes());
-    } else {
-      setIntegracoes(getDefaultIntegracoes());
+    if (!client.id) {
+      // Visão geral - limpar integrações
+      setIntegracoes([]);
+      return;
+    }
+    
+    // Buscar integrações para o cliente
+    setIsLoading(true);
+    
+    try {
+      // Tentar buscar do Supabase
+      const { data, error } = await supabase
+        .from('integracoes_estaduais')
+        .select('*')
+        .eq('client_id', client.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        // Mapear os dados do banco para o formato esperado
+        const integracoesData = data.map(item => ({
+          id: item.id,
+          nome: item.nome,
+          uf: item.uf as UF,
+          status: item.status as 'conectado' | 'desconectado' | 'erro' | 'pendente',
+          ultimoAcesso: item.ultimo_acesso,
+          proximaRenovacao: item.proxima_renovacao,
+          mensagem: item.mensagem_erro
+        }));
+        
+        setIntegracoes(integracoesData);
+      } else {
+        // Se não encontrar, criar integrações padrão
+        const integracoesDefault = ESTADOS.map(estado => ({
+          id: `sefaz_${estado.uf.toLowerCase()}`,
+          nome: `SEFAZ-${estado.uf}`,
+          uf: estado.uf,
+          status: 'desconectado' as const
+        }));
+        
+        setIntegracoes(integracoesDefault);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar integrações:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as integrações estaduais.",
+        variant: "destructive"
+      });
+      
+      // Usar integrações padrão em caso de erro
+      const integracoesDefault = ESTADOS.map(estado => ({
+        id: `sefaz_${estado.uf.toLowerCase()}`,
+        nome: `SEFAZ-${estado.uf}`,
+        uf: estado.uf,
+        status: 'desconectado' as const
+      }));
+      
+      setIntegracoes(integracoesDefault);
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  const handleSaveIntegracao = (data: any) => {
-    // Atualizar o status da integração
-    setIntegracoes(prev => prev.map(integracao => 
-      integracao.uf === activeTab ? {
-        ...integracao,
+  const handleSaveIntegracao = async (data: any) => {
+    if (!selectedClientId) return;
+    
+    try {
+      // Atualizar o status da integração no banco
+      const integracaoAtualizada = {
+        client_id: selectedClientId,
+        uf: activeTab,
+        nome: `SEFAZ-${activeTab}`,
         status: 'conectado',
-        ultimoAcesso: new Date().toLocaleString('pt-BR'),
-        proximaRenovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
-      } : integracao
-    ));
+        ultimo_acesso: new Date().toLocaleString('pt-BR'),
+        proxima_renovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
+        certificado_info: JSON.stringify({
+          nome: data.certificadoDigital,
+          renovar_automaticamente: data.renovarAutomaticamente || false
+        })
+      };
+      
+      // Verificar se já existe uma integração para este cliente/UF
+      const { data: existingData } = await supabase
+        .from('integracoes_estaduais')
+        .select('id')
+        .eq('client_id', selectedClientId)
+        .eq('uf', activeTab)
+        .single();
+      
+      let result;
+      
+      if (existingData?.id) {
+        // Atualizar
+        result = await supabase
+          .from('integracoes_estaduais')
+          .update(integracaoAtualizada)
+          .eq('id', existingData.id);
+      } else {
+        // Inserir
+        result = await supabase
+          .from('integracoes_estaduais')
+          .insert([integracaoAtualizada]);
+      }
+      
+      if (result.error) {
+        throw result.error;
+      }
+      
+      // Atualizar o estado local
+      setIntegracoes(prev => prev.map(integracao => 
+        integracao.uf === activeTab ? {
+          ...integracao,
+          status: 'conectado',
+          ultimoAcesso: integracaoAtualizada.ultimo_acesso,
+          proximaRenovacao: integracaoAtualizada.proxima_renovacao,
+        } : integracao
+      ));
+      
+      toast({
+        title: "Sucesso",
+        description: `Integração com SEFAZ-${activeTab} configurada com sucesso.`,
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Erro ao salvar integração:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar a configuração da integração.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
@@ -60,16 +179,24 @@ const IntegracoesEstaduais = () => {
           <EmptyClientState />
         ) : (
           <>
-            <IntegracaoStatusGrid integracoes={integracoes} />
-            
-            <UfTabs
-              estados={ESTADOS}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              clientId={selectedClientId}
-              clientName={selectedClientName}
-              onSave={handleSaveIntegracao}
-            />
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p>Carregando integrações...</p>
+              </div>
+            ) : (
+              <>
+                <IntegracaoStatusGrid integracoes={integracoes} />
+                
+                <UfTabs
+                  estados={ESTADOS}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  clientId={selectedClientId}
+                  clientName={selectedClientName}
+                  onSave={handleSaveIntegracao}
+                />
+              </>
+            )}
           </>
         )}
       </div>

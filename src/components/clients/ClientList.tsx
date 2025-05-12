@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Tables } from "@/integrations/supabase/types";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/auth';
 import { Button } from "@/components/ui/button";
 import {
@@ -16,9 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, AlertCircle, Plus } from "lucide-react";
+import { fetchAllClients } from '@/services/supabase/clientsService';
+import { AccountingClient } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 
-export function ClientList() {
-  const [clients, setClients] = useState<Tables<"accounting_clients">[]>([]);
+interface ClientListProps {
+  refreshKey?: number;
+}
+
+export function ClientList({ refreshKey = 0 }: ClientListProps) {
+  const [clients, setClients] = useState<AccountingClient[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, profile } = useAuth();
@@ -30,15 +35,8 @@ export function ClientList() {
       setError(null);
       
       try {
-        const { data, error } = await supabase
-          .from('accounting_clients')
-          .select('*')
-          .order('name');
-        
-        if (error) throw error;
-        
-        setClients(data || []);
-        
+        const data = await fetchAllClients();
+        setClients(data);
       } catch (error: any) {
         console.error("Erro ao carregar clientes:", error);
         setError("Não foi possível carregar a lista de clientes.");
@@ -53,7 +51,7 @@ export function ClientList() {
     };
 
     fetchClients();
-  }, []);
+  }, [refreshKey]);
   
   return (
     <div className="space-y-6">
@@ -77,9 +75,11 @@ export function ClientList() {
               <p className="text-muted-foreground mb-4">
                 Você ainda não possui clientes cadastrados ou a busca não retornou resultados.
               </p>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Cliente
+              <Button asChild>
+                <Link to="/gerenciar-clientes?tab=cadastrar">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Cliente
+                </Link>
               </Button>
             </div>
           ) : (
@@ -106,7 +106,9 @@ export function ClientList() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">Ver detalhes</Button>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/clientes/${client.id}`}>Ver detalhes</Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

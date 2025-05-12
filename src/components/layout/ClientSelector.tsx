@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchAllClients } from "@/services/supabase/clientsService";
 import { Tables } from "@/integrations/supabase/types";
 
 export interface ClientSelectorProps {
@@ -22,20 +22,14 @@ export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 
   const [clients, setClients] = useState<{ id: string; name: string }[]>([
     { id: '', name: 'Visão Geral' }
   ]);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Buscar clientes do Supabase quando o componente inicializar
   useEffect(() => {
-    const fetchClients = async () => {
+    const loadClients = async () => {
+      setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('accounting_clients')
-          .select('id, name')
-          .order('name');
-        
-        if (error) {
-          console.error('Erro ao buscar clientes:', error);
-          return;
-        }
+        const data = await fetchAllClients();
         
         // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
         if (data && data.length > 0) {
@@ -50,10 +44,12 @@ export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 
         }
       } catch (error) {
         console.error('Erro ao buscar clientes:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchClients();
+    loadClients();
   }, []);
   
   const handleChange = (value: string) => {
@@ -74,9 +70,9 @@ export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 
   return (
     <div className="flex items-center space-x-2">
       <Building className="h-5 w-5 text-muted-foreground" />
-      <Select value={selectedClient} onValueChange={handleChange}>
+      <Select value={selectedClient} onValueChange={handleChange} disabled={isLoading}>
         <SelectTrigger className="border-none bg-transparent p-0 focus:ring-0 text-lg font-medium min-w-[200px]">
-          <SelectValue placeholder="Selecione um cliente" />
+          <SelectValue placeholder={isLoading ? "Carregando..." : "Selecione um cliente"} />
         </SelectTrigger>
         <SelectContent>
           {clients.map(client => (
