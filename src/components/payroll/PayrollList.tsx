@@ -78,8 +78,8 @@ export function PayrollList() {
     fetchPayrolls();
   }, [supabase, selectedClientId, period, toast]);
   
-  const handleClientChange = (clientId: string) => {
-    setSelectedClientId(clientId);
+  const handleClientSelect = (client: { id: string, name: string }) => {
+    setSelectedClientId(client.id);
   };
   
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -192,7 +192,7 @@ export function PayrollList() {
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="w-full md:w-1/3">
           <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-          <ClientSelector onSelectClient={handleClientChange} />
+          <ClientSelector onClientSelect={handleClientSelect} />
         </div>
         
         <div className="w-full md:w-1/3">

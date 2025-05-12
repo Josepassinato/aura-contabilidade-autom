@@ -69,8 +69,8 @@ export function PayrollGenerator({ clientId: initialClientId, onPayrollCreated }
     fetchEmployees();
   }, [supabase, clientId, toast]);
   
-  const handleClientChange = (selectedClientId: string) => {
-    setClientId(selectedClientId);
+  const handleClientSelect = (client: { id: string, name: string }) => {
+    setClientId(client.id);
   };
   
   const toggleEmployeeSelection = (employeeId: string) => {
@@ -248,7 +248,7 @@ export function PayrollGenerator({ clientId: initialClientId, onPayrollCreated }
           <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
           <ClientSelector 
             defaultValue={clientId || ""} 
-            onSelectClient={handleClientChange} 
+            onClientSelect={handleClientSelect} 
           />
         </div>
         

@@ -1,11 +1,7 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { ClientSelector } from "@/components/layout/ClientSelector";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,12 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
-import { Users, UserPlus, Search, Edit, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Users } from "lucide-react";
+import { ClientSelector } from '@/components/layout/ClientSelector';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Colaborador {
   id: string;
@@ -55,40 +51,15 @@ const Colaboradores = () => {
     }
   ]);
   
+  const { toast } = useToast();
   const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [selectedClientName, setSelectedClientName] = useState<string>('');
-  const [formData, setFormData] = useState({
-    nome: '',
-    cpf: '',
-    cargo: '',
-    departamento: '',
-    dataAdmissao: '',
-    salarioBase: '',
-    status: 'ativo'
-  });
   const [editingColaboradorId, setEditingColaboradorId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [deletingColaboradorId, setDeletingColaboradorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("lista");
-  const [searchTerm, setSearchTerm] = useState('');
   
   const handleClientSelect = (client: { id: string, name: string }) => {
     setSelectedClientId(client.id);
-    setSelectedClientName(client.name);
-  };
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-  
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData({ ...formData, [name]: value });
-  };
-  
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSaveColaborador(formData);
   };
   
   const handleSaveColaborador = (data: any) => {
@@ -114,16 +85,6 @@ const Colaboradores = () => {
       });
     }
     
-    // Resetar formulário e estado
-    setFormData({
-      nome: '',
-      cpf: '',
-      cargo: '',
-      departamento: '',
-      dataAdmissao: '',
-      salarioBase: '',
-      status: 'ativo'
-    });
     setEditingColaboradorId(null);
     setActiveTab("lista");
   };
@@ -131,15 +92,6 @@ const Colaboradores = () => {
   const handleEditColaborador = (id: string) => {
     const colaborador = colaboradores.find(c => c.id === id);
     if (colaborador) {
-      setFormData({
-        nome: colaborador.nome,
-        cpf: colaborador.cpf,
-        cargo: colaborador.cargo,
-        departamento: colaborador.departamento || '',
-        dataAdmissao: colaborador.dataAdmissao,
-        salarioBase: colaborador.salarioBase,
-        status: colaborador.status
-      });
       setEditingColaboradorId(id);
       setActiveTab("adicionar");
     }
@@ -166,15 +118,6 @@ const Colaboradores = () => {
   };
   
   const handleAddNew = () => {
-    setFormData({
-      nome: '',
-      cpf: '',
-      cargo: '',
-      departamento: '',
-      dataAdmissao: '',
-      salarioBase: '',
-      status: 'ativo'
-    });
     setEditingColaboradorId(null);
     setActiveTab("adicionar");
   };
@@ -187,28 +130,6 @@ const Colaboradores = () => {
     return cpfLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
   
-  // Filtrar colaboradores por termo de busca
-  const filteredColaboradores = colaboradores.filter(colaborador => 
-    colaborador.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    colaborador.cpf.includes(searchTerm) ||
-    colaborador.cargo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ativo':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Ativo</Badge>;
-      case 'inativo':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inativo</Badge>;
-      case 'ferias':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Férias</Badge>;
-      case 'licenca':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Licença</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-  
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -219,11 +140,13 @@ const Colaboradores = () => {
               Gerencie os colaboradores dos seus clientes
             </p>
           </div>
-          <ClientSelector onClientSelect={handleClientSelect} />
+          <div>
+            <ClientSelector onClientSelect={handleClientSelect} />
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid grid-cols-2 w-full max-w-md">
             <TabsTrigger value="lista">Lista de Colaboradores</TabsTrigger>
             <TabsTrigger value="adicionar">
               {editingColaboradorId ? "Editar Colaborador" : "Adicionar Colaborador"}
@@ -233,82 +156,74 @@ const Colaboradores = () => {
           <div className="mt-6">
             <TabsContent value="lista">
               <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-primary" />
-                      <CardTitle>Colaboradores</CardTitle>
-                    </div>
-                    <Button onClick={handleAddNew}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Novo Colaborador
-                    </Button>
-                  </div>
-                  <CardDescription>
-                    Gerencie os colaboradores cadastrados
-                  </CardDescription>
-                  <div className="mt-4">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar por nome, CPF ou cargo..."
-                        className="pl-8"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    <span>Colaboradores</span>
+                  </CardTitle>
+                  <Button size="sm" onClick={handleAddNew}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="rounded-md border">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="py-3 px-4 text-left font-medium">Nome</th>
-                          <th className="py-3 px-4 text-left font-medium">CPF</th>
-                          <th className="py-3 px-4 text-left font-medium">Cargo</th>
-                          <th className="py-3 px-4 text-left font-medium">Status</th>
-                          <th className="py-3 px-4 text-right font-medium">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredColaboradores.length > 0 ? (
-                          filteredColaboradores.map((colaborador) => (
-                            <tr key={colaborador.id} className="border-b">
-                              <td className="py-3 px-4">{colaborador.nome}</td>
-                              <td className="py-3 px-4">{formatCPF(colaborador.cpf)}</td>
-                              <td className="py-3 px-4">{colaborador.cargo}</td>
-                              <td className="py-3 px-4">{getStatusBadge(colaborador.status)}</td>
-                              <td className="py-3 px-4 text-right">
-                                <div className="flex justify-end space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditColaborador(colaborador.id)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteIntent(colaborador.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </div>
+                  {colaboradores.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p>Nenhum colaborador cadastrado</p>
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-muted">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-medium">Nome</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">CPF</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">Cargo</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {colaboradores.map((colaborador) => (
+                            <tr key={colaborador.id}>
+                              <td className="px-4 py-3 text-sm">{colaborador.nome}</td>
+                              <td className="px-4 py-3 text-sm">{formatCPF(colaborador.cpf)}</td>
+                              <td className="px-4 py-3 text-sm">{colaborador.cargo}</td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  colaborador.status === "ativo" ? "bg-green-100 text-green-800" :
+                                  colaborador.status === "ferias" ? "bg-blue-100 text-blue-800" :
+                                  colaborador.status === "licenca" ? "bg-yellow-100 text-yellow-800" :
+                                  "bg-gray-100 text-gray-800"
+                                }`}>
+                                  {colaborador.status === "ativo" ? "Ativo" :
+                                   colaborador.status === "ferias" ? "Férias" :
+                                   colaborador.status === "licenca" ? "Licença" : "Inativo"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditColaborador(colaborador.id)}
+                                >
+                                  Editar
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="text-red-500 hover:text-red-700"
+                                  onClick={() => handleDeleteIntent(colaborador.id)}
+                                >
+                                  Excluir
+                                </Button>
                               </td>
                             </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={5} className="py-6 text-center text-muted-foreground">
-                              Nenhum colaborador encontrado
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -316,144 +231,39 @@ const Colaboradores = () => {
             <TabsContent value="adicionar">
               <Card>
                 <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5 text-primary" />
-                    <CardTitle>
-                      {editingColaboradorId ? "Editar Colaborador" : "Adicionar Novo Colaborador"}
-                    </CardTitle>
-                  </div>
-                  <CardDescription>
-                    Preencha os dados do colaborador
-                  </CardDescription>
+                  <CardTitle>
+                    {editingColaboradorId ? "Editar Colaborador" : "Adicionar Novo Colaborador"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleFormSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="nome" className="text-sm font-medium">Nome Completo</label>
-                        <Input 
-                          id="nome"
-                          name="nome"
-                          value={formData.nome}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="cpf" className="text-sm font-medium">CPF</label>
-                        <Input 
-                          id="cpf"
-                          name="cpf"
-                          value={formData.cpf}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="cargo" className="text-sm font-medium">Cargo</label>
-                        <Input 
-                          id="cargo"
-                          name="cargo"
-                          value={formData.cargo}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="departamento" className="text-sm font-medium">Departamento</label>
-                        <Input 
-                          id="departamento"
-                          name="departamento"
-                          value={formData.departamento}
-                          onChange={handleInputChange}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="dataAdmissao" className="text-sm font-medium">Data de Admissão</label>
-                        <Input 
-                          id="dataAdmissao"
-                          name="dataAdmissao"
-                          type="date"
-                          value={formData.dataAdmissao}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="salarioBase" className="text-sm font-medium">Salário Base</label>
-                        <Input 
-                          id="salarioBase"
-                          name="salarioBase"
-                          type="text"
-                          value={formData.salarioBase}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="status" className="text-sm font-medium">Status</label>
-                        <Select 
-                          value={formData.status}
-                          onValueChange={(value) => handleSelectChange('status', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ativo">Ativo</SelectItem>
-                            <SelectItem value="inativo">Inativo</SelectItem>
-                            <SelectItem value="ferias">Férias</SelectItem>
-                            <SelectItem value="licenca">Licença</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2 pt-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setActiveTab("lista")}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button type="submit">
-                        {editingColaboradorId ? "Atualizar" : "Salvar"}
-                      </Button>
-                    </div>
-                  </form>
+                  <p className="text-center text-muted-foreground py-8">
+                    Formulário de cadastro de colaboradores estará disponível em breve.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
           </div>
         </Tabs>
-        
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmar exclusão</DialogTitle>
-              <DialogDescription>
-                Tem certeza que deseja excluir este colaborador?
-                Esta ação não pode ser desfeita.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancelar</Button>
-              </DialogClose>
-              <Button variant="destructive" onClick={handleConfirmDelete}>
-                Excluir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogDescription>
+              Esta ação não pode ser desfeita. Deseja realmente excluir este colaborador?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

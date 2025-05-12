@@ -14,12 +14,13 @@ interface Client {
   name: string;
 }
 
-interface ClientSelectorProps {
+export interface ClientSelectorProps {
   onClientSelect?: (client: Client) => void;
+  onSelectClient?: (clientId: string) => void;
   defaultValue?: string;
 }
 
-export function ClientSelector({ onClientSelect, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
+export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
   const [selectedClient, setSelectedClient] = useState(defaultValue);
   const clients: Client[] = [
     { id: '', name: 'Visão Geral' },
@@ -34,6 +35,13 @@ export function ClientSelector({ onClientSelect, defaultValue = 'Visão Geral' }
     if (onClientSelect) {
       const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
       onClientSelect(selectedClientData);
+    }
+
+    if (onSelectClient) {
+      const selectedClientData = clients.find(c => c.name === value);
+      if (selectedClientData) {
+        onSelectClient(selectedClientData.id);
+      }
     }
   };
   
