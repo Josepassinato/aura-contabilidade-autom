@@ -1,10 +1,10 @@
-
 /**
  * Serviço para cálculos fiscais
  * Implementa lógica para cálculo de diversos impostos e obrigações fiscais
  */
 
 import { toast } from "@/hooks/use-toast";
+import { buscarDadosContabeis, buscarNotasFiscais, DadosFaturamento, NotaFiscalMetadata } from "./dataSourcesIntegration";
 
 // Tipos de impostos suportados
 export type TipoImposto = 'IRPJ' | 'CSLL' | 'PIS' | 'COFINS' | 'ICMS' | 'ISS' | 'INSS' | 'FGTS' | 'Simples';
@@ -29,6 +29,22 @@ export interface ResultadoCalculo {
   valorFinal: number;
   dataVencimento: string;
   codigoReceita?: string;
+  dadosOrigem?: {
+    fonte: 'manual' | 'notasFiscais' | 'contabilidade';
+    documentos?: number;
+    consolidado?: boolean;
+  };
+}
+
+// Interface para relatório de cálculo
+export interface RelatorioCálculo {
+  parametros: ParametrosCalculo;
+  resultado: ResultadoCalculo;
+  dataCálculo: string;
+  fontesDados: string[];
+  validadeCalculoEmDias?: number;
+  notasFiscaisProcessadas?: number;
+  historicoAliquotas?: Array<{periodo: string, aliquota: number}>;
 }
 
 // Funções auxiliares para cálculos fiscais
@@ -343,6 +359,97 @@ export const calcularImposto = async (
   }
 };
 
+/**
+ * Realiza a extração de dados de notas fiscais para cálculo de impostos
+ * @param notas Lista de notas fiscais
+ * @param tipoImposto Tipo de imposto para extração de dados
+ * @returns Base de cálculo e valores relevantes para o tipo de imposto
+ */
+const extrairDadosNotasFiscais = (
+  notas: NotaFiscalMetadata[], 
+  tipoImposto: TipoImposto
+): { baseCalculo: number, aliquotaMedia?: number, valorTotalImpostos?: number } => {
+  // Cálculo base para todos os tipos de impostos
+  const valorTotal = notas.reduce((sum, nota) => sum + nota.valorTotal, 0);
+  
+  switch (tipoImposto) {
+    case 'ICMS': {
+      // Extração específica para ICMS
+      const valoresICMS = notas.map(nota => nota.impostos.ICMS || 0);
+      const totalICMS = valoresICMS.reduce((sum, valor) => sum + valor, 0);
+      const aliquotaMedia = totalICMS / valorTotal;
+      
+      return { 
+        baseCalculo: valorTotal, 
+        aliquotaMedia, 
+        valorTotalImpostos: totalICMS 
+      };
+    }
+    case 'PIS':
+    case 'COFINS': {
+      // Extração específica para tributos federais
+      const valoresImposto = notas.map(nota => nota.impostos[tipoImposto] || 0);
+      const totalImposto = valoresImposto.reduce((sum, valor) => sum + valor, 0);
+      
+      return { 
+        baseCalculo: valorTotal,
+        valorTotalImpostos: totalImposto 
+      };
+    }
+    // Outros casos específicos...
+    default:
+      // Cálculo padrão para outros tipos
+      return { baseCalculo: valorTotal };
+  }
+};
+
+/**
+ * Calcula base de cálculo a partir de dados contábeis
+ * @param dados Dados contábeis do período
+ * @param tipoImposto Tipo de imposto para cálculo
+ * @param regimeTributario Regime tributário da empresa
+ * @returns Base de cálculo para o imposto específico
+ */
+const calcularBaseContabil = (
+  dados: DadosFaturamento, 
+  tipoImposto: TipoImposto,
+  regimeTributario: 'Simples' | 'LucroPresumido' | 'LucroReal'
+): number => {
+  const { totalReceitas, totalDespesas } = dados;
+  
+  // Base de cálculo específica para cada imposto e regime
+  switch (tipoImposto) {
+    case 'IRPJ':
+      if (regimeTributario === 'LucroPresumido') {
+        return totalReceitas * 0.32; // 32% de presunção para serviços em geral
+      } else if (regimeTributario === 'LucroReal') {
+        return Math.max(0, totalReceitas - totalDespesas);
+      }
+      return 0;
+      
+    case 'CSLL':
+      if (regimeTributario === 'LucroPresumido') {
+        return totalReceitas * 0.32; // 32% para CSLL em serviços
+      } else if (regimeTributario === 'LucroReal') {
+        return Math.max(0, totalReceitas - totalDespesas);
+      }
+      return 0;
+      
+    case 'PIS':
+    case 'COFINS':
+      if (regimeTributario === 'LucroPresumido') {
+        return totalReceitas; // Base cheia no regime cumulativo
+      } else if (regimeTributario === 'LucroReal') {
+        // No regime não-cumulativo, poderia haver deduções específicas
+        return totalReceitas;
+      }
+      return totalReceitas;
+      
+    default:
+      return totalReceitas;
+  }
+};
+
 // Função para gerar DARF a partir do resultado do cálculo
 export const gerarDARF = async (
   tipoImposto: TipoImposto,
@@ -373,65 +480,119 @@ export const gerarDARF = async (
   }
 };
 
-// Função para integrar com dados de notas fiscais
-export const calcularImpostosPorNotasFiscais = async (
+/**
+ * Calcula impostos de uma empresa com base em suas notas fiscais
+ * @param cnpj CNPJ da empresa
+ * @param periodo Período de apuração (YYYY-MM)
+ * @param tipoImposto Tipo de imposto a ser calculado
+ * @param regimeTributario Regime tributário da empresa
+ * @returns Resultado do cálculo do imposto
+ */
+export const calcularImpostoPorNotasFiscais = async (
   cnpj: string,
   periodo: string,
+  tipoImposto: TipoImposto,
   regimeTributario: 'Simples' | 'LucroPresumido' | 'LucroReal'
-): Promise<Record<TipoImposto, ResultadoCalculo>> => {
+): Promise<ResultadoCalculo> => {
   try {
-    // Em uma implementação real, aqui buscaríamos as notas fiscais do período
-    // e calcularíamos os impostos baseados nos dados reais
+    // Buscar notas fiscais do período
+    const notas = await buscarNotasFiscais(cnpj, periodo);
     
-    // Simulando notas fiscais para demonstração
-    const faturamentoTotal = Math.random() * 500000 + 100000;
-    const despesasTotal = faturamentoTotal * (Math.random() * 0.6 + 0.2); // 20% a 80% do faturamento
+    if (notas.length === 0) {
+      throw new Error("Nenhuma nota fiscal encontrada para o período selecionado");
+    }
     
-    // Parâmetros base para os cálculos
-    const parametrosBase: ParametrosCalculo = {
-      valor: faturamentoTotal,
+    // Extrair dados das notas para o tipo de imposto
+    const { baseCalculo, aliquotaMedia } = extrairDadosNotasFiscais(notas, tipoImposto);
+    
+    // Configurar parâmetros para o cálculo
+    const params: ParametrosCalculo = {
+      valor: baseCalculo,
       periodo,
       cnpj,
       regimeTributario,
-      despesas: despesasTotal
+      // Se houver uma alíquota média extraída das notas, usar ela
+      ...(aliquotaMedia ? { aliquota: aliquotaMedia } : {})
     };
     
-    // Calculando todos os impostos aplicáveis conforme regime tributário
-    const resultados: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
+    // Realizar o cálculo do imposto
+    const resultado = await calcularImposto(tipoImposto, params);
     
-    if (regimeTributario === 'Simples') {
-      resultados['Simples'] = await calcularImposto('Simples', parametrosBase);
-    } else {
-      // Para Lucro Presumido ou Real
-      const impostos: TipoImposto[] = ['IRPJ', 'CSLL', 'PIS', 'COFINS'];
-      
-      for (const imposto of impostos) {
-        resultados[imposto] = await calcularImposto(imposto, parametrosBase);
+    // Adicionar informações sobre a origem dos dados
+    return {
+      ...resultado,
+      dadosOrigem: {
+        fonte: 'notasFiscais',
+        documentos: notas.length,
+        consolidado: true
       }
-      
-      // Adiciona impostos específicos se houver operações com mercadorias ou serviços
-      if (Math.random() > 0.5) { // Simulando que tem operações com mercadorias
-        resultados['ICMS'] = await calcularImposto('ICMS', { 
-          ...parametrosBase, 
-          valor: faturamentoTotal * 0.7 // Supondo que 70% do faturamento é com mercadorias
-        });
-      }
-      
-      if (Math.random() > 0.3) { // Simulando que tem operações com serviços
-        resultados['ISS'] = await calcularImposto('ISS', { 
-          ...parametrosBase, 
-          valor: faturamentoTotal * 0.3 // Supondo que 30% do faturamento é com serviços
-        });
-      }
-    }
-    
-    return resultados as Record<TipoImposto, ResultadoCalculo>;
+    };
     
   } catch (error) {
-    console.error(`Erro ao calcular impostos por notas fiscais:`, error);
+    console.error(`Erro ao calcular ${tipoImposto} por notas fiscais:`, error);
     toast({
-      title: "Erro no cálculo por notas fiscais",
+      title: `Erro no cálculo de ${tipoImposto}`,
       description: error instanceof Error ? error.message : "Ocorreu um erro no processamento das notas fiscais",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+/**
+ * Calcula impostos de uma empresa com base em dados contábeis
+ * @param cnpj CNPJ da empresa
+ * @param periodo Período de apuração (YYYY-MM)
+ * @param tipoImposto Tipo de imposto a ser calculado
+ * @param regimeTributario Regime tributário da empresa
+ * @returns Resultado do cálculo do imposto
+ */
+export const calcularImpostoPorDadosContabeis = async (
+  cnpj: string,
+  periodo: string,
+  tipoImposto: TipoImposto,
+  regimeTributario: 'Simples' | 'LucroPresumido' | 'LucroReal'
+): Promise<ResultadoCalculo> => {
+  try {
+    // Buscar dados contábeis do período
+    const dadosContabeis = await buscarDadosContabeis(cnpj, periodo);
+    
+    if (dadosContabeis.totalReceitas === 0) {
+      throw new Error("Nenhum dado contábil encontrado para o período selecionado");
+    }
+    
+    // Calcular base de acordo com o tipo de imposto e regime tributário
+    const baseCalculo = calcularBaseContabil(dadosContabeis, tipoImposto, regimeTributario);
+    
+    // Configurar parâmetros para o cálculo
+    const params: ParametrosCalculo = {
+      valor: baseCalculo,
+      periodo,
+      cnpj,
+      regimeTributario,
+      // Informações adicionais dos dados contábeis
+      receitaBruta: dadosContabeis.totalReceitas,
+      despesasTotais: dadosContabeis.totalDespesas
+    };
+    
+    // Realizar o cálculo do imposto
+    const resultado = await calcularImposto(tipoImposto, params);
+    
+    // Adicionar informações sobre a origem dos dados
+    return {
+      ...resultado,
+      dadosOrigem: {
+        fonte: 'contabilidade',
+        documentos: dadosContabeis.notasFiscais.length,
+        consolidado: true
+      }
+    };
+    
+  } catch (error) {
+    console.error(`Erro ao calcular ${tipoImposto} por dados contábeis:`, error);
+    toast({
+      title: `Erro no cálculo de ${tipoImposto}`,
+      description: error instanceof Error ? error.message : "Ocorreu um erro no processamento dos dados contábeis",
       variant: "destructive",
     });
     throw error;
