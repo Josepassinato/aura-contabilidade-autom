@@ -8,6 +8,7 @@ export interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: UserProfile | null;
+  userProfile: UserProfile | null; // Add this line to include userProfile
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{error: any | null}>;
   signUp: (email: string, password: string, userData: Partial<UserProfile>) => Promise<{error: any | null}>;
@@ -16,6 +17,8 @@ export interface AuthContextType {
   isClient: boolean;
   isAccountant: boolean;
   isAdmin: boolean;
+  login?: (email: string, password: string) => Promise<{success: boolean, error: any | null}>; // Optional property to support existing implementations
+  logout?: () => Promise<{success: boolean, error?: any | null}>; // Optional property to support existing implementations
 }
 
 // Create the context with default values to avoid null issues
@@ -23,6 +26,7 @@ const defaultContextValue: AuthContextType = {
   session: null,
   user: null,
   profile: null,
+  userProfile: null, // Add default value for userProfile
   isLoading: true,
   signIn: async () => ({ error: new Error('AuthProvider not initialized') }),
   signUp: async () => ({ error: new Error('AuthProvider not initialized') }),

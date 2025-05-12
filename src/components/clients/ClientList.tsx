@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AccountingClient, useSupabaseClient } from "@/lib/supabase";
 import { useAuth } from '@/contexts/auth';
@@ -51,7 +52,7 @@ export function ClientList() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, userProfile } = useAuth();
+  const { isAuthenticated, profile, userProfile } = useAuth();
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   
