@@ -1,4 +1,3 @@
-
 /**
  * Componente para configuração de integração com fontes de dados fiscais
  */
@@ -13,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "lucide-react"; 
-import { configurarFonteDados, FonteDadosConfig } from "@/services/fiscal/dataSourcesIntegration";
+import { configurarFonteDados, FonteDadosConfig } from "@/services/fiscal/integration";
 
 export interface FontesDadosIntegracaoProps {
   cnpj?: string;

@@ -4,7 +4,7 @@
  */
 
 import { toast } from "@/hooks/use-toast";
-import { buscarDadosContabeis, DadosFaturamento } from "../dataSourcesIntegration";
+import { buscarDadosContabeis, DadosFaturamento } from "../integration";
 import { TipoImposto, ResultadoCalculo } from "../types";
 import { calcularImposto } from "../calculoFiscal";
 

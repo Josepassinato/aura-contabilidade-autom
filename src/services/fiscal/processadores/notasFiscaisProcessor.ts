@@ -4,7 +4,7 @@
  */
 
 import { toast } from "@/hooks/use-toast";
-import { buscarNotasFiscais, NotaFiscalMetadata } from "../dataSourcesIntegration";
+import { buscarNotasFiscais, NotaFiscalMetadata } from "../integration";
 import { TipoImposto, ResultadoCalculo } from "../types";
 import { calcularImposto } from "../calculoFiscal";
 
