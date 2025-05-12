@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { AccountingClient, useSupabaseClient } from "@/lib/supabase";
+import { Tables } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/contexts/auth';
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +18,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Building2, AlertCircle, Plus } from "lucide-react";
 
 export function ClientList() {
-  const [clients, setClients] = useState<AccountingClient[]>([]);
+  const [clients, setClients] = useState<Tables<"accounting_clients">[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, profile } = useAuth();
-  const supabase = useSupabaseClient();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -30,58 +30,16 @@ export function ClientList() {
       setError(null);
       
       try {
-        // No ambiente real, usaríamos o Supabase para buscar os clientes
-        // const { data, error } = await supabase
-        //   .from('accounting_clients')
-        //   .select('*')
-        //   .order('name');
+        const { data, error } = await supabase
+          .from('accounting_clients')
+          .select('*')
+          .order('name');
         
-        // if (error) throw error;
-        // setClients(data || []);
+        if (error) throw error;
         
-        // Como estamos em modo de demonstração, vamos verificar primeiro no localStorage
-        const storedClientsString = localStorage.getItem('clients');
-        let storedClients = storedClientsString ? JSON.parse(storedClientsString) : [];
+        setClients(data || []);
         
-        if (!Array.isArray(storedClients)) {
-          storedClients = [];
-        }
-        
-        // Combinar com alguns clientes de demonstração se a lista estiver vazia
-        if (storedClients.length === 0) {
-          storedClients = [
-            {
-              id: "1",
-              name: "Empresa ABC Ltda",
-              cnpj: "12.345.678/0001-99",
-              email: "contato@empresaabc.com",
-              phone: "(11) 3456-7890",
-              address: "Av. Paulista, 1000",
-              status: "active",
-            },
-            {
-              id: "2",
-              name: "XYZ Comércio S.A.",
-              cnpj: "98.765.432/0001-10",
-              email: "financeiro@xyzcomercio.com.br",
-              phone: "(11) 2345-6789",
-              address: "Rua Augusta, 500",
-              status: "active",
-            },
-            {
-              id: "3",
-              name: "Tech Solutions",
-              cnpj: "45.678.901/0001-23",
-              email: "contato@techsolutions.com.br",
-              phone: "(11) 9876-5432",
-              address: "Alameda Santos, 200",
-              status: "inactive",
-            }
-          ];
-        }
-        
-        setClients(storedClients);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Erro ao carregar clientes:", error);
         setError("Não foi possível carregar a lista de clientes.");
         toast({

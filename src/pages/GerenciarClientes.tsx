@@ -17,7 +17,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useSupabaseClient } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { ClientList } from "@/components/clients/ClientList";
 import { ClientForm } from "@/components/clients/ClientForm";
 
@@ -29,8 +29,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const GerenciarClientes = () => {
   const [activeTab, setActiveTab] = useState("listar");
-  const [clientsUpdated, setClientsUpdated] = useState(0); // Contador para forçar atualização da lista
-  const supabaseClient = useSupabaseClient();
+  const [refreshKey, setRefreshKey] = useState(0); // Para forçar a atualização do componente ClientList
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -41,31 +40,20 @@ const GerenciarClientes = () => {
 
   const onSubmitSearch = (data: FormValues) => {
     console.log("Pesquisando:", data.searchTerm);
+    // Implementar lógica de pesquisa
   };
   
-  // Força a atualização do componente quando os clientes mudam
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setClientsUpdated(prev => prev + 1);
-    };
-    
-    // Ouvir mudanças no localStorage
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-  
+  // Função para lidar com cliente adicionado com sucesso
   const handleClientAdded = () => {
-    // Incrementa o contador para forçar a atualização da lista
-    setClientsUpdated(prev => prev + 1);
+    // Incrementa a chave para forçar a atualização do componente ClientList
+    setRefreshKey(prev => prev + 1);
     // Muda para a aba de listar
     setActiveTab("listar");
     
-    // Dispara um evento personalizado para notificar mudança no localStorage
-    // já que o evento 'storage' não é disparado na mesma janela
-    window.dispatchEvent(new Event('storage'));
+    toast({
+      title: "Cliente adicionado",
+      description: "O cliente foi adicionado com sucesso e a lista foi atualizada.",
+    });
   };
 
   return (
@@ -119,8 +107,8 @@ const GerenciarClientes = () => {
                 </form>
               </Form>
 
-              {/* Forçar remontagem do componente quando clientsUpdated mudar */}
-              <ClientList key={`client-list-${clientsUpdated}`} />
+              {/* Usar a key para forçar remontagem quando refreshKey mudar */}
+              <ClientList key={`client-list-${refreshKey}`} />
             </CardContent>
           </Card>
         </TabsContent>

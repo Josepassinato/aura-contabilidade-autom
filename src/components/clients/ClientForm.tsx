@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useSupabaseClient } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -36,7 +36,6 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ onSuccess }: ClientFormProps) {
-  const supabaseClient = useSupabaseClient();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,32 +57,21 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
     try {
       console.log("Dados do cliente:", data);
       
-      // Preparar dados do cliente
-      const clientData = {
-        id: `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...data,
-        status: "active",
-        created_at: new Date().toISOString()
-      };
+      // Inserir cliente no Supabase
+      const { data: insertedData, error } = await supabase
+        .from('accounting_clients')
+        .insert([{
+          name: data.name,
+          cnpj: data.cnpj,
+          email: data.email,
+          phone: data.phone || null,
+          address: data.address || null,
+          regime: data.regime,
+          status: "active"
+        }])
+        .select();
       
-      // Em ambiente real, usaríamos Supabase:
-      // const { data: insertedData, error } = await supabaseClient
-      //   .from('accounting_clients')
-      //   .insert([clientData])
-      //   .select()
-      
-      // if (error) throw error;
-      
-      // Como estamos em modo de demonstração, salvamos no localStorage
-      const storedClientsString = localStorage.getItem('clients');
-      let storedClients = storedClientsString ? JSON.parse(storedClientsString) : [];
-      
-      if (!Array.isArray(storedClients)) {
-        storedClients = [];
-      }
-      
-      storedClients.push(clientData);
-      localStorage.setItem('clients', JSON.stringify(storedClients));
+      if (error) throw error;
       
       // Exibir mensagem de sucesso
       toast({
@@ -98,11 +86,11 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao salvar cliente:", error);
       toast({
         title: "Erro ao cadastrar cliente",
-        description: "Ocorreu um erro ao salvar os dados do cliente.",
+        description: error.message || "Ocorreu um erro ao salvar os dados do cliente.",
         variant: "destructive"
       });
     } finally {
