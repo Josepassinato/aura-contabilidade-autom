@@ -56,6 +56,7 @@ export type Database = {
           id: string
           name: string
           size: number | null
+          status: string
           title: string
           type: string
           updated_at: string | null
@@ -67,6 +68,7 @@ export type Database = {
           id?: string
           name: string
           size?: number | null
+          status?: string
           title: string
           type: string
           updated_at?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           id?: string
           name?: string
           size?: number | null
+          status?: string
           title?: string
           type?: string
           updated_at?: string | null
