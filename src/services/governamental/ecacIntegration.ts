@@ -40,11 +40,11 @@ export async function autenticarEcacReal(credentials: EcacCredentials): Promise<
       certificatePassword: credentials.certificado.senha,
     };
     
-    // Adicionar CNPJ ou CPF se fornecido
-    if (credentials.cnpj) {
-      requestBody.cnpj = credentials.cnpj;
-    } else if (credentials.cpf) {
-      requestBody.cpf = credentials.cpf;
+    // Adicionar CNPJ ou CPF se fornecido nas credenciais
+    if (credentials.dados?.cnpj) {
+      requestBody.cnpj = credentials.dados.cnpj;
+    } else if (credentials.dados?.cpf) {
+      requestBody.cpf = credentials.dados.cpf;
     }
     
     // Em produção, aqui faríamos uma chamada real para a API do e-CAC
