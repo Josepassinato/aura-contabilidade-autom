@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabaseClient } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -36,6 +37,8 @@ interface ClientFormProps {
 
 export function ClientForm({ onSuccess }: ClientFormProps) {
   const supabaseClient = useSupabaseClient();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,17 +53,60 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
   });
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Dados do cliente:", data);
+    setIsSubmitting(true);
     
-    // Aqui seria a integração com o Supabase para salvar o cliente
-    // Exemplo:
-    // const { data: clientData, error } = await supabaseClient
-    //   ?.from('accounting_clients')
-    //   .insert([{ ...data, accounting_firm_id: 'ID_DA_EMPRESA_CONTABIL' }]);
-    
-    // Simulando sucesso
-    if (onSuccess) {
-      onSuccess();
+    try {
+      console.log("Dados do cliente:", data);
+      
+      // Preparar dados do cliente
+      const clientData = {
+        id: `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...data,
+        status: "active",
+        created_at: new Date().toISOString()
+      };
+      
+      // Em ambiente real, usaríamos Supabase:
+      // const { data: insertedData, error } = await supabaseClient
+      //   .from('accounting_clients')
+      //   .insert([clientData])
+      //   .select()
+      
+      // if (error) throw error;
+      
+      // Como estamos em modo de demonstração, salvamos no localStorage
+      const storedClientsString = localStorage.getItem('clients');
+      let storedClients = storedClientsString ? JSON.parse(storedClientsString) : [];
+      
+      if (!Array.isArray(storedClients)) {
+        storedClients = [];
+      }
+      
+      storedClients.push(clientData);
+      localStorage.setItem('clients', JSON.stringify(storedClients));
+      
+      // Exibir mensagem de sucesso
+      toast({
+        title: "Cliente cadastrado",
+        description: `${data.name} foi cadastrado com sucesso.`,
+      });
+      
+      // Limpar formulário
+      form.reset();
+      
+      // Chamar callback de sucesso
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Erro ao salvar cliente:", error);
+      toast({
+        title: "Erro ao cadastrar cliente",
+        description: "Ocorreu um erro ao salvar os dados do cliente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -168,10 +214,20 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         />
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => form.reset()}
+            disabled={isSubmitting}
+          >
             Limpar
           </Button>
-          <Button type="submit">Cadastrar Cliente</Button>
+          <Button 
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Cadastrando..." : "Cadastrar Cliente"}
+          </Button>
         </div>
       </form>
     </Form>

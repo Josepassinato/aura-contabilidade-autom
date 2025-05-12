@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,10 +13,8 @@ import { Plus, Search, FileText } from "lucide-react";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabaseClient } from "@/lib/supabase";
@@ -31,6 +29,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const GerenciarClientes = () => {
   const [activeTab, setActiveTab] = useState("listar");
+  const [clientsUpdated, setClientsUpdated] = useState(0); // Contador para forçar atualização da lista
   const supabaseClient = useSupabaseClient();
 
   const form = useForm<FormValues>({
@@ -42,6 +41,31 @@ const GerenciarClientes = () => {
 
   const onSubmitSearch = (data: FormValues) => {
     console.log("Pesquisando:", data.searchTerm);
+  };
+  
+  // Força a atualização do componente quando os clientes mudam
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setClientsUpdated(prev => prev + 1);
+    };
+    
+    // Ouvir mudanças no localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+  
+  const handleClientAdded = () => {
+    // Incrementa o contador para forçar a atualização da lista
+    setClientsUpdated(prev => prev + 1);
+    // Muda para a aba de listar
+    setActiveTab("listar");
+    
+    // Dispara um evento personalizado para notificar mudança no localStorage
+    // já que o evento 'storage' não é disparado na mesma janela
+    window.dispatchEvent(new Event('storage'));
   };
 
   return (
@@ -95,7 +119,8 @@ const GerenciarClientes = () => {
                 </form>
               </Form>
 
-              <ClientList />
+              {/* Forçar remontagem do componente quando clientsUpdated mudar */}
+              <ClientList key={`client-list-${clientsUpdated}`} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -107,13 +132,7 @@ const GerenciarClientes = () => {
             </CardHeader>
             <CardContent>
               <ClientForm 
-                onSuccess={() => {
-                  toast({
-                    title: "Cliente cadastrado",
-                    description: "O cliente foi cadastrado com sucesso."
-                  });
-                  setActiveTab("listar");
-                }}
+                onSuccess={handleClientAdded}
               />
             </CardContent>
           </Card>
