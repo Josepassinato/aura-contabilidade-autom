@@ -48,17 +48,25 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
     }
 
     // Mapear os dados para o formato esperado pelo componente, garantindo que o status padrão seja 'pendente'
-    return data.map(doc => ({
-      id: doc.id,
-      title: doc.title,
-      name: doc.name || doc.title,
-      type: doc.type,
-      size: doc.size,
-      file_path: doc.file_path,
-      date: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : undefined,
-      status: doc.status as 'pendente' | 'processado' | 'rejeitado' || 'pendente',
-      created_at: doc.created_at
-    }));
+    return data.map(doc => {
+      // Verificar se doc.status existe e tem um valor válido
+      let docStatus: 'pendente' | 'processado' | 'rejeitado' = 'pendente';
+      if (doc.status && ['pendente', 'processado', 'rejeitado'].includes(doc.status)) {
+        docStatus = doc.status as 'pendente' | 'processado' | 'rejeitado';
+      }
+      
+      return {
+        id: doc.id,
+        title: doc.title,
+        name: doc.name || doc.title,
+        type: doc.type,
+        size: doc.size,
+        file_path: doc.file_path,
+        date: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : undefined,
+        status: docStatus,
+        created_at: doc.created_at
+      };
+    });
 
   } catch (error) {
     console.error('Erro ao buscar documentos do cliente:', error);
