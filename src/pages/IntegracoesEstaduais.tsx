@@ -1,6 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import { UF } from "@/services/governamental/estadualIntegration";
 import { IntegracaoStatusGrid } from "@/components/integracoes/IntegracaoStatusGrid";
 import { UfTabs } from "@/components/integracoes/UfTabs";
@@ -100,7 +104,15 @@ const IntegracoesEstaduais = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Integrações Estaduais</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold tracking-tight">Integrações Estaduais</h1>
+              <Button variant="outline" size="sm" asChild className="ml-2">
+                <Link to="/">
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Link>
+              </Button>
+            </div>
             <p className="text-muted-foreground">
               Configure o acesso aos portais das secretarias estaduais da fazenda
             </p>
