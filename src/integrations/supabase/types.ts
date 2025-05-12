@@ -95,6 +95,59 @@ export type Database = {
           },
         ]
       }
+      employees: {
+        Row: {
+          base_salary: number
+          client_id: string
+          cpf: string
+          created_at: string | null
+          department: string | null
+          hire_date: string
+          id: string
+          name: string
+          notes: string | null
+          position: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          base_salary: number
+          client_id: string
+          cpf: string
+          created_at?: string | null
+          department?: string | null
+          hire_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          position: string
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          base_salary?: number
+          client_id?: string
+          cpf?: string
+          created_at?: string | null
+          department?: string | null
+          hire_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          position?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integracoes_estaduais: {
         Row: {
           certificado_info: Json | null
@@ -238,6 +291,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          role: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
