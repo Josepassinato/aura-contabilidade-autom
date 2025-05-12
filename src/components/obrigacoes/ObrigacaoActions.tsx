@@ -11,7 +11,7 @@ interface ObrigacaoActionsProps {
 }
 
 export const ObrigacaoActions: React.FC<ObrigacaoActionsProps> = ({ id, status }) => {
-  const marcarComoConcluida = async (obrigacaoId: number) => {
+  const marcarComoConcluida = async (obrigacaoId: number | string) => {
     const sucesso = await atualizarStatusObrigacao(obrigacaoId, "concluido");
     
     if (sucesso) {
@@ -31,7 +31,7 @@ export const ObrigacaoActions: React.FC<ObrigacaoActionsProps> = ({ id, status }
     }
   };
 
-  const gerarDocumento = (obrigacaoId: number) => {
+  const gerarDocumento = (obrigacaoId: number | string) => {
     toast({
       title: "Documento gerado",
       description: "O documento foi gerado com sucesso e está disponível para download."
