@@ -12,7 +12,7 @@ export interface ClientDocument {
   size?: number;
   file_path?: string;
   date?: string;
-  status?: 'pendente' | 'processado' | 'rejeitado';
+  status: 'pendente' | 'processado' | 'rejeitado'; // Making status required and defining its possible values
   created_at?: string;
 }
 
@@ -56,7 +56,7 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
       size: doc.size,
       file_path: doc.file_path,
       date: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : undefined,
-      status: doc.status || 'pendente',
+      status: doc.status as 'pendente' | 'processado' | 'rejeitado' || 'pendente',
       created_at: doc.created_at
     }));
 
