@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { atualizarStatusObrigacao } from "@/services/supabase/obrigacoesService";
 
 interface ObrigacaoActionsProps {
   id: number;
@@ -10,11 +11,24 @@ interface ObrigacaoActionsProps {
 }
 
 export const ObrigacaoActions: React.FC<ObrigacaoActionsProps> = ({ id, status }) => {
-  const marcarComoConcluida = (obrigacaoId: number) => {
-    toast({
-      title: "Obrigação concluída",
-      description: "A obrigação foi marcada como concluída com sucesso."
-    });
+  const marcarComoConcluida = async (obrigacaoId: number) => {
+    const sucesso = await atualizarStatusObrigacao(obrigacaoId, "concluido");
+    
+    if (sucesso) {
+      toast({
+        title: "Obrigação concluída",
+        description: "A obrigação foi marcada como concluída com sucesso."
+      });
+      
+      // Recarregar a página para mostrar as mudanças
+      window.location.reload();
+    } else {
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar a obrigação como concluída.",
+        variant: "destructive"
+      });
+    }
   };
 
   const gerarDocumento = (obrigacaoId: number) => {

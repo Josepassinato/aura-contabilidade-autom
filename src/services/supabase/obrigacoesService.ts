@@ -10,47 +10,95 @@ export async function fetchObrigacoesFiscais(clientId?: string): Promise<Obrigac
   try {
     console.log('Iniciando busca de obrigações fiscais...');
     
-    // Como a tabela obrigacoes_fiscais ainda não existe no Supabase,
-    // vamos retornar dados mockados temporariamente
-    const mockObrigacoes: Obrigacao[] = [
-      {
-        id: 1,
-        nome: "DARF IRPJ",
-        tipo: "Federal",
-        prazo: "20/05/2025",
-        empresa: "Empresa Exemplo LTDA",
-        status: "pendente",
-        prioridade: "alta"
-      },
-      {
-        id: 2,
-        nome: "GFIP",
-        tipo: "Federal",
-        prazo: "25/05/2025",
-        empresa: "Empresa Exemplo LTDA",
-        status: "pendente",
-        prioridade: "media"
-      },
-      {
-        id: 3,
-        nome: "DCTF",
-        tipo: "Federal",
-        prazo: "15/05/2025",
-        empresa: "Empresa Exemplo LTDA",
-        status: "concluido",
-        prioridade: "alta"
-      }
-    ];
-
-    // Filtrar por cliente
+    let query = supabase.from('obrigacoes_fiscais').select('*');
+    
+    // Filtrar por cliente se o ID for fornecido
     if (clientId) {
-      return mockObrigacoes.filter(obr => obr.empresa === clientId);
+      query = query.eq('client_id', clientId);
     }
     
-    return mockObrigacoes;
+    const { data, error } = await query.order('prazo');
+    
+    if (error) {
+      console.error('Erro ao buscar obrigações fiscais:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('Nenhuma obrigação fiscal encontrada');
+      return [];
+    }
+    
+    return data.map(item => ({
+      id: item.id,
+      nome: item.nome,
+      tipo: item.tipo,
+      prazo: item.prazo,
+      empresa: item.empresa,
+      status: item.status as "pendente" | "atrasado" | "concluido",
+      prioridade: item.prioridade as "baixa" | "media" | "alta"
+    }));
     
   } catch (error) {
     console.error('Erro ao buscar obrigações fiscais:', error);
     return [];
+  }
+}
+
+/**
+ * Adiciona uma nova obrigação fiscal
+ */
+export async function adicionarObrigacaoFiscal(obrigacao: Omit<Obrigacao, "id">): Promise<Obrigacao | null> {
+  try {
+    const { data, error } = await supabase
+      .from('obrigacoes_fiscais')
+      .insert(obrigacao)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Erro ao adicionar obrigação fiscal:', error);
+      return null;
+    }
+    
+    return {
+      id: data.id,
+      nome: data.nome,
+      tipo: data.tipo,
+      prazo: data.prazo,
+      empresa: data.empresa,
+      status: data.status,
+      prioridade: data.prioridade
+    };
+    
+  } catch (error) {
+    console.error('Erro ao adicionar obrigação fiscal:', error);
+    return null;
+  }
+}
+
+/**
+ * Atualiza o status de uma obrigação fiscal
+ */
+export async function atualizarStatusObrigacao(
+  id: number | string, 
+  status: "pendente" | "atrasado" | "concluido"
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('obrigacoes_fiscais')
+      .update({ status })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Erro ao atualizar status da obrigação fiscal:', error);
+      return false;
+    }
+    
+    return true;
+    
+  } catch (error) {
+    console.error('Erro ao atualizar status da obrigação fiscal:', error);
+    return false;
   }
 }

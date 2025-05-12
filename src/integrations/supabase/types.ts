@@ -189,6 +189,53 @@ export type Database = {
           },
         ]
       }
+      obrigacoes_fiscais: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          empresa: string
+          id: string
+          nome: string
+          prazo: string
+          prioridade: string
+          status: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          empresa: string
+          id?: string
+          nome: string
+          prazo: string
+          prioridade: string
+          status: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          empresa?: string
+          id?: string
+          nome?: string
+          prazo?: string
+          prioridade?: string
+          status?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obrigacoes_fiscais_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

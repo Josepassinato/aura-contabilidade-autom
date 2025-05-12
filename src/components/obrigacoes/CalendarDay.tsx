@@ -3,6 +3,7 @@ import React from "react";
 import { CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Obrigacao } from "@/types/obrigacoes";
+import { atualizarStatusObrigacao } from "@/services/supabase/obrigacoesService";
 
 interface CalendarDayProps {
   dia: number | null;
@@ -14,11 +15,24 @@ interface CalendarDayProps {
 export const CalendarDay: React.FC<CalendarDayProps> = ({ dia, obrigacoes, mes, ano }) => {
   const temObrigacoes = obrigacoes.length > 0;
 
-  const marcarComoConcluida = (id: number) => {
-    toast({
-      title: "Obrigação concluída",
-      description: "A obrigação foi marcada como concluída com sucesso."
-    });
+  const marcarComoConcluida = async (id: number) => {
+    const sucesso = await atualizarStatusObrigacao(id, "concluido");
+    
+    if (sucesso) {
+      toast({
+        title: "Obrigação concluída",
+        description: "A obrigação foi marcada como concluída com sucesso."
+      });
+      
+      // Recarregar a página para mostrar as mudanças
+      window.location.reload();
+    } else {
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar a obrigação como concluída.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (!dia) {
@@ -42,7 +56,7 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({ dia, obrigacoes, mes, 
                 ${obrigacao.status === 'concluido' ? 'bg-green-100' : 
                   obrigacao.status === 'atrasado' ? 'bg-red-100' : 'bg-yellow-100'}
               `}
-              onClick={() => marcarComoConcluida(obrigacao.id)}
+              onClick={() => marcarComoConcluida(obrigacao.id as number)}
             >
               <div className="flex items-center">
                 {obrigacao.status === 'concluido' ? (
