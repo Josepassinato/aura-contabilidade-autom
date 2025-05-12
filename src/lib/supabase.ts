@@ -14,6 +14,7 @@ export interface Employee {
   base_salary: number;
   status: string;
   created_at?: string;
+  cpf?: string;
 }
 
 export interface PayrollEntry {
@@ -37,6 +38,36 @@ export interface PayrollDeduction {
   amount: number;
   created_at?: string;
 }
+
+// Added missing exports for build errors
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  ACCOUNTANT = 'accountant',
+  CLIENT = 'client',
+  USER = 'user'
+}
+
+export interface AccountingClient {
+  id: string;
+  name: string;
+  cnpj: string;
+  email: string;
+  phone: string;
+  address: string;
+  status: string;
+}
+
+export const initializeSupabase = () => {
+  // Mock implementation
+  return true;
+};
 
 // Um hook falso para usar como mock
 export function useSupabaseClient() {
