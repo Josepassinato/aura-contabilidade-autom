@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 
 // Tipos para as requisições
@@ -8,6 +7,10 @@ export interface EcacCredentials {
   certificado?: {
     arquivo: string;
     senha: string;
+  };
+  dados?: {
+    cnpj?: string;
+    cpf?: string;
   };
 }
 
