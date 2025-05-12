@@ -13,10 +13,10 @@ export const getObrigacoesDoDia = (
   if (!dia) return [];
   
   const diaFormatado = dia.toString().padStart(2, '0');
-  const mesFormatado = mes.toString().padStart(2, '0');
+  const mesFormatado = (mes + 1).toString().padStart(2, '0'); // Mês é 0-indexed em JavaScript
   
   return obrigacoes.filter(obrigacao => {
-    // Assume that prazo is in the format DD/MM/YYYY
+    // Assuming that prazo is in the format DD/MM/YYYY
     const [prazoDia, prazoMes] = obrigacao.prazo.split('/');
     return prazoDia === diaFormatado && prazoMes === mesFormatado;
   });

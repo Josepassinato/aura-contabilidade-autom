@@ -4,6 +4,7 @@ import { IntegracaoEstadualStatus } from "@/components/integracoes/IntegracaoSta
 import { getDefaultIntegracoes } from "@/components/integracoes/constants";
 import { FonteDadosConfig } from "./types";
 import { supabase } from "@/integrations/supabase/client";
+import { UF } from "@/services/governamental/estadualIntegration";
 
 /**
  * Verifica se há integrações estaduais configuradas
