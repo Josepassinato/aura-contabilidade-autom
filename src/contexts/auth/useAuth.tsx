@@ -11,9 +11,12 @@ export const useAuth = (): AuthContextType => {
   
   return {
     ...context,
-    // Ensure userProfile is accessible
+    // Garante que userProfile esteja sempre acessível
     userProfile: context.userProfile || context.profile,
-    // Simulando propriedades de permissões para desenvolvimento
+    // Garante que todos os métodos de autenticação estejam disponíveis
+    signIn: context.signIn || context.login,
+    signOut: context.signOut || context.logout,
+    // Mantém as verificações de perfil
     isAdmin: context.isAdmin || localStorage.getItem('user_role') === 'admin',
     isAccountant: context.isAccountant || localStorage.getItem('user_role') === 'accountant',
     isClient: context.isClient || localStorage.getItem('user_role') === 'client'
