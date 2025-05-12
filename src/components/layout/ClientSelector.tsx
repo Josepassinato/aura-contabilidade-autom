@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building } from "lucide-react";
 import {
   Select,
@@ -8,40 +8,66 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Client {
-  id: string;
-  name: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 
 export interface ClientSelectorProps {
-  onClientSelect?: (client: Client) => void;
+  onClientSelect?: (client: { id: string; name: string }) => void;
   onSelectClient?: (clientId: string) => void;
   defaultValue?: string;
 }
 
 export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
   const [selectedClient, setSelectedClient] = useState(defaultValue);
-  const clients: Client[] = [
-    { id: '', name: 'Visão Geral' },
-    { id: '1', name: 'Empresa ABC Ltda' },
-    { id: '2', name: 'XYZ Comércio S.A.' },
-    { id: '3', name: 'Tech Solutions' }
-  ];
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([
+    { id: '', name: 'Visão Geral' }
+  ]);
+  
+  // Buscar clientes do Supabase quando o componente inicializar
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('accounting_clients')
+          .select('id, name')
+          .order('name');
+        
+        if (error) {
+          console.error('Erro ao buscar clientes:', error);
+          return;
+        }
+        
+        // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
+        if (data && data.length > 0) {
+          const clientsData = [
+            { id: '', name: 'Visão Geral' },
+            ...data.map(client => ({
+              id: client.id,
+              name: client.name
+            }))
+          ];
+          setClients(clientsData);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar clientes:', error);
+      }
+    };
+    
+    fetchClients();
+  }, []);
   
   const handleChange = (value: string) => {
     setSelectedClient(value);
     
+    // Encontrar o cliente selecionado pelo nome
+    const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
+    
     if (onClientSelect) {
-      const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
       onClientSelect(selectedClientData);
     }
 
-    if (onSelectClient) {
-      const selectedClientData = clients.find(c => c.name === value);
-      if (selectedClientData) {
-        onSelectClient(selectedClientData.id);
-      }
+    if (onSelectClient && selectedClientData.id) {
+      onSelectClient(selectedClientData.id);
     }
   };
   
