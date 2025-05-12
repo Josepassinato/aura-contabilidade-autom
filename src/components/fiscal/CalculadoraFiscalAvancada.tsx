@@ -42,7 +42,7 @@ import {
   buscarNotasFiscais,
   DadosFaturamento, 
   NotaFiscalMetadata 
-} from "@/services/fiscal/dataSourcesIntegration";
+} from "@/services/fiscal/integration";
 import { 
   Calculator, 
   FileSpreadsheet, 
@@ -423,7 +423,7 @@ export function CalculadoraFiscalAvancada() {
                           {Object.entries(dadosContabeis.despesas).map(([categoria, valor]) => (
                             <TableRow key={categoria}>
                               <TableCell>{categoria}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(valor)}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(valor as number)}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -765,7 +765,7 @@ export function CalculadoraFiscalAvancada() {
                   {Object.entries(visualizandoNota.impostos).map(([imposto, valor]) => (
                     <div key={imposto} className="bg-muted rounded-md p-3">
                       <div className="text-xs text-muted-foreground">{imposto}</div>
-                      <div className="font-semibold">{formatCurrency(valor)}</div>
+                      <div className="font-semibold">{formatCurrency(valor as number)}</div>
                     </div>
                   ))}
                 </div>
