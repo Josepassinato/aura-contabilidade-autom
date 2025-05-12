@@ -1,3 +1,4 @@
+
 /**
  * Componente para configuração de integração com fontes de dados fiscais
  */
@@ -5,14 +6,17 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "lucide-react"; 
 import { configurarFonteDados, FonteDadosConfig } from "@/services/fiscal/integration";
+
+// Import sub-components
+import ErpTabContent from "./fontesdados/ErpTabContent";
+import NfeTabContent from "./fontesdados/NfeTabContent";
+import ContabilidadeTabContent from "./fontesdados/ContabilidadeTabContent";
+import ManualTabContent from "./fontesdados/ManualTabContent";
+import PeriodoSelector from "./fontesdados/PeriodoSelector";
 
 export interface FontesDadosIntegracaoProps {
   cnpj?: string;
@@ -134,183 +138,54 @@ export const FontesDadosIntegracao: React.FC<FontesDadosIntegracaoProps> = ({
           </TabsList>
           
           <TabsContent value="erp" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="erp_url">URL da API</Label>
-                <Input 
-                  id="erp_url" 
-                  placeholder="https://api.seuerppreferido.com.br/v1" 
-                  value={erpUrl}
-                  onChange={(e) => setErpUrl(e.target.value)}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="erp_usuario">Usuário</Label>
-                  <Input 
-                    id="erp_usuario" 
-                    placeholder="usuario_api" 
-                    value={erpUsuario}
-                    onChange={(e) => setErpUsuario(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="erp_senha">Senha</Label>
-                  <Input 
-                    id="erp_senha" 
-                    type="password" 
-                    placeholder="********" 
-                    value={erpSenha}
-                    onChange={(e) => setErpSenha(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="erp_token">Token de API (se necessário)</Label>
-                <Input 
-                  id="erp_token" 
-                  placeholder="Token de acesso" 
-                  value={erpToken}
-                  onChange={(e) => setErpToken(e.target.value)}
-                />
-              </div>
-            </div>
+            <ErpTabContent
+              erpUrl={erpUrl}
+              setErpUrl={setErpUrl}
+              erpUsuario={erpUsuario}
+              setErpUsuario={setErpUsuario}
+              erpSenha={erpSenha}
+              setErpSenha={setErpSenha}
+              erpToken={erpToken}
+              setErpToken={setErpToken}
+            />
           </TabsContent>
           
           <TabsContent value="nfe" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nfe_token">Token de acesso</Label>
-                <Input 
-                  id="nfe_token" 
-                  placeholder="Token de API da SEFAZ ou provedor" 
-                  value={nfeToken}
-                  onChange={(e) => setNfeToken(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="nfe_certificado">Certificado Digital</Label>
-                <Input 
-                  id="nfe_certificado" 
-                  type="file" 
-                  accept=".pfx,.p12"
-                  onChange={(e) => setNfeCertificado(e.target.files ? e.target.files[0] : null)}
-                />
-                <p className="text-xs text-muted-foreground">Certificado digital no formato PFX ou P12</p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="nfe_senha_certificado">Senha do Certificado</Label>
-                <Input 
-                  id="nfe_senha_certificado" 
-                  type="password" 
-                  placeholder="********" 
-                  value={nfeSenhaCertificado}
-                  onChange={(e) => setNfeSenhaCertificado(e.target.value)}
-                />
-              </div>
-            </div>
+            <NfeTabContent
+              nfeToken={nfeToken}
+              setNfeToken={setNfeToken}
+              nfeCertificado={nfeCertificado}
+              setNfeCertificado={setNfeCertificado}
+              nfeSenhaCertificado={nfeSenhaCertificado}
+              setNfeSenhaCertificado={setNfeSenhaCertificado}
+            />
           </TabsContent>
           
           <TabsContent value="contabilidade" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="contabilidade_url">URL do Sistema Contábil</Label>
-                <Input 
-                  id="contabilidade_url" 
-                  placeholder="https://sistema.contabilidade.com.br/api" 
-                  value={contabilidadeUrl}
-                  onChange={(e) => setContabilidadeUrl(e.target.value)}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contabilidade_usuario">Usuário</Label>
-                  <Input 
-                    id="contabilidade_usuario" 
-                    placeholder="Usuario do sistema contábil" 
-                    value={contabilidadeUsuario}
-                    onChange={(e) => setContabilidadeUsuario(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="contabilidade_senha">Senha</Label>
-                  <Input 
-                    id="contabilidade_senha" 
-                    type="password" 
-                    placeholder="********" 
-                    value={contabilidadeSenha}
-                    onChange={(e) => setContabilidadeSenha(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="contabilidade_integracao">Tipo de Integração</Label>
-                <Select 
-                  value={contabilidadeIntegracao} 
-                  onValueChange={setContabilidadeIntegracao}
-                >
-                  <SelectTrigger id="contabilidade_integracao">
-                    <SelectValue placeholder="Selecione o tipo de integração" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="api">API Direta</SelectItem>
-                    <SelectItem value="importacao">Importação de Arquivos</SelectItem>
-                    <SelectItem value="manual">Manual</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <ContabilidadeTabContent
+              contabilidadeUrl={contabilidadeUrl}
+              setContabilidadeUrl={setContabilidadeUrl}
+              contabilidadeUsuario={contabilidadeUsuario}
+              setContabilidadeUsuario={setContabilidadeUsuario}
+              contabilidadeSenha={contabilidadeSenha}
+              setContabilidadeSenha={setContabilidadeSenha}
+              contabilidadeIntegracao={contabilidadeIntegracao}
+              setContabilidadeIntegracao={setContabilidadeIntegracao}
+            />
           </TabsContent>
           
           <TabsContent value="manual" className="space-y-4">
-            <div className="border rounded-md p-4 bg-muted/50">
-              <p className="text-sm">
-                Na configuração manual, os dados fiscais e contábeis serão inseridos diretamente no sistema
-                ou importados através de planilhas. Configure abaixo o período para busca inicial dos dados.
-              </p>
-            </div>
+            <ManualTabContent />
           </TabsContent>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 border-t pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="periodo_inicial">Período Inicial</Label>
-              <Input 
-                id="periodo_inicial" 
-                type="month" 
-                placeholder="YYYY-MM" 
-                value={periodoInicial}
-                onChange={(e) => setPeriodoInicial(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="periodo_final">Período Final (opcional)</Label>
-              <Input 
-                id="periodo_final" 
-                type="month" 
-                placeholder="YYYY-MM" 
-                value={periodoFinal}
-                onChange={(e) => setPeriodoFinal(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 mt-4">
-            <Switch 
-              id="sincronizacao" 
-              checked={sincronizacaoAutomatica}
-              onCheckedChange={setSincronizacaoAutomatica}
-            />
-            <Label htmlFor="sincronizacao">Sincronização automática</Label>
-          </div>
+          <PeriodoSelector 
+            periodoInicial={periodoInicial}
+            setPeriodoInicial={setPeriodoInicial}
+            periodoFinal={periodoFinal}
+            setPeriodoFinal={setPeriodoFinal}
+            sincronizacaoAutomatica={sincronizacaoAutomatica}
+            setSincronizacaoAutomatica={setSincronizacaoAutomatica}
+          />
         </Tabs>
       </CardContent>
       
