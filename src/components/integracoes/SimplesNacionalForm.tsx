@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +17,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "@/hooks/use-toast";
 import { KeyRound, Lock, ShieldCheck } from "lucide-react";
 import { salvarCredenciaisSimplesNacional } from '@/services/governamental/simplesNacionalIntegration';
+import { saveIntegracaoSimplesNacional } from '@/services/supabase/integracoesService';
 
 const formSchema = z.object({
   codigoAcesso: z.string().min(8, {
@@ -59,7 +59,7 @@ export function SimplesNacionalForm({ clientId, clientName, cnpj, onSave }: Simp
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // Salvar credenciais no localStorage
+      // Salvar credenciais no localStorage (manter para compatibilidade)
       salvarCredenciaisSimplesNacional({
         cnpj,
         codigo_acesso: data.codigoAcesso,
@@ -67,14 +67,20 @@ export function SimplesNacionalForm({ clientId, clientName, cnpj, onSave }: Simp
         senha_certificado: data.senhaCertificado
       });
       
-      // Simulação de envio do certificado digital
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Salvar na base de dados do Supabase
+      const saved = await saveIntegracaoSimplesNacional(clientId, cnpj, data);
+      
+      if (!saved) {
+        throw new Error("Não foi possível salvar a configuração no banco de dados");
+      }
+      
       onSave(data);
       toast({
         title: "Integração configurada",
         description: `Configuração de acesso ao Portal do Simples Nacional realizada com sucesso.`,
       });
     } catch (error) {
+      console.error("Erro ao salvar:", error);
       toast({
         title: "Erro na configuração",
         description: "Não foi possível configurar a integração.",

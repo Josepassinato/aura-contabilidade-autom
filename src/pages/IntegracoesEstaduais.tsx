@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
@@ -8,9 +7,11 @@ import { UfTabs } from "@/components/integracoes/UfTabs";
 import { EmptyClientState } from "@/components/integracoes/EmptyClientState";
 import { 
   ESTADOS,
-  IntegracaoEstadualStatus 
+  getDefaultIntegracoes
 } from "@/components/integracoes/constants";
+import { IntegracaoEstadualStatus } from "@/components/integracoes/IntegracaoStatus";
 import { useToast } from '@/hooks/use-toast';
+import { fetchIntegracoesEstaduais, saveIntegracaoEstadual } from "@/services/supabase/integracoesService";
 
 const IntegracoesEstaduais = () => {
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -34,53 +35,15 @@ const IntegracoesEstaduais = () => {
     setIsLoading(true);
     
     try {
-      // We'll use mock data since the integracoes_estaduais table doesn't exist yet
-      // When the table is created in the database, we can use the Supabase query
-      /*
-      const { data, error } = await supabase
-        .from('integracoes_estaduais')
-        .select('*')
-        .eq('client_id', client.id);
+      // Buscar do Supabase
+      const integracoesData = await fetchIntegracoesEstaduais(client.id);
       
-      if (error) {
-        throw error;
-      }
-      
-      if (data && data.length > 0) {
-        // Mapear os dados do banco para o formato esperado
-        const integracoesData = data.map(item => ({
-          id: item.id,
-          nome: item.nome,
-          uf: item.uf as UF,
-          status: item.status,
-          ultimoAcesso: item.ultimo_acesso,
-          proximaRenovacao: item.proxima_renovacao,
-          mensagem: item.mensagem_erro
-        }));
-        
+      if (integracoesData && integracoesData.length > 0) {
         setIntegracoes(integracoesData);
       } else {
         // Se não encontrar, criar integrações padrão
-        const integracoesDefault = ESTADOS.map(estado => ({
-          id: `sefaz_${estado.uf.toLowerCase()}`,
-          nome: `SEFAZ-${estado.uf}`,
-          uf: estado.uf,
-          status: 'desconectado' as const
-        }));
-        
-        setIntegracoes(integracoesDefault);
+        setIntegracoes(getDefaultIntegracoes());
       }
-      */
-      
-      // Use default integrations for now
-      const integracoesDefault = ESTADOS.map(estado => ({
-        id: `sefaz_${estado.uf.toLowerCase()}`,
-        nome: `SEFAZ-${estado.uf}`,
-        uf: estado.uf,
-        status: 'desconectado' as 'conectado' | 'desconectado' | 'erro' | 'pendente'
-      }));
-      
-      setIntegracoes(integracoesDefault);
     } catch (error) {
       console.error('Erro ao buscar integrações:', error);
       toast({
@@ -90,14 +53,7 @@ const IntegracoesEstaduais = () => {
       });
       
       // Usar integrações padrão em caso de erro
-      const integracoesDefault = ESTADOS.map(estado => ({
-        id: `sefaz_${estado.uf.toLowerCase()}`,
-        nome: `SEFAZ-${estado.uf}`,
-        uf: estado.uf,
-        status: 'desconectado' as 'conectado' | 'desconectado' | 'erro' | 'pendente'
-      }));
-      
-      setIntegracoes(integracoesDefault);
+      setIntegracoes(getDefaultIntegracoes());
     } finally {
       setIsLoading(false);
     }
@@ -107,52 +63,14 @@ const IntegracoesEstaduais = () => {
     if (!selectedClientId) return;
     
     try {
-      // Mock saving integration for now
-      // When the table is created, this would actually save to Supabase
-      /*
-      // Atualizar o status da integração no banco
-      const integracaoAtualizada = {
-        client_id: selectedClientId,
-        uf: activeTab,
-        nome: `SEFAZ-${activeTab}`,
-        status: 'conectado',
-        ultimo_acesso: new Date().toLocaleString('pt-BR'),
-        proxima_renovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
-        certificado_info: JSON.stringify({
-          nome: data.certificadoDigital,
-          renovar_automaticamente: data.renovarAutomaticamente || false
-        })
-      };
+      // Salvar no Supabase
+      const saved = await saveIntegracaoEstadual(selectedClientId, activeTab, data);
       
-      // Verificar se já existe uma integração para este cliente/UF
-      const { data: existingData } = await supabase
-        .from('integracoes_estaduais')
-        .select('id')
-        .eq('client_id', selectedClientId)
-        .eq('uf', activeTab)
-        .single();
-      
-      let result;
-      
-      if (existingData?.id) {
-        // Atualizar
-        result = await supabase
-          .from('integracoes_estaduais')
-          .update(integracaoAtualizada)
-          .eq('id', existingData.id);
-      } else {
-        // Inserir
-        result = await supabase
-          .from('integracoes_estaduais')
-          .insert([integracaoAtualizada]);
+      if (!saved) {
+        throw new Error("Não foi possível salvar os dados");
       }
       
-      if (result.error) {
-        throw result.error;
-      }
-      */
-      
-      // Update the local state to simulate saving
+      // Atualizar o estado local
       setIntegracoes(prev => prev.map(integracao => 
         integracao.uf === activeTab ? {
           ...integracao,

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
@@ -10,6 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Building2, AlertCircle, CheckCircle, GanttChart } from "lucide-react";
+import { IntegracaoStatus, IntegracaoEstadualStatus } from "@/components/integracoes/IntegracaoStatus";
+import { saveIntegracaoEstadual, saveIntegracaoSimplesNacional, fetchIntegracoesEstaduais } from "@/services/supabase/integracoesService";
+import { fetchClientById } from "@/services/supabase/clientsService";
+import { getDefaultIntegracoes } from "@/components/integracoes/constants";
 
 interface IntegracaoStatus {
   id: string;
@@ -26,7 +29,7 @@ const IntegracoesGov = () => {
   const [selectedClientCnpj, setSelectedClientCnpj] = useState<string>('');
   const [activeTab, setActiveTab] = useState("ecac");
   
-  // Estado para simular os status de integração
+  // Estado para as integrações
   const [integracoes, setIntegracoes] = useState<IntegracaoStatus[]>([
     {
       id: "ecac",
@@ -50,42 +53,13 @@ const IntegracoesGov = () => {
     },
   ]);
   
-  const handleClientSelect = (client: { id: string, name: string, cnpj?: string }) => {
+  const handleClientSelect = async (client: { id: string, name: string, cnpj?: string }) => {
     setSelectedClientId(client.id);
     setSelectedClientName(client.name);
     setSelectedClientCnpj(client.cnpj || '');
     
-    // Simular dados de integrações para esse cliente
-    if (client.id === "1") {
-      setIntegracoes([
-        {
-          id: "ecac",
-          nome: "e-CAC (Receita Federal)",
-          status: 'conectado',
-          ultimoAcesso: "10/05/2025 15:30",
-          proximaRenovacao: "10/06/2025",
-        },
-        {
-          id: "sefaz_sp",
-          nome: "SEFAZ-SP",
-          status: 'erro',
-          ultimoAcesso: "05/05/2025 10:15",
-          mensagem: "Certificado expirado"
-        },
-        {
-          id: "sefaz_rj",
-          nome: "SEFAZ-RJ",
-          status: 'desconectado',
-        },
-        {
-          id: "simples_nacional",
-          nome: "Portal Simples Nacional",
-          status: 'conectado',
-          ultimoAcesso: "09/05/2025 08:45",
-          proximaRenovacao: "09/06/2025",
-        },
-      ]);
-    } else {
+    if (!client.id) {
+      // Resetar integrações para o estado inicial
       setIntegracoes([
         {
           id: "ecac",
@@ -108,19 +82,101 @@ const IntegracoesGov = () => {
           status: 'desconectado',
         },
       ]);
+      return;
+    }
+    
+    // Se não tiver CNPJ, tenta buscar do Supabase
+    if (!client.cnpj) {
+      const clientData = await fetchClientById(client.id);
+      if (clientData?.cnpj) {
+        setSelectedClientCnpj(clientData.cnpj);
+      }
+    }
+    
+    // Buscar integrações estaduais do cliente
+    try {
+      const integracoesEstadual = await fetchIntegracoesEstaduais(client.id);
+      
+      // Atualizar status das integrações com SEFAZ
+      const updatedIntegracoes = [...integracoes];
+      
+      // Atualizar SEFAZ-SP
+      const spIntegracao = integracoesEstadual.find(i => i.uf === "SP");
+      if (spIntegracao) {
+        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_sp");
+        if (index >= 0) {
+          updatedIntegracoes[index] = {
+            ...updatedIntegracoes[index],
+            status: spIntegracao.status,
+            ultimoAcesso: spIntegracao.ultimoAcesso,
+            proximaRenovacao: spIntegracao.proximaRenovacao,
+            mensagem: spIntegracao.mensagem
+          };
+        }
+      }
+      
+      // Atualizar SEFAZ-RJ
+      const rjIntegracao = integracoesEstadual.find(i => i.uf === "RJ");
+      if (rjIntegracao) {
+        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_rj");
+        if (index >= 0) {
+          updatedIntegracoes[index] = {
+            ...updatedIntegracoes[index],
+            status: rjIntegracao.status,
+            ultimoAcesso: rjIntegracao.ultimoAcesso,
+            proximaRenovacao: rjIntegracao.proximaRenovacao,
+            mensagem: rjIntegracao.mensagem
+          };
+        }
+      }
+      
+      setIntegracoes(updatedIntegracoes);
+      
+    } catch (error) {
+      console.error("Erro ao buscar integrações:", error);
     }
   };
   
-  const handleSaveIntegracao = (data: any) => {
-    // Atualizar o status da integração
-    setIntegracoes(prev => prev.map(integracao => 
-      integracao.id === activeTab ? {
-        ...integracao,
-        status: 'conectado',
-        ultimoAcesso: new Date().toLocaleString('pt-BR'),
-        proximaRenovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
-      } : integracao
-    ));
+  const handleSaveIntegracao = async (data: any) => {
+    // Atualizar o status da integração baseado na aba ativa
+    let saved = false;
+    
+    try {
+      switch (activeTab) {
+        case "ecac":
+          // TODO: Implementar integração com e-CAC no Supabase
+          saved = true;
+          break;
+          
+        case "sefaz_sp":
+          saved = await saveIntegracaoEstadual(selectedClientId, "SP", data);
+          break;
+          
+        case "sefaz_rj":
+          saved = await saveIntegracaoEstadual(selectedClientId, "RJ", data);
+          break;
+          
+        case "simples_nacional":
+          saved = await saveIntegracaoSimplesNacional(selectedClientId, selectedClientCnpj, data);
+          break;
+      }
+      
+      if (!saved) {
+        throw new Error("Falha ao salvar configuração");
+      }
+      
+      // Atualizar o estado local
+      setIntegracoes(prev => prev.map(integracao => 
+        integracao.id === activeTab ? {
+          ...integracao,
+          status: 'conectado',
+          ultimoAcesso: new Date().toLocaleString('pt-BR'),
+          proximaRenovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
+        } : integracao
+      ));
+    } catch (error) {
+      console.error("Erro ao salvar integração:", error);
+    }
   };
   
   const getStatusBadge = (status: string) => {

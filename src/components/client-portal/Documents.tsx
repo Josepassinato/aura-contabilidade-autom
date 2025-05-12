@@ -4,78 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
-// Do not use supabase typings until the tables are created in database
-// import { supabase } from "@/integrations/supabase/client";
-
-interface Document {
-  id: string;
-  name: string;
-  date: string;
-  type: string;
-}
+import { fetchClientDocuments, ClientDocument } from "@/services/supabase/documentosService";
 
 interface DocumentsProps {
   clientId: string;
 }
 
 export const Documents = ({ clientId }: DocumentsProps) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchDocuments = async () => {
+    const loadDocuments = async () => {
       if (!clientId) return;
 
       setIsLoading(true);
       try {
-        // Use mock data since the client_documents table doesn't exist yet
-        // When the table is created, we can uncomment this code
-        /*
-        const { data, error } = await supabase
-          .from('client_documents')
-          .select('*')
-          .eq('client_id', clientId)
-          .order('created_at', { ascending: false })
-          .limit(3);
-
-        if (error) {
-          throw error;
-        }
-
-        if (data) {
-          // Mapear dados para o formato esperado pelo componente
-          const mappedDocs = data.map(doc => ({
-            id: doc.id,
-            name: doc.name || doc.title || 'Documento sem título',
-            date: new Date(doc.created_at).toLocaleDateString('pt-BR'),
-            type: doc.type || 'documento'
-          }));
-          
-          setDocuments(mappedDocs);
-        }
-        */
-        
-        // Use mock data for now
-        setDocuments([
-          { id: '1', name: 'Balanço Patrimonial', date: '10/05/2025', type: 'contábil' },
-          { id: '2', name: 'DRE', date: '10/05/2025', type: 'contábil' },
-          { id: '3', name: 'Notas Fiscais Abril', date: '05/05/2025', type: 'fiscal' }
-        ]);
+        // Buscar documentos do Supabase (limitando a 3 documentos)
+        const documentos = await fetchClientDocuments(clientId, 3);
+        setDocuments(documentos);
       } catch (error) {
         console.error('Erro ao buscar documentos:', error);
-        
-        // Fallback to mock data in case of error
-        setDocuments([
-          { id: '1', name: 'Balanço Patrimonial', date: '10/05/2025', type: 'contábil' },
-          { id: '2', name: 'DRE', date: '10/05/2025', type: 'contábil' },
-          { id: '3', name: 'Notas Fiscais Abril', date: '05/05/2025', type: 'fiscal' }
-        ]);
+        setDocuments([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDocuments();
+    loadDocuments();
   }, [clientId]);
 
   return (

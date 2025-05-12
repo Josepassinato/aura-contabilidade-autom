@@ -48,6 +48,147 @@ export type Database = {
         }
         Relationships: []
       }
+      client_documents: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          file_path: string | null
+          id: string
+          name: string
+          size: number | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          name: string
+          size?: number | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          name?: string
+          size?: number | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integracoes_estaduais: {
+        Row: {
+          certificado_info: Json | null
+          client_id: string
+          created_at: string | null
+          id: string
+          mensagem_erro: string | null
+          nome: string
+          proxima_renovacao: string | null
+          status: string
+          uf: string
+          ultimo_acesso: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          certificado_info?: Json | null
+          client_id: string
+          created_at?: string | null
+          id?: string
+          mensagem_erro?: string | null
+          nome: string
+          proxima_renovacao?: string | null
+          status?: string
+          uf: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          certificado_info?: Json | null
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          mensagem_erro?: string | null
+          nome?: string
+          proxima_renovacao?: string | null
+          status?: string
+          uf?: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integracoes_estaduais_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integracoes_simples_nacional: {
+        Row: {
+          certificado_digital: string | null
+          client_id: string
+          cnpj: string
+          codigo_acesso: string | null
+          created_at: string | null
+          id: string
+          proxima_renovacao: string | null
+          status: string
+          ultimo_acesso: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          certificado_digital?: string | null
+          client_id: string
+          cnpj: string
+          codigo_acesso?: string | null
+          created_at?: string | null
+          id?: string
+          proxima_renovacao?: string | null
+          status?: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          certificado_digital?: string | null
+          client_id?: string
+          cnpj?: string
+          codigo_acesso?: string | null
+          created_at?: string | null
+          id?: string
+          proxima_renovacao?: string | null
+          status?: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integracoes_simples_nacional_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
