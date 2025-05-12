@@ -1,6 +1,6 @@
 
 import React from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 // Páginas
 import Index from "./pages/Index";
@@ -28,6 +28,7 @@ import IntegracoesGov from "./pages/IntegracoesGov";
 import RelatoriosIA from "./pages/RelatoriosIA";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
+import OnboardingWelcome from "./pages/OnboardingWelcome";
 
 // Configure as rotas aqui
 export const routes = [
@@ -98,6 +99,10 @@ export const routes = [
   {
     path: "/onboarding",
     element: <Onboarding />,
+  },
+  {
+    path: "/onboarding-welcome",
+    element: <OnboardingWelcome />,
   },
   {
     path: "/planos",

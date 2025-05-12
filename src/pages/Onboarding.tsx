@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,10 +24,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Building2, Users, Calendar, FileText, Mic, Server, Wallet } from "lucide-react";
+import { 
+  ArrowRight, 
+  Building2, 
+  Users, 
+  Calendar, 
+  FileText, 
+  Mic, 
+  Server, 
+  Wallet, 
+  Check,
+  CheckCircle
+} from "lucide-react";
 import { IntegracaoFiscalForm } from "@/components/onboarding/IntegracaoFiscalForm";
 import { IntegracaoBancariaForm } from "@/components/onboarding/IntegracaoBancariaForm";
+import { PrimeiroClienteForm } from "@/components/onboarding/PrimeiroClienteForm";
+import { EquipeForm } from "@/components/onboarding/EquipeForm";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const onboardingSteps = [
   {
@@ -35,6 +49,12 @@ const onboardingSteps = [
     title: "Informações do Escritório",
     description: "Vamos começar com informações básicas sobre o seu escritório contábil",
     icon: <Building2 className="h-8 w-8 text-primary" />,
+  },
+  {
+    id: "primeiro-cliente",
+    title: "Primeiro Cliente",
+    description: "Adicione seu primeiro cliente para começar a usar o sistema",
+    icon: <Users className="h-8 w-8 text-primary" />,
   },
   {
     id: "fiscal-integration",
@@ -65,13 +85,7 @@ const onboardingSteps = [
     title: "Gestão Documental",
     description: "Defina políticas para armazenamento e compartilhamento de documentos",
     icon: <FileText className="h-8 w-8 text-primary" />,
-  },
-  {
-    id: "ai-assistant",
-    title: "Assistente de Voz IA",
-    description: "Configure as preferências para seu assistente de voz inteligente",
-    icon: <Mic className="h-8 w-8 text-primary" />,
-  },
+  }
 ];
 
 const officeFormSchema = z.object({
@@ -89,8 +103,12 @@ type OfficeFormValues = z.infer<typeof officeFormSchema>;
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [officeData, setOfficeData] = useState<OfficeFormValues | null>(null);
+  const [primeiroClienteData, setPrimeiroClienteData] = useState(null);
   const [fiscalData, setFiscalData] = useState(null);
   const [bancariaData, setBancariaData] = useState(null);
+  const [equipeData, setEquipeData] = useState(null);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   
   const form = useForm<OfficeFormValues>({
@@ -106,11 +124,26 @@ const Onboarding = () => {
     },
   });
 
+  useEffect(() => {
+    // Calcular o progresso com base no passo atual
+    const newProgress = Math.round(((currentStep + 1) / onboardingSteps.length) * 100);
+    setProgress(newProgress);
+  }, [currentStep]);
+
   const handleOfficeFormSubmit = (data: OfficeFormValues) => {
     setOfficeData(data);
     toast({
       title: "Informações salvas",
       description: "As informações do escritório foram salvas com sucesso.",
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handlePrimeiroClienteSubmit = (data: any) => {
+    setPrimeiroClienteData(data);
+    toast({
+      title: "Cliente adicionado",
+      description: "O primeiro cliente foi cadastrado com sucesso.",
     });
     setCurrentStep(currentStep + 1);
   };
@@ -133,13 +166,31 @@ const Onboarding = () => {
     setCurrentStep(currentStep + 1);
   };
 
+  const handleEquipeFormSubmit = (data: any) => {
+    setEquipeData(data);
+    toast({
+      title: "Equipe configurada",
+      description: "A equipe foi configurada com sucesso.",
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
   const nextStep = () => {
     if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       // Complete onboarding
-      navigate("/");
+      setShowCompletionDialog(true);
     }
+  };
+
+  const completeOnboarding = () => {
+    setShowCompletionDialog(false);
+    navigate("/");
+    toast({
+      title: "Onboarding concluído",
+      description: "Seu escritório está pronto para usar o sistema!",
+    });
   };
 
   const renderStepContent = () => {
@@ -263,46 +314,96 @@ const Onboarding = () => {
           </Form>
         );
       case 1:
-        return <IntegracaoFiscalForm onSubmit={handleFiscalFormSubmit} />;
+        return <PrimeiroClienteForm onSubmit={handlePrimeiroClienteSubmit} />;
       case 2:
-        return <IntegracaoBancariaForm onSubmit={handleBancariaFormSubmit} />;
+        return <IntegracaoFiscalForm onSubmit={handleFiscalFormSubmit} />;
       case 3:
-        // Renderiza o formulário de equipe e colaboradores
-        return (
-          <div className="space-y-4">
-            <p>Aqui você poderá adicionar os membros da sua equipe. Esta funcionalidade será habilitada em breve.</p>
-            <div className="flex justify-end">
-              <Button onClick={nextStep}>Continuar</Button>
-            </div>
-          </div>
-        );
+        return <IntegracaoBancariaForm onSubmit={handleBancariaFormSubmit} />;
       case 4:
+        return <EquipeForm onSubmit={handleEquipeFormSubmit} />;
+      case 5:
         // Renderiza configuração de calendário fiscal
         return (
           <div className="space-y-4">
-            <p>Configure o calendário fiscal e defina alertas para obrigações importantes. Esta funcionalidade será habilitada em breve.</p>
-            <div className="flex justify-end">
-              <Button onClick={nextStep}>Continuar</Button>
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4">
+              <h3 className="font-medium">Calendário fiscal será configurado automaticamente</h3>
+              <p className="mt-2 text-sm">
+                Com base no regime tributário dos seus clientes, configuraremos automaticamente as obrigações 
+                fiscais e prazos importantes. Você poderá personalizar isso mais tarde.
+              </p>
             </div>
-          </div>
-        );
-      case 5:
-        // Renderiza configuração de gestão documental
-        return (
-          <div className="space-y-4">
-            <p>Configure como os documentos serão armazenados e compartilhados no sistema. Esta funcionalidade será habilitada em breve.</p>
-            <div className="flex justify-end">
+            
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="border rounded-md p-4 bg-muted/10">
+                <h4 className="font-medium">Simples Nacional</h4>
+                <ul className="mt-2 text-sm space-y-1 text-muted-foreground">
+                  <li>- DAS: dia 20 de cada mês</li>
+                  <li>- DEFIS: março</li>
+                </ul>
+              </div>
+              
+              <div className="border rounded-md p-4 bg-muted/10">
+                <h4 className="font-medium">Lucro Presumido</h4>
+                <ul className="mt-2 text-sm space-y-1 text-muted-foreground">
+                  <li>- PIS/COFINS: dia 25</li>
+                  <li>- IRPJ/CSLL: fim de trimestre</li>
+                </ul>
+              </div>
+              
+              <div className="border rounded-md p-4 bg-muted/10">
+                <h4 className="font-medium">Obrigações Gerais</h4>
+                <ul className="mt-2 text-sm space-y-1 text-muted-foreground">
+                  <li>- INSS: dia 20</li>
+                  <li>- FGTS: dia 7</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="flex justify-end pt-6">
               <Button onClick={nextStep}>Continuar</Button>
             </div>
           </div>
         );
       case 6:
-        // Renderiza configuração do assistente de voz
+        // Renderiza configuração de gestão documental
         return (
-          <div className="space-y-4">
-            <p>Configure o assistente de voz IA que irá ajudar você e seus clientes. Esta funcionalidade será habilitada em breve.</p>
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-4">
+              <h3 className="font-medium">Gestão documental será configurada com valores padrão</h3>
+              <p className="mt-2 text-sm">
+                Configuramos automaticamente políticas de acesso e compartilhamento de documentos.
+                Você poderá personalizar essas configurações a qualquer momento.
+              </p>
+            </div>
+            
+            <div className="border rounded-md divide-y">
+              <div className="p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Armazenamento de documentos fiscais</h4>
+                  <p className="text-sm text-muted-foreground">Documentos fiscais serão armazenados por 5 anos</p>
+                </div>
+                <Check className="text-green-500 h-5 w-5" />
+              </div>
+              
+              <div className="p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Compartilhamento com clientes</h4>
+                  <p className="text-sm text-muted-foreground">Clientes terão acesso aos próprios documentos</p>
+                </div>
+                <Check className="text-green-500 h-5 w-5" />
+              </div>
+              
+              <div className="p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Backup automático</h4>
+                  <p className="text-sm text-muted-foreground">Backups diários dos documentos</p>
+                </div>
+                <Check className="text-green-500 h-5 w-5" />
+              </div>
+            </div>
+            
             <div className="flex justify-end">
-              <Button onClick={() => navigate("/")}>Concluir</Button>
+              <Button onClick={nextStep}>Finalizar Configuração</Button>
             </div>
           </div>
         );
@@ -315,33 +416,22 @@ const Onboarding = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl">
         <CardHeader className="border-b pb-4">
-          <CardTitle className="text-2xl">Configuração Inicial</CardTitle>
-          <CardDescription>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl">Configuração Inicial</CardTitle>
+            <div className="text-sm font-medium">{progress}% concluído</div>
+          </div>
+          <div className="w-full bg-muted h-2 mt-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-primary h-full transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }} 
+            />
+          </div>
+          <CardDescription className="mt-2">
             Complete os passos abaixo para configurar seu escritório no Contaflix
           </CardDescription>
         </CardHeader>
         
         <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-2 mb-8">
-            {onboardingSteps.map((step, index) => (
-              <div 
-                key={step.id}
-                className={`flex items-center ${
-                  index < currentStep 
-                    ? "text-primary" 
-                    : index === currentStep 
-                    ? "text-primary font-semibold" 
-                    : "text-muted-foreground"
-                }`}
-              >
-                <span className="text-sm">{step.title}</span>
-                {index < onboardingSteps.length - 1 && (
-                  <ArrowRight className="h-4 w-4 mx-2" />
-                )}
-              </div>
-            ))}
-          </div>
-
           <div className="flex items-center gap-4 mb-6">
             {onboardingSteps[currentStep].icon}
             <div>
@@ -361,8 +451,52 @@ const Onboarding = () => {
           >
             Voltar
           </Button>
+          
+          {/* Exibir número do passo atual / total */}
+          <span className="text-sm text-muted-foreground">
+            Passo {currentStep + 1} de {onboardingSteps.length}
+          </span>
         </CardFooter>
       </Card>
+      
+      {/* Modal de conclusão */}
+      <Dialog open={showCompletionDialog} onOpenChange={setShowCompletionDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-6 w-6 text-green-500" />
+              Configuração concluída!
+            </DialogTitle>
+            <DialogDescription>
+              Seu escritório está configurado e pronto para começar a usar o Contaflix.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="p-4 bg-muted/20 rounded-md">
+            <h4 className="font-medium">O que você pode fazer agora:</h4>
+            <ul className="mt-2 space-y-2">
+              <li className="flex items-start gap-2">
+                <Check className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                <span>Acessar o dashboard e explorar as funcionalidades</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                <span>Adicionar mais clientes ao sistema</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="h-4 w-4 text-green-500 mt-1 shrink-0" />
+                <span>Configurar mais detalhes nas preferências</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="flex justify-center">
+            <Button onClick={completeOnboarding} className="w-full">
+              Ir para o Dashboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
