@@ -15,7 +15,7 @@ interface CalendarDayProps {
 export const CalendarDay: React.FC<CalendarDayProps> = ({ dia, obrigacoes, mes, ano }) => {
   const temObrigacoes = obrigacoes.length > 0;
 
-  const marcarComoConcluida = async (id: number) => {
+  const marcarComoConcluida = async (id: number | string) => {  // Atualizado para aceitar número ou string
     const sucesso = await atualizarStatusObrigacao(id, "concluido");
     
     if (sucesso) {
@@ -50,13 +50,13 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({ dia, obrigacoes, mes, 
         {temObrigacoes ? (
           obrigacoes.map((obrigacao) => (
             <div 
-              key={obrigacao.id}
+              key={String(obrigacao.id)}  // Convertendo para string para garantir
               className={`
                 p-1 rounded text-xs cursor-pointer
                 ${obrigacao.status === 'concluido' ? 'bg-green-100' : 
                   obrigacao.status === 'atrasado' ? 'bg-red-100' : 'bg-yellow-100'}
               `}
-              onClick={() => marcarComoConcluida(obrigacao.id as number)}
+              onClick={() => marcarComoConcluida(obrigacao.id)}
             >
               <div className="flex items-center">
                 {obrigacao.status === 'concluido' ? (

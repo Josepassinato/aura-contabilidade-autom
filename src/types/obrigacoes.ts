@@ -1,6 +1,6 @@
 
 export interface Obrigacao {
-  id: number;
+  id: number | string;  // Agora aceita tanto número quanto string (UUID)
   nome: string;
   tipo: string;
   prazo: string;

@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { atualizarStatusObrigacao } from "@/services/supabase/obrigacoesService";
 
 interface ObrigacaoActionsProps {
-  id: number;
+  id: number | string;  // Atualizado para aceitar número ou string
   status: "pendente" | "atrasado" | "concluido";
 }
 

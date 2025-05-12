@@ -30,7 +30,7 @@ export async function fetchObrigacoesFiscais(clientId?: string): Promise<Obrigac
     }
     
     return data.map(item => ({
-      id: item.id,
+      id: item.id, // ID agora pode ser string (UUID) ou número
       nome: item.nome,
       tipo: item.tipo,
       prazo: item.prazo,
@@ -67,8 +67,8 @@ export async function adicionarObrigacaoFiscal(obrigacao: Omit<Obrigacao, "id">)
       tipo: data.tipo,
       prazo: data.prazo,
       empresa: data.empresa,
-      status: data.status,
-      prioridade: data.prioridade
+      status: data.status as "pendente" | "atrasado" | "concluido",
+      prioridade: data.prioridade as "baixa" | "media" | "alta"
     };
     
   } catch (error) {
