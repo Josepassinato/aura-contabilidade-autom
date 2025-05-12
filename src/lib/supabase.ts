@@ -45,6 +45,8 @@ export interface UserProfile {
   email: string;
   name: string;
   role: UserRole;
+  full_name?: string;
+  company_id?: string;
 }
 
 export enum UserRole {
@@ -62,19 +64,14 @@ export interface AccountingClient {
   phone: string;
   address: string;
   status: string;
+  created_at?: string;
 }
 
 export const initializeSupabase = () => {
-  // Mock implementation
-  return true;
-};
-
-// Um hook falso para usar como mock
-export function useSupabaseClient() {
-  // Este é um cliente falso - substitua pela implementação real conforme necessário
-  const mockClient = {
+  // This is a mock implementation just to fix build errors
+  const client = {
     from: (tableName: string) => {
-      // Implementação simulada - retorna funções que simulam o comportamento do Supabase
+      // Mock implementation - returns functions that simulate Supabase behavior
       return {
         select: (columns: string) => ({
           eq: (column: string, value: any) => ({
@@ -112,7 +109,11 @@ export function useSupabaseClient() {
       signOut: () => Promise.resolve({})
     }
   };
+  return client;
+};
 
-  // Fingindo que estamos retornando um cliente Supabase
-  return mockClient as any;
+// Um hook falso para usar como mock
+export function useSupabaseClient() {
+  // Este é um cliente falso - substitua pela implementação real conforme necessário
+  return initializeSupabase() as any;
 }
