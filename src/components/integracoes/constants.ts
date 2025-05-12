@@ -1,6 +1,5 @@
 
 import { UF } from "@/services/governamental/estadualIntegration";
-import { IntegracaoEstadualStatus } from './IntegracaoStatus';
 
 // Lista de estados suportados
 export const ESTADOS: Array<{uf: UF, nome: string}> = [
@@ -11,4 +10,5 @@ export const ESTADOS: Array<{uf: UF, nome: string}> = [
   { uf: 'PR', nome: 'Paraná' }
 ];
 
-export { IntegracaoEstadualStatus };
+// Using "export type" instead of "export" to fix the isolatedModules error
+export type { IntegracaoEstadualStatus } from './IntegracaoStatus';

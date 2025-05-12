@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Do not use supabase typings until the tables are created in database
+// import { supabase } from "@/integrations/supabase/client";
 
 interface Document {
   id: string;
@@ -27,7 +28,9 @@ export const Documents = ({ clientId }: DocumentsProps) => {
 
       setIsLoading(true);
       try {
-        // Buscar documentos do cliente no Supabase
+        // Use mock data since the client_documents table doesn't exist yet
+        // When the table is created, we can uncomment this code
+        /*
         const { data, error } = await supabase
           .from('client_documents')
           .select('*')
@@ -50,10 +53,18 @@ export const Documents = ({ clientId }: DocumentsProps) => {
           
           setDocuments(mappedDocs);
         }
+        */
+        
+        // Use mock data for now
+        setDocuments([
+          { id: '1', name: 'Balanço Patrimonial', date: '10/05/2025', type: 'contábil' },
+          { id: '2', name: 'DRE', date: '10/05/2025', type: 'contábil' },
+          { id: '3', name: 'Notas Fiscais Abril', date: '05/05/2025', type: 'fiscal' }
+        ]);
       } catch (error) {
         console.error('Erro ao buscar documentos:', error);
         
-        // Temporariamente, usar dados mockados em caso de erro
+        // Fallback to mock data in case of error
         setDocuments([
           { id: '1', name: 'Balanço Patrimonial', date: '10/05/2025', type: 'contábil' },
           { id: '2', name: 'DRE', date: '10/05/2025', type: 'contábil' },

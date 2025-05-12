@@ -8,6 +8,9 @@ import { Obrigacao } from "@/types/obrigacoes";
  */
 export async function fetchObrigacoesFiscais(clientId?: string): Promise<Obrigacao[]> {
   try {
+    // We'll use mock data since the obrigacoes_fiscais table doesn't exist yet
+    // When the table is created, uncomment this code
+    /*
     let query = supabase.from('obrigacoes_fiscais').select('*');
     
     if (clientId) {
@@ -26,25 +29,29 @@ export async function fetchObrigacoesFiscais(clientId?: string): Promise<Obrigac
       status: obrigacao.status as "pendente" | "atrasado" | "concluido",
       prioridade: obrigacao.prioridade as "baixa" | "media" | "alta"
     })) as Obrigacao[];
+    */
+    
+    // Temporariamente retornamos dados mockados enquanto a tabela não existe
+    return getObrigacoesMock(clientId);
   } catch (error) {
     console.error('Erro ao buscar obrigações fiscais:', error);
     
     // Temporariamente retornamos dados mockados enquanto a tabela não existe
-    return getObrigacoesMock();
+    return getObrigacoesMock(clientId);
   }
 }
 
 // Dados mockados temporários enquanto a tabela não existe
-function getObrigacoesMock(): Obrigacao[] {
-  return [
+function getObrigacoesMock(clientId?: string): Obrigacao[] {
+  const allObrigacoes = [
     {
       id: 1,
       nome: "DARF IRPJ",
       tipo: "Federal",
       prazo: "30/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "pendente", 
-      prioridade: "alta"
+      status: "pendente" as const, 
+      prioridade: "alta" as const
     },
     {
       id: 2,
@@ -52,8 +59,8 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Federal",
       prazo: "20/05/2025",
       empresa: "XYZ Comércio S.A.",
-      status: "concluido", 
-      prioridade: "media"
+      status: "concluido" as const, 
+      prioridade: "media" as const
     },
     {
       id: 3,
@@ -61,8 +68,8 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Federal",
       prazo: "15/05/2025",
       empresa: "Tech Solutions",
-      status: "concluido", 
-      prioridade: "alta"
+      status: "concluido" as const, 
+      prioridade: "alta" as const
     },
     {
       id: 4,
@@ -70,8 +77,8 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Estadual",
       prazo: "10/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "atrasado", 
-      prioridade: "alta"
+      status: "atrasado" as const, 
+      prioridade: "alta" as const
     },
     {
       id: 5,
@@ -79,8 +86,8 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Estadual",
       prazo: "28/05/2025",
       empresa: "XYZ Comércio S.A.",
-      status: "pendente", 
-      prioridade: "media"
+      status: "pendente" as const, 
+      prioridade: "media" as const
     },
     {
       id: 6,
@@ -88,8 +95,8 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Federal",
       prazo: "22/05/2025",
       empresa: "Tech Solutions",
-      status: "atrasado", 
-      prioridade: "media"
+      status: "atrasado" as const, 
+      prioridade: "media" as const
     },
     {
       id: 7,
@@ -97,8 +104,22 @@ function getObrigacoesMock(): Obrigacao[] {
       tipo: "Municipal",
       prazo: "10/05/2025",
       empresa: "Empresa ABC Ltda",
-      status: "pendente", 
-      prioridade: "baixa"
+      status: "pendente" as const, 
+      prioridade: "baixa" as const
     }
   ];
+  
+  // If a clientId is provided, filter the mock data
+  if (clientId) {
+    // This is simplified, in real data you'd match actual client IDs
+    if (clientId.includes('abc')) {
+      return allObrigacoes.filter(obr => obr.empresa.includes('ABC'));
+    } else if (clientId.includes('xyz')) {
+      return allObrigacoes.filter(obr => obr.empresa.includes('XYZ'));
+    } else if (clientId.includes('tech')) {
+      return allObrigacoes.filter(obr => obr.empresa.includes('Tech'));
+    }
+  }
+  
+  return allObrigacoes;
 }

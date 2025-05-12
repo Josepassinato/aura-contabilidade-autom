@@ -10,8 +10,6 @@ import {
   ESTADOS,
   IntegracaoEstadualStatus 
 } from "@/components/integracoes/constants";
-import { supabase } from '@/integrations/supabase/client';
-import { Toast, ToastTitle, ToastDescription } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 
 const IntegracoesEstaduais = () => {
@@ -36,7 +34,9 @@ const IntegracoesEstaduais = () => {
     setIsLoading(true);
     
     try {
-      // Tentar buscar do Supabase
+      // We'll use mock data since the integracoes_estaduais table doesn't exist yet
+      // When the table is created in the database, we can use the Supabase query
+      /*
       const { data, error } = await supabase
         .from('integracoes_estaduais')
         .select('*')
@@ -52,7 +52,7 @@ const IntegracoesEstaduais = () => {
           id: item.id,
           nome: item.nome,
           uf: item.uf as UF,
-          status: item.status as 'conectado' | 'desconectado' | 'erro' | 'pendente',
+          status: item.status,
           ultimoAcesso: item.ultimo_acesso,
           proximaRenovacao: item.proxima_renovacao,
           mensagem: item.mensagem_erro
@@ -70,6 +70,17 @@ const IntegracoesEstaduais = () => {
         
         setIntegracoes(integracoesDefault);
       }
+      */
+      
+      // Use default integrations for now
+      const integracoesDefault = ESTADOS.map(estado => ({
+        id: `sefaz_${estado.uf.toLowerCase()}`,
+        nome: `SEFAZ-${estado.uf}`,
+        uf: estado.uf,
+        status: 'desconectado' as 'conectado' | 'desconectado' | 'erro' | 'pendente'
+      }));
+      
+      setIntegracoes(integracoesDefault);
     } catch (error) {
       console.error('Erro ao buscar integrações:', error);
       toast({
@@ -83,7 +94,7 @@ const IntegracoesEstaduais = () => {
         id: `sefaz_${estado.uf.toLowerCase()}`,
         nome: `SEFAZ-${estado.uf}`,
         uf: estado.uf,
-        status: 'desconectado' as const
+        status: 'desconectado' as 'conectado' | 'desconectado' | 'erro' | 'pendente'
       }));
       
       setIntegracoes(integracoesDefault);
@@ -96,6 +107,9 @@ const IntegracoesEstaduais = () => {
     if (!selectedClientId) return;
     
     try {
+      // Mock saving integration for now
+      // When the table is created, this would actually save to Supabase
+      /*
       // Atualizar o status da integração no banco
       const integracaoAtualizada = {
         client_id: selectedClientId,
@@ -136,14 +150,15 @@ const IntegracoesEstaduais = () => {
       if (result.error) {
         throw result.error;
       }
+      */
       
-      // Atualizar o estado local
+      // Update the local state to simulate saving
       setIntegracoes(prev => prev.map(integracao => 
         integracao.uf === activeTab ? {
           ...integracao,
           status: 'conectado',
-          ultimoAcesso: integracaoAtualizada.ultimo_acesso,
-          proximaRenovacao: integracaoAtualizada.proxima_renovacao,
+          ultimoAcesso: new Date().toLocaleString('pt-BR'),
+          proximaRenovacao: new Date(Date.now() + 30*24*60*60*1000).toLocaleString('pt-BR'),
         } : integracao
       ));
       
