@@ -47,7 +47,7 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
       return [];
     }
 
-    // Mapear os dados para o formato esperado pelo componente
+    // Mapear os dados para o formato esperado pelo componente, garantindo que o status padrão seja 'pendente'
     return data.map(doc => ({
       id: doc.id,
       title: doc.title,
@@ -56,7 +56,7 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
       size: doc.size,
       file_path: doc.file_path,
       date: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : undefined,
-      status: 'processado' as 'pendente' | 'processado' | 'rejeitado',
+      status: doc.status || 'pendente',
       created_at: doc.created_at
     }));
 
@@ -93,7 +93,8 @@ export async function addClientDocument(
           name: document.name,
           type: document.type,
           size: document.size,
-          file_path: document.file_path
+          file_path: document.file_path,
+          status: 'pendente' // Definir explicitamente o status como pendente
         }
       ])
       .select('id')

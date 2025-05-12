@@ -67,7 +67,8 @@ export function DashboardView() {
             client: clientesData?.find(c => c.id === clienteAtivo)?.name || '',
             type: doc.type || '',
             date: doc.date || '',
-            status: doc.status || 'pendente'
+            // Garante que o status seja explicitamente "processado" ou definido como "pendente" por padrão
+            status: doc.status === 'processado' ? 'processado' : 'pendente'
           })));
         } else {
           setRecentDocuments([]);
