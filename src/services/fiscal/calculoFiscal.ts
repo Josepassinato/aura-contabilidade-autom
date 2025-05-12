@@ -97,6 +97,172 @@ const calcularCSLL = (params: ParametrosCalculo): ResultadoCalculo => {
   };
 };
 
+const calcularPIS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de PIS
+  const { valor, deducoes = 0, regimeTributario } = params;
+  
+  // Alíquota PIS (0.65% para Lucro Presumido, 1.65% para Lucro Real)
+  const aliquota = regimeTributario === 'LucroPresumido' ? 0.0065 : 0.0165;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (25 do mês seguinte)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 25);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0],
+    codigoReceita: regimeTributario === 'LucroPresumido' ? '8109' : '6912'
+  };
+};
+
+const calcularCOFINS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de COFINS
+  const { valor, deducoes = 0, regimeTributario } = params;
+  
+  // Alíquota COFINS (3% para Lucro Presumido, 7.6% para Lucro Real)
+  const aliquota = regimeTributario === 'LucroPresumido' ? 0.03 : 0.076;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (25 do mês seguinte)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 25);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0],
+    codigoReceita: regimeTributario === 'LucroPresumido' ? '2172' : '5856'
+  };
+};
+
+const calcularICMS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de ICMS
+  const { valor, aliquota = 0.18, deducoes = 0 } = params;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (varia por estado, usando o 20 do mês seguinte como exemplo)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0]
+  };
+};
+
+const calcularISS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de ISS
+  const { valor, aliquota = 0.05, deducoes = 0 } = params;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (varia por município, usando o 15 do mês seguinte como exemplo)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 15);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0]
+  };
+};
+
+const calcularINSS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de INSS para pessoa jurídica (patronal)
+  const { valor, deducoes = 0 } = params;
+  
+  // Alíquota INSS patronal básica (20%)
+  const aliquota = 0.2;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (dia 20 do mês seguinte)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0],
+    codigoReceita: '2100'
+  };
+};
+
+const calcularFGTS = (params: ParametrosCalculo): ResultadoCalculo => {
+  // Implementação simplificada de cálculo de FGTS
+  const { valor, deducoes = 0 } = params;
+  
+  // Alíquota FGTS (8%)
+  const aliquota = 0.08;
+  
+  // Base de cálculo
+  let baseCalculo = valor;
+  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  
+  // Cálculo do imposto
+  const valorImposto = baseCalculo * aliquota;
+
+  // Data de vencimento (dia 7 do mês seguinte)
+  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 7);
+  
+  return {
+    valorBase: baseCalculo,
+    valorImposto,
+    aliquotaEfetiva: valorImposto / valor,
+    deducoes,
+    valorFinal: valorImposto,
+    dataVencimento: dataVencimento.toISOString().split('T')[0],
+    codigoReceita: 'FGTS'
+  };
+};
+
 const calcularSimples = (params: ParametrosCalculo): ResultadoCalculo => {
   // Implementação simplificada do cálculo do Simples Nacional
   const { valor, cnpj } = params;
@@ -138,10 +304,27 @@ export const calcularImposto = async (
       case 'CSLL':
         resultado = calcularCSLL(params);
         break;
+      case 'PIS':
+        resultado = calcularPIS(params);
+        break;
+      case 'COFINS':
+        resultado = calcularCOFINS(params);
+        break;
+      case 'ICMS':
+        resultado = calcularICMS(params);
+        break;
+      case 'ISS':
+        resultado = calcularISS(params);
+        break;
+      case 'INSS':
+        resultado = calcularINSS(params);
+        break;
+      case 'FGTS':
+        resultado = calcularFGTS(params);
+        break;
       case 'Simples':
         resultado = calcularSimples(params);
         break;
-      // Implementar outros tipos de impostos conforme necessário
       default:
         throw new Error(`Cálculo para ${tipo} ainda não implementado`);
     }
@@ -184,6 +367,142 @@ export const gerarDARF = async (
     toast({
       title: "Erro ao gerar DARF",
       description: error instanceof Error ? error.message : "Ocorreu um erro na geração do DARF",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Função para integrar com dados de notas fiscais
+export const calcularImpostosPorNotasFiscais = async (
+  cnpj: string,
+  periodo: string,
+  regimeTributario: 'Simples' | 'LucroPresumido' | 'LucroReal'
+): Promise<Record<TipoImposto, ResultadoCalculo>> => {
+  try {
+    // Em uma implementação real, aqui buscaríamos as notas fiscais do período
+    // e calcularíamos os impostos baseados nos dados reais
+    
+    // Simulando notas fiscais para demonstração
+    const faturamentoTotal = Math.random() * 500000 + 100000;
+    const despesasTotal = faturamentoTotal * (Math.random() * 0.6 + 0.2); // 20% a 80% do faturamento
+    
+    // Parâmetros base para os cálculos
+    const parametrosBase: ParametrosCalculo = {
+      valor: faturamentoTotal,
+      periodo,
+      cnpj,
+      regimeTributario,
+      despesas: despesasTotal
+    };
+    
+    // Calculando todos os impostos aplicáveis conforme regime tributário
+    const resultados: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
+    
+    if (regimeTributario === 'Simples') {
+      resultados['Simples'] = await calcularImposto('Simples', parametrosBase);
+    } else {
+      // Para Lucro Presumido ou Real
+      const impostos: TipoImposto[] = ['IRPJ', 'CSLL', 'PIS', 'COFINS'];
+      
+      for (const imposto of impostos) {
+        resultados[imposto] = await calcularImposto(imposto, parametrosBase);
+      }
+      
+      // Adiciona impostos específicos se houver operações com mercadorias ou serviços
+      if (Math.random() > 0.5) { // Simulando que tem operações com mercadorias
+        resultados['ICMS'] = await calcularImposto('ICMS', { 
+          ...parametrosBase, 
+          valor: faturamentoTotal * 0.7 // Supondo que 70% do faturamento é com mercadorias
+        });
+      }
+      
+      if (Math.random() > 0.3) { // Simulando que tem operações com serviços
+        resultados['ISS'] = await calcularImposto('ISS', { 
+          ...parametrosBase, 
+          valor: faturamentoTotal * 0.3 // Supondo que 30% do faturamento é com serviços
+        });
+      }
+    }
+    
+    return resultados as Record<TipoImposto, ResultadoCalculo>;
+    
+  } catch (error) {
+    console.error(`Erro ao calcular impostos por notas fiscais:`, error);
+    toast({
+      title: "Erro no cálculo por notas fiscais",
+      description: error instanceof Error ? error.message : "Ocorreu um erro no processamento das notas fiscais",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Função para integrar com lançamentos contábeis
+export const calcularImpostosPorLancamentos = async (
+  cnpj: string,
+  periodo: string,
+  regimeTributario: 'Simples' | 'LucroPresumido' | 'LucroReal'
+): Promise<Record<TipoImposto, ResultadoCalculo>> => {
+  try {
+    // Em uma implementação real, aqui buscaríamos os lançamentos contábeis do período
+    // e calcularíamos os impostos baseados nos dados reais
+    
+    // Simulando lançamentos para demonstração
+    const receitasBrutas = Math.random() * 500000 + 100000;
+    const custos = receitasBrutas * (Math.random() * 0.4 + 0.1); // 10% a 50% da receita
+    const despesasOperacionais = receitasBrutas * (Math.random() * 0.3 + 0.1); // 10% a 40% da receita
+    const baseCalculo = regimeTributario === 'LucroReal' ? 
+                       receitasBrutas - custos - despesasOperacionais : 
+                       receitasBrutas;
+    
+    // Parâmetros base para os cálculos
+    const parametrosBase: ParametrosCalculo = {
+      valor: baseCalculo,
+      periodo,
+      cnpj,
+      regimeTributario,
+      receitasBrutas,
+      custos,
+      despesasOperacionais
+    };
+    
+    // Calculando todos os impostos aplicáveis conforme regime tributário
+    const resultados: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
+    
+    if (regimeTributario === 'Simples') {
+      resultados['Simples'] = await calcularImposto('Simples', { ...parametrosBase, valor: receitasBrutas });
+    } else {
+      // Para Lucro Presumido ou Real
+      const impostos: TipoImposto[] = ['IRPJ', 'CSLL', 'PIS', 'COFINS'];
+      
+      for (const imposto of impostos) {
+        resultados[imposto] = await calcularImposto(imposto, parametrosBase);
+      }
+    }
+    
+    // Se tiver folha de pagamento, calcula INSS e FGTS
+    if (Math.random() > 0.3) { // Simulando que tem folha de pagamento
+      const valorFolha = receitasBrutas * (Math.random() * 0.2 + 0.05); // 5% a 25% da receita
+      
+      resultados['INSS'] = await calcularImposto('INSS', { 
+        ...parametrosBase, 
+        valor: valorFolha
+      });
+      
+      resultados['FGTS'] = await calcularImposto('FGTS', { 
+        ...parametrosBase, 
+        valor: valorFolha
+      });
+    }
+    
+    return resultados as Record<TipoImposto, ResultadoCalculo>;
+    
+  } catch (error) {
+    console.error(`Erro ao calcular impostos por lançamentos:`, error);
+    toast({
+      title: "Erro no cálculo por lançamentos",
+      description: error instanceof Error ? error.message : "Ocorreu um erro no processamento dos lançamentos",
       variant: "destructive",
     });
     throw error;

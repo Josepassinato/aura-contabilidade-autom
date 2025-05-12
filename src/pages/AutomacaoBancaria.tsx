@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AgendarPagamentosTributos } from "@/components/bancario/AgendarPagamentosTributos";
 
 const AutomacaoBancaria = () => {
   const { isAuthenticated, isAccountant } = useAuth();
@@ -251,7 +252,6 @@ const AutomacaoBancaria = () => {
               variant="outline" 
               className="w-full"
               onClick={() => {
-                setActiveTab("bancos");
                 window.location.href = "/settings";
               }}
             >
@@ -262,9 +262,10 @@ const AutomacaoBancaria = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="mb-4">
           <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
           <TabsTrigger value="tributos">Pagamento de Tributos</TabsTrigger>
+          <TabsTrigger value="lote">Pagamentos em Lote</TabsTrigger>
           <TabsTrigger value="folha">Folha de Pagamento</TabsTrigger>
           <TabsTrigger value="extratos">Extratos e Saldos</TabsTrigger>
         </TabsList>
@@ -451,6 +452,10 @@ const AutomacaoBancaria = () => {
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="lote">
+          <AgendarPagamentosTributos bancoSelecionado={bancoSelecionado} />
         </TabsContent>
 
         <TabsContent value="folha">
