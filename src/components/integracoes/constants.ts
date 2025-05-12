@@ -82,4 +82,5 @@ export const getClientOneIntegracoes = (): IntegracaoEstadualStatus[] => [
   },
 ];
 
-export { IntegracaoEstadualStatus } from './IntegracaoStatus';
+// Changed from 'export { IntegracaoEstadualStatus }' to 'export type { IntegracaoEstadualStatus }'
+export type { IntegracaoEstadualStatus } from './IntegracaoStatus';
