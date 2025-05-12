@@ -14,44 +14,21 @@ export const buscarDadosContabeis = async (
   periodo: string
 ): Promise<DadosFaturamento> => {
   try {
-    console.log(`Buscando dados contábeis para CNPJ ${cnpj} no período ${periodo}`);
+    console.log(`Iniciando busca de dados contábeis para CNPJ ${cnpj} no período ${periodo}`);
     
     // Em uma implementação real, aqui buscaríamos os dados de um sistema contábil integrado
-    
-    // Simulação para desenvolvimento
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulando delay de rede
     
     // Buscar notas fiscais para o período
     const notasFiscais = await buscarNotasFiscais(cnpj, periodo);
     
-    // Calcular total de receitas a partir das notas
-    const totalReceitas = notasFiscais.reduce((sum, nota) => sum + nota.valorTotal, 0);
-    
-    // Simular categorias de receitas
-    const receitas: Record<string, number> = {
-      "Venda de Produtos": totalReceitas * 0.7,
-      "Prestação de Serviços": totalReceitas * 0.25,
-      "Outras Receitas": totalReceitas * 0.05
-    };
-    
-    // Simular despesas como percentual das receitas
-    const totalDespesas = totalReceitas * (Math.random() * 0.4 + 0.3); // 30% a 70% das receitas
-    
-    const despesas: Record<string, number> = {
-      "Folha de Pagamento": totalDespesas * 0.4,
-      "Insumos": totalDespesas * 0.3,
-      "Despesas Administrativas": totalDespesas * 0.15,
-      "Despesas Comerciais": totalDespesas * 0.1,
-      "Despesas Financeiras": totalDespesas * 0.05
-    };
-    
+    // Retornar estrutura básica com os dados disponíveis
     return {
       periodo,
-      receitas,
-      despesas,
+      receitas: {},
+      despesas: {},
       notasFiscais,
-      totalReceitas,
-      totalDespesas
+      totalReceitas: 0,
+      totalDespesas: 0
     };
     
   } catch (error) {

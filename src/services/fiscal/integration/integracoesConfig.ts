@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import { IntegracaoEstadualStatus } from "@/components/integracoes/IntegracaoStatus";
 import { getDefaultIntegracoes } from "@/components/integracoes/constants";
 import { FonteDadosConfig } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Verifica se há integrações estaduais configuradas
@@ -11,37 +12,40 @@ import { FonteDadosConfig } from "./types";
  */
 export const obterIntegracoesConfiguradasPorCNPJ = async (cnpj: string): Promise<IntegracaoEstadualStatus[]> => {
   try {
-    // Em uma implementação real, aqui buscaríamos as integrações configuradas
-    // para o CNPJ específico em uma base de dados
-    
-    // Simulação para desenvolvimento
     console.log(`Buscando integrações para CNPJ: ${cnpj}`);
     
-    // Para fins de demonstração, se o CNPJ terminar com 0001, consideramos que há integrações
-    if (cnpj.endsWith('0001')) {
-      // Cliente com integrações simuladas
-      return Promise.resolve([
-        {
-          id: "sefaz_sp",
-          nome: "SEFAZ-SP",
-          uf: "SP",
-          status: 'conectado',
-          ultimoAcesso: "10/05/2025 15:30",
-          proximaRenovacao: "10/06/2025",
-        },
-        {
-          id: "sefaz_rj",
-          nome: "SEFAZ-RJ",
-          uf: "RJ",
-          status: 'conectado',
-          ultimoAcesso: "11/05/2025 16:45",
-          proximaRenovacao: "11/06/2025",
-        }
-      ]);
+    // Buscar cliente pelo CNPJ
+    const { data: cliente, error: clienteError } = await supabase
+      .from('accounting_clients')
+      .select('id')
+      .eq('cnpj', cnpj)
+      .single();
+      
+    if (clienteError || !cliente) {
+      console.log('Cliente não encontrado para o CNPJ:', cnpj);
+      return getDefaultIntegracoes();
     }
     
-    // Caso contrário, retorna integrações padrão desconectadas
-    return Promise.resolve(getDefaultIntegracoes());
+    // Buscar integrações para o cliente encontrado
+    const { data: integracoes, error: integracoesError } = await supabase
+      .from('integracoes_estaduais')
+      .select('*')
+      .eq('client_id', cliente.id);
+      
+    if (integracoesError || !integracoes || integracoes.length === 0) {
+      console.log('Nenhuma integração encontrada para o cliente:', cliente.id);
+      return getDefaultIntegracoes();
+    }
+    
+    // Mapear para o formato esperado pela aplicação
+    return integracoes.map(integ => ({
+      id: integ.id,
+      nome: integ.nome,
+      uf: integ.uf as UF,
+      status: integ.status as 'conectado' | 'desconectado' | 'erro' | 'pendente',
+      ultimoAcesso: integ.ultimo_acesso ? new Date(integ.ultimo_acesso).toLocaleString('pt-BR') : undefined,
+      proximaRenovacao: integ.proxima_renovacao ? new Date(integ.proxima_renovacao).toLocaleString('pt-BR') : undefined,
+    }));
     
   } catch (error) {
     console.error('Erro ao obter integrações configuradas:', error);
@@ -50,7 +54,7 @@ export const obterIntegracoesConfiguradasPorCNPJ = async (cnpj: string): Promise
       description: "Não foi possível verificar as integrações estaduais configuradas",
       variant: "destructive",
     });
-    return [];
+    return getDefaultIntegracoes();
   }
 };
 
@@ -63,13 +67,7 @@ export const configurarFonteDados = async (config: FonteDadosConfig): Promise<bo
   try {
     console.log('Configurando fonte de dados:', config);
     
-    // Em uma implementação real, aqui salvaríamos as configurações de integração
-    // e testaríamos a conexão com a fonte de dados
-    
-    // Simulação para desenvolvimento
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulando delay de rede
-    
-    // Validações simuladas
+    // Validações básicas
     if (config.tipo === 'erp' && !config.endpointUrl) {
       throw new Error("URL do endpoint é obrigatória para integração com ERP");
     }
@@ -78,7 +76,8 @@ export const configurarFonteDados = async (config: FonteDadosConfig): Promise<bo
       throw new Error(`Credenciais são obrigatórias para integração com ${config.tipo.toUpperCase()}`);
     }
     
-    // Salvando configuração no localStorage para simulação
+    // Salvando configuração no localStorage temporariamente
+    // Em produção, isso seria salvo no banco de dados
     localStorage.setItem(`fonte-dados-${config.tipo}`, JSON.stringify(config));
     
     toast({

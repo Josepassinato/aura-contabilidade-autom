@@ -23,13 +23,13 @@ interface EcacAuthResponse {
 }
 
 /**
- * Implementação de autenticação real no e-CAC usando certificado digital
+ * Implementação de autenticação no e-CAC usando certificado digital
  * Esta função envia o certificado para o servidor de autenticação do e-CAC
  * e retorna um token de sessão válido
  */
 export async function autenticarEcacReal(credentials: EcacCredentials): Promise<EcacAuthResponse> {
   try {
-    console.log('Iniciando autenticação real no e-CAC');
+    console.log('Iniciando autenticação no e-CAC');
     
     if (!credentials.certificado) {
       throw new Error('Certificado digital não fornecido');
@@ -48,33 +48,11 @@ export async function autenticarEcacReal(credentials: EcacCredentials): Promise<
     }
     
     // Em produção, aqui faríamos uma chamada real para a API do e-CAC
-    // Como não temos acesso direto, vamos simular com verificações realistas
-    
-    if (credentials.certificado.arquivo.length < 100) {
-      throw new Error('Certificado digital inválido. O conteúdo do certificado é muito curto.');
-    }
-    
-    if (credentials.certificado.senha.length < 4) {
-      throw new Error('Senha do certificado muito curta. Deve ter pelo menos 4 caracteres.');
-    }
-    
-    // Simular latência de rede
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simular resposta de sucesso (em produção, processaríamos a resposta real)
-    console.log('Autenticação no e-CAC realizada com sucesso');
-    
-    // Gerar um token de sessão simulado
-    const sessionToken = `ecac-${btoa(Date.now().toString())}-${Math.random().toString(36).substring(2, 10)}`;
-    
-    // Armazenar token para uso em outras requisições
-    localStorage.setItem('ecac-session-token', sessionToken);
-    localStorage.setItem('ecac-session-expiry', new Date(Date.now() + 30 * 60 * 1000).toISOString());
+    console.log('Requisição para autenticação no e-CAC seria enviada aqui');
     
     return {
-      success: true,
-      sessionToken: sessionToken,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+      success: false,
+      error: 'Integração com e-CAC ainda não implementada'
     };
   } catch (error: any) {
     console.error('Erro na autenticação do e-CAC:', error);
@@ -129,79 +107,12 @@ export async function obterCertidaoNegativaReal(cnpj: string): Promise<CertidaoN
     }
     
     const token = obterTokenSessaoEcac();
-    console.log(`Consultando CND para CNPJ ${cnpj} com token ${token?.substring(0, 10)}...`);
-    
-    // Simular requisição à API real
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    console.log(`Consultando CND para CNPJ ${cnpj}`);
     
     // Em produção, faríamos uma requisição real com o token da sessão
-    // Como exemplo, vamos simular respostas mais realistas baseadas no CNPJ
+    console.log('Requisição para obter CND seria enviada aqui');
     
-    // Usar os dígitos do CNPJ para determinar o status (para fins de simulação)
-    const cnpjSemFormatacao = cnpj.replace(/[^\d]/g, '');
-    const ultimoDigito = parseInt(cnpjSemFormatacao.charAt(cnpjSemFormatacao.length - 1));
-    
-    // Simular diferentes situações com base no último dígito do CNPJ
-    if (ultimoDigito < 3) {
-      // CNPJ com pendências
-      return {
-        status: 'pendente',
-        dataEmissao: new Date().toISOString().split('T')[0],
-        dataValidade: 'N/A',
-        numero: `CND${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`,
-        pendencias: [
-          {
-            tipo: 'IRPJ',
-            descricao: 'Imposto de Renda Pessoa Jurídica pendente',
-            valor: Math.random() * 10000,
-            dataVencimento: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          },
-          {
-            tipo: 'CSLL',
-            descricao: 'Contribuição Social sobre Lucro Líquido pendente',
-            valor: Math.random() * 2500,
-            dataVencimento: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          }
-        ]
-      };
-    } else if (ultimoDigito < 7) {
-      // CNPJ regular
-      return {
-        status: 'regular',
-        dataEmissao: new Date().toISOString().split('T')[0],
-        dataValidade: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        numero: `CND${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`,
-        url: 'https://exemplo.gov.br/cnd.pdf'
-      };
-    } else {
-      // CNPJ irregular
-      return {
-        status: 'irregular',
-        dataEmissao: new Date().toISOString().split('T')[0],
-        dataValidade: 'N/A',
-        numero: `CND${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`,
-        pendencias: [
-          {
-            tipo: 'DCTF',
-            descricao: 'Declaração de Débitos e Créditos Tributários Federais não entregue',
-            valor: 0,
-            dataVencimento: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          },
-          {
-            tipo: 'PIS',
-            descricao: 'Programa de Integração Social não recolhido',
-            valor: Math.random() * 5000,
-            dataVencimento: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          },
-          {
-            tipo: 'COFINS',
-            descricao: 'Contribuição para o Financiamento da Seguridade Social não recolhida',
-            valor: Math.random() * 8000,
-            dataVencimento: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-          }
-        ]
-      };
-    }
+    return null;
   } catch (error: any) {
     console.error('Erro ao obter Certidão Negativa:', error);
     toast({

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { ClientSummaryCard } from "@/components/dashboard/ClientSummaryCard";
 import { FiscalCalendar } from "@/components/dashboard/FiscalCalendar";
@@ -8,64 +8,79 @@ import { DocumentsTable } from "@/components/dashboard/DocumentsTable";
 import { ContabilAlerts } from '@/components/alerts/ContabilAlerts';
 import { FiscalDeadlineAlerts } from '@/components/alerts/FiscalDeadlineAlerts';
 import { BarChart, FileText, DollarSign, Calendar, Building, Inbox, CheckCircle } from "lucide-react";
-
-// Tipos para dados do dashboard
-type ClientStatus = 'regular' | 'pendente' | 'atrasado';
-type DocumentStatus = 'pendente' | 'recebido' | 'processado' | 'arquivado';
-type ObligationStatus = 'pendente' | 'atrasado' | 'concluído';
-type PriorityLevel = 'alta' | 'média' | 'baixa';
-
-// Interface para clientes
-interface Client {
-  name: string;
-  status: ClientStatus;
-  documentsPending: number;
-  upcomingDeadlines: number;
-}
-
-// Interface para eventos/obrigações
-interface ObligationEvent {
-  id: string;
-  title: string;
-  client: string;
-  dueDate: string;
-  status: ObligationStatus;
-  priority: PriorityLevel;
-}
-
-// Interface para documentos
-interface Document {
-  id: string;
-  name: string;
-  client: string;
-  type: string;
-  date: string;
-  status: DocumentStatus;
-}
-
-// Dados de exemplo
-const clients: Client[] = [
-  { name: 'Empresa ABC Ltda', status: 'regular', documentsPending: 2, upcomingDeadlines: 3 },
-  { name: 'XYZ Comércio S.A.', status: 'pendente', documentsPending: 5, upcomingDeadlines: 2 },
-  { name: 'Tech Solutions', status: 'atrasado', documentsPending: 7, upcomingDeadlines: 4 },
-];
-
-const fiscalEvents: ObligationEvent[] = [
-  { id: '1', title: 'DARF PIS/COFINS', client: 'Empresa ABC Ltda', dueDate: '25/05/2025', status: 'pendente', priority: 'alta' },
-  { id: '2', title: 'DARF IRPJ', client: 'XYZ Comércio S.A.', dueDate: '30/05/2025', status: 'pendente', priority: 'média' },
-  { id: '3', title: 'GFIP', client: 'Tech Solutions', dueDate: '20/05/2025', status: 'atrasado', priority: 'alta' },
-  { id: '4', title: 'ICMS-ST', client: 'XYZ Comércio S.A.', dueDate: '15/05/2025', status: 'concluído', priority: 'baixa' }
-];
-
-const recentDocuments: Document[] = [
-  { id: '1', name: 'Balanço Patrimonial', client: 'Empresa ABC Ltda', type: 'Contábil', date: '10/05/2025', status: 'processado' },
-  { id: '2', name: 'Notas Fiscais Abril', client: 'XYZ Comércio S.A.', type: 'Fiscal', date: '05/05/2025', status: 'recebido' },
-  { id: '3', name: 'Folha de Pagamento', client: 'Tech Solutions', type: 'RH', date: '01/05/2025', status: 'pendente' },
-  { id: '4', name: 'Extrato Bancário', client: 'Empresa ABC Ltda', type: 'Financeiro', date: '30/04/2025', status: 'arquivado' },
-];
+import { supabase } from '@/integrations/supabase/client';
+import { fetchObrigacoesFiscais } from '@/services/supabase/obrigacoesService';
+import { fetchClientDocuments } from '@/services/supabase/documentosService';
 
 export function DashboardView() {
   const { isAdmin, isAccountant } = useAuth();
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [fiscalEvents, setFiscalEvents] = useState<any[]>([]);
+  const [recentDocuments, setRecentDocuments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [clienteAtivo, setClienteAtivo] = useState<string | null>(null);
+  
+  // Carregar dados reais do Supabase
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Carregar clientes
+        const { data: clientesData, error: clientesError } = await supabase
+          .from('accounting_clients')
+          .select('*');
+          
+        if (!clientesError && clientesData) {
+          setClientes(clientesData.map(cliente => ({
+            name: cliente.name,
+            status: 'regular' as 'regular' | 'pendente' | 'atrasado',
+            documentsPending: 0,
+            upcomingDeadlines: 0,
+            id: cliente.id
+          })));
+          
+          // Se tiver clientes, define o primeiro como ativo
+          if (clientesData.length > 0) {
+            setClienteAtivo(clientesData[0].id);
+          }
+        } else {
+          setClientes([]);
+        }
+        
+        // Carregar obrigações fiscais
+        const obrigacoesFiscais = await fetchObrigacoesFiscais();
+        setFiscalEvents(obrigacoesFiscais.map(obr => ({
+          id: obr.id?.toString() || '',
+          title: obr.nome || '',
+          client: obr.empresa || '',
+          dueDate: obr.prazo || '',
+          status: obr.status || 'pendente',
+          priority: obr.prioridade || 'media'
+        })));
+        
+        // Carregar documentos recentes
+        if (clienteAtivo) {
+          const documentos = await fetchClientDocuments(clienteAtivo, 4);
+          setRecentDocuments(documentos.map(doc => ({
+            id: doc.id || '',
+            name: doc.title || '',
+            client: clientesData?.find(c => c.id === clienteAtivo)?.name || '',
+            type: doc.type || '',
+            date: doc.date || '',
+            status: doc.status || 'pendente'
+          })));
+        } else {
+          setRecentDocuments([]);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [clienteAtivo]);
   
   // Dashboard para contador (visualização mais completa)
   const renderAccountantDashboard = () => (
@@ -77,44 +92,50 @@ export function DashboardView() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard 
           title="Total de Clientes" 
-          value="42" 
+          value={clientes.length.toString()} 
           icon={<Building className="h-5 w-5" />} 
-          trend={{ value: 5, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Obrigações Pendentes" 
-          value="18" 
+          value={fiscalEvents.filter(e => e.status === 'pendente').length.toString()} 
           icon={<Calendar className="h-5 w-5" />}
-          trend={{ value: 12, isPositive: false }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Documentos Processados" 
-          value="283" 
+          value={recentDocuments.filter(d => d.status === 'processado').length.toString()} 
           icon={<FileText className="h-5 w-5" />}
-          trend={{ value: 8, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Faturamento Mensal" 
-          value="R$ 45.780,00" 
+          value="R$ 0,00" 
           icon={<DollarSign className="h-5 w-5" />} 
-          trend={{ value: 15, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
       </div>
       
       {/* Clientes com pendências */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Clientes com Pendências</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {clients.map((client, index) => (
-            <ClientSummaryCard
-              key={index}
-              name={client.name}
-              status={client.status}
-              documentsPending={client.documentsPending}
-              upcomingDeadlines={client.upcomingDeadlines}
-            />
-          ))}
-        </div>
+        <h2 className="text-lg font-semibold mb-4">Clientes</h2>
+        {loading ? (
+          <p>Carregando clientes...</p>
+        ) : clientes.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {clientes.map((client, index) => (
+              <ClientSummaryCard
+                key={index}
+                name={client.name}
+                status={client.status}
+                documentsPending={client.documentsPending}
+                upcomingDeadlines={client.upcomingDeadlines}
+              />
+            ))}
+          </div>
+        ) : (
+          <p>Nenhum cliente cadastrado</p>
+        )}
       </div>
       
       {/* Calendário fiscal e documentos recentes */}
@@ -134,39 +155,39 @@ export function DashboardView() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard 
           title="Docs. Pendentes" 
-          value="3" 
+          value="0" 
           icon={<Inbox className="h-5 w-5" />} 
-          trend={{ value: 2, isPositive: false }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Obrigações Pendentes" 
-          value="2" 
+          value="0" 
           icon={<Calendar className="h-5 w-5" />}
           trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Docs. Enviados" 
-          value="27" 
+          value="0" 
           icon={<FileText className="h-5 w-5" />}
-          trend={{ value: 8, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Obrigações Cumpridas" 
-          value="15" 
+          value="0" 
           icon={<CheckCircle className="h-5 w-5" />} 
-          trend={{ value: 15, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
       </div>
       
-      {/* Calendário fiscal e documentos recentes para o cliente */}
+      {/* Calendário fiscal e documentos recentes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FiscalCalendar events={fiscalEvents.filter(e => e.client === 'Empresa ABC Ltda')} />
-        <DocumentsTable documents={recentDocuments.filter(d => d.client === 'Empresa ABC Ltda')} />
+        <FiscalCalendar events={[]} />
+        <DocumentsTable documents={[]} />
       </div>
     </div>
   );
   
-  // Dashboard para administrador (visualização completa com foco em métricas da empresa)
+  // Dashboard para administrador
   const renderAdminDashboard = () => (
     <div className="space-y-6">
       <ContabilAlerts />
@@ -176,50 +197,60 @@ export function DashboardView() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard 
           title="Total de Clientes" 
-          value="42" 
+          value={clientes.length.toString()} 
           icon={<Building className="h-5 w-5" />} 
-          trend={{ value: 5, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Faturamento Mensal" 
-          value="R$ 45.780,00" 
+          value="R$ 0,00" 
           icon={<DollarSign className="h-5 w-5" />} 
-          trend={{ value: 15, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Obrigações Atrasadas" 
-          value="7" 
+          value={fiscalEvents.filter(e => e.status === 'atrasado').length.toString()} 
           icon={<Calendar className="h-5 w-5" />}
-          trend={{ value: 2, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
         <MetricCard 
           title="Taxa de Conclusão" 
-          value="94%" 
+          value="0%" 
           icon={<BarChart className="h-5 w-5" />} 
-          trend={{ value: 3, isPositive: true }}
+          trend={{ value: 0, isPositive: true }}
         />
       </div>
       
-      {/* Clientes com pendências e calendário fiscal */}
+      {/* Clientes e calendário fiscal */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-lg font-semibold mb-4">Clientes com Pendências</h2>
-          <div className="space-y-4">
-            {clients.map((client, index) => (
-              <ClientSummaryCard
-                key={index}
-                name={client.name}
-                status={client.status}
-                documentsPending={client.documentsPending}
-                upcomingDeadlines={client.upcomingDeadlines}
-              />
-            ))}
-          </div>
+          <h2 className="text-lg font-semibold mb-4">Clientes</h2>
+          {loading ? (
+            <p>Carregando clientes...</p>
+          ) : clientes.length > 0 ? (
+            <div className="space-y-4">
+              {clientes.map((client, index) => (
+                <ClientSummaryCard
+                  key={index}
+                  name={client.name}
+                  status={client.status}
+                  documentsPending={client.documentsPending}
+                  upcomingDeadlines={client.upcomingDeadlines}
+                />
+              ))}
+            </div>
+          ) : (
+            <p>Nenhum cliente cadastrado</p>
+          )}
         </div>
         <FiscalCalendar events={fiscalEvents} />
       </div>
     </div>
   );
+  
+  if (loading) {
+    return <div>Carregando dados...</div>;
+  }
   
   // Renderizar o dashboard adequado baseado no perfil do usuário
   if (isAdmin) {

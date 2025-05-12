@@ -5,8 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Calendar, Calculator, FileText, CheckCircle, Database } from "lucide-react";
+import { Calculator, FileText, Database } from "lucide-react";
 import { useSupabaseClient } from "@/lib/supabase";
 import { ApuracaoResults } from "@/components/apuracao/ApuracaoResults";
 import { ProcessamentoStatus } from "@/components/apuracao/ProcessamentoStatus";
@@ -22,35 +21,58 @@ const ApuracaoAutomatica = () => {
   const [regimeTributario, setRegimeTributario] = useState("lucro_presumido");
   const supabaseClient = useSupabaseClient();
   
-  // Simular o início do processamento automático
+  // Iniciar o processamento automático
   const iniciarProcessamento = async () => {
     try {
       setProcessando(true);
       setProgress(0);
       setClientesProcessados(0);
       
-      // Simular busca de clientes
-      const clientes = [
-        { id: 1, nome: "Empresa ABC Ltda", cnpj: "12.345.678/0001-99" },
-        { id: 2, nome: "XYZ Comércio S.A.", cnpj: "98.765.432/0001-10" }, 
-        { id: 3, nome: "Tech Solutions", cnpj: "45.678.901/0001-23" }
-      ];
+      // Buscar clientes do Supabase
+      const { data: clientes, error } = await supabaseClient
+        .from('accounting_clients')
+        .select('*')
+        .order('name');
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (!clientes || clientes.length === 0) {
+        toast({
+          title: "Nenhum cliente encontrado",
+          description: "Não há clientes cadastrados para processamento.",
+          variant: "destructive"
+        });
+        setProcessando(false);
+        return;
+      }
       
       setTotalClientes(clientes.length);
       
-      // Simular processamento para cada cliente
+      // Processar cada cliente
       const resultadosProcessamento = [];
       for (const cliente of clientes) {
-        // Simular tempo de processamento
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Gerar dados fictícios baseados no regime tributário
-        const resultado = gerarResultadoSimulado(cliente, regimeTributario);
-        resultadosProcessamento.push(resultado);
-        
-        // Atualizar progresso
-        setClientesProcessados(prev => prev + 1);
-        setProgress(Math.round(((resultadosProcessamento.length) / clientes.length) * 100));
+        try {
+          // Em produção, aqui seria feita a chamada para o serviço de apuração real
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulação de tempo de processamento
+          
+          // Informação básica sobre o processamento
+          const resultado = {
+            cliente: cliente,
+            trimestre: "1° Trimestre/2025",
+            status: "Processado",
+            timestamp: new Date().toISOString()
+          };
+          
+          resultadosProcessamento.push(resultado);
+          
+          // Atualizar progresso
+          setClientesProcessados(prev => prev + 1);
+          setProgress(Math.round(((resultadosProcessamento.length) / clientes.length) * 100));
+        } catch (clienteError) {
+          console.error(`Erro ao processar cliente ${cliente.name}:`, clienteError);
+        }
       }
       
       // Finalizar processamento
@@ -59,7 +81,7 @@ const ApuracaoAutomatica = () => {
       
       toast({
         title: "Processamento concluído",
-        description: `${clientes.length} empresas foram processadas com sucesso.`,
+        description: `${resultadosProcessamento.length} empresas foram processadas com sucesso.`,
       });
     } catch (error) {
       console.error("Erro no processamento:", error);
@@ -71,27 +93,6 @@ const ApuracaoAutomatica = () => {
     } finally {
       setProcessando(false);
     }
-  };
-  
-  // Função para gerar resultados simulados
-  const gerarResultadoSimulado = (cliente: any, regime: string) => {
-    // Valores fictícios para demonstração
-    const receita = Math.random() * 1000000 + 100000;
-    const aliquota = regime === "lucro_presumido" ? 0.08 : 0.15;
-    const baseCalculo = regime === "lucro_presumido" ? receita * 0.32 : receita * 0.8;
-    const imposto = baseCalculo * aliquota;
-    
-    return {
-      cliente: cliente,
-      trimestre: "1° Trimestre/2025",
-      receita: receita.toFixed(2),
-      baseCalculo: baseCalculo.toFixed(2),
-      aliquota: (aliquota * 100).toFixed(2) + "%",
-      imposto: imposto.toFixed(2),
-      status: Math.random() > 0.2 ? "Processado" : "Pendente de Confirmação",
-      documentos: Math.floor(Math.random() * 50) + 10,
-      timestamp: new Date().toISOString()
-    };
   };
 
   return (
