@@ -48,6 +48,53 @@ export type Database = {
         }
         Relationships: []
       }
+      accounting_firm_subscriptions: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          firm_id: string | null
+          id: string
+          monthly_fee: number
+          plan_type: string
+          start_date: string
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          firm_id?: string | null
+          id?: string
+          monthly_fee: number
+          plan_type: string
+          start_date?: string
+          status: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          firm_id?: string | null
+          id?: string
+          monthly_fee?: number
+          plan_type?: string
+          start_date?: string
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_firm_subscriptions_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_access_tokens: {
         Row: {
           client_id: string
@@ -183,6 +230,50 @@ export type Database = {
           {
             foreignKeyName: "employees_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firm_monthly_statistics: {
+        Row: {
+          active_clients: number
+          ai_queries_count: number
+          created_at: string
+          documents_processed: number
+          firm_id: string | null
+          id: string
+          month: string
+          revenue_amount: number
+          updated_at: string
+        }
+        Insert: {
+          active_clients?: number
+          ai_queries_count?: number
+          created_at?: string
+          documents_processed?: number
+          firm_id?: string | null
+          id?: string
+          month: string
+          revenue_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          active_clients?: number
+          ai_queries_count?: number
+          created_at?: string
+          documents_processed?: number
+          firm_id?: string | null
+          id?: string
+          month?: string
+          revenue_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_monthly_statistics_firm_id_fkey"
+            columns: ["firm_id"]
             isOneToOne: false
             referencedRelation: "accounting_clients"
             referencedColumns: ["id"]
