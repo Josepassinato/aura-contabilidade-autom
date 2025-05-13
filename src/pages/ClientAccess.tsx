@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
 
 const ClientAccess = () => {
   const { isAuthenticated, isAccountant, isAdmin } = useAuth();
@@ -35,6 +36,15 @@ const ClientAccess = () => {
   if (isAuthenticated && isAccountantOrAdmin) {
     return (
       <div className="container max-w-4xl py-8">
+        <div className="mb-6">
+          <Button variant="ghost" size="sm" asChild className="flex items-center">
+            <Link to="/">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para o painel principal
+            </Link>
+          </Button>
+        </div>
+        
         <h1 className="text-3xl font-bold mb-8">Acesso de Clientes</h1>
         
         <Tabs defaultValue="form">
