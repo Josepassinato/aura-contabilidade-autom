@@ -5,7 +5,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const { isAuthenticated, navigateToLogin } = useAuth();
+  const navigate = useNavigate();
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
@@ -29,7 +30,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6 text-muted-foreground">Você precisa fazer login para acessar esta página</p>
           <Button 
-            onClick={() => navigateToLogin()} 
+            onClick={() => {
+              console.log("Redirecionando para login...");
+              navigate("/login");
+            }} 
             size="lg"
           >
             Ir para o Login

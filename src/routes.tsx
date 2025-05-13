@@ -13,6 +13,7 @@ import UsageMetrics from "@/pages/admin/UsageMetrics";
 import Settings from "@/pages/Settings";
 import RelatoriosIA from "@/pages/RelatoriosIA";
 import ClientAccess from "@/pages/ClientAccess";
+import ClientPortal from "@/pages/ClientPortal";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -68,6 +69,14 @@ const routes = createBrowserRouter([
   {
     path: "/client-access",
     element: <ClientAccess />
+  },
+  {
+    path: "/client-portal",
+    element: <ClientPortal />
+  },
+  {
+    path: "/client-portal/:clientId",
+    element: <ClientPortal />
   }
 ]);
 

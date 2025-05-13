@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -18,6 +18,7 @@ const ClientPortal = () => {
   const [clientInfo, setClientInfo] = useState<{ id: string; name: string; cnpj: string } | null>(null);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
   useEffect(() => {
@@ -44,8 +45,8 @@ const ClientPortal = () => {
     sessionStorage.removeItem('client_name');
     sessionStorage.removeItem('client_cnpj');
     
-    // Redirecionar para a página de login
-    setIsAuthenticated(false);
+    // Redirecionar para a página de login de cliente
+    navigate("/client-access");
     
     toast({
       title: "Sessão encerrada",
