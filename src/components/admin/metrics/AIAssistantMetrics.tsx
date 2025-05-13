@@ -31,6 +31,7 @@ export function AIAssistantMetrics({ isLoading }: AIAssistantMetricsProps) {
   };
 
   const stats = getOpenAIStats();
+  const { isConfigured, config } = useOpenAIConfig();
   
   // Mock data for demonstration
   const aiData = {
@@ -127,18 +128,4 @@ export function AIAssistantMetrics({ isLoading }: AIAssistantMetricsProps) {
       </div>
     </div>
   );
-}
-
-function useOpenAIConfig() {
-  return {
-    isConfigured: true,
-    config: {
-      model: 'gpt-4o-mini',
-      usage: {
-        totalTokens: 125482,
-        requests: 387,
-        lastReset: new Date().toISOString()
-      }
-    }
-  };
 }

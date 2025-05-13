@@ -32,7 +32,7 @@ export function AccountantSection() {
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/clients"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/clients"}>
                 <a href="/clients">
                   <Building className="h-4 w-4" />
                   <span>Clientes</span>
@@ -41,7 +41,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/obrigacoes-fiscais"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/obrigacoes-fiscais"}>
                 <a href="/obrigacoes-fiscais">
                   <Calendar className="h-4 w-4" />
                   <span>Obrigações Fiscais</span>
@@ -50,7 +50,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/guias-fiscais"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/guias-fiscais"}>
                 <a href="/guias-fiscais">
                   <FileText className="h-4 w-4" />
                   <span>Guias Fiscais</span>
@@ -59,7 +59,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/folha-pagamento"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/folha-pagamento"}>
                 <a href="/folha-pagamento">
                   <CreditCard className="h-4 w-4" />
                   <span>Folha de Pagamento</span>
@@ -68,7 +68,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/calculos-fiscais"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/calculos-fiscais"}>
                 <a href="/calculos-fiscais">
                   <Calculator className="h-4 w-4" />
                   <span>Cálculos Fiscais</span>
@@ -84,7 +84,7 @@ export function AccountantSection() {
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/colaboradores"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/colaboradores"}>
                 <a href="/colaboradores">
                   <Users className="h-4 w-4" />
                   <span>Colaboradores</span>
@@ -93,7 +93,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/admin/business-analytics"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/admin/business-analytics"}>
                 <a href="/admin/business-analytics">
                   <BarChart3 className="h-4 w-4" />
                   <span>Análise de Negócio</span>
@@ -102,7 +102,7 @@ export function AccountantSection() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton asChild active={currentPath === "/admin/usage-metrics"}>
+              <SidebarMenuButton asChild isActive={currentPath === "/admin/usage-metrics"}>
                 <a href="/admin/usage-metrics">
                   <LineChart className="h-4 w-4" />
                   <span>Métricas de Uso</span>
