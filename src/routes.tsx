@@ -1,5 +1,5 @@
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -32,7 +32,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Routes that should have the sidebar
 const routesWithSidebar = [
   {
-    path: '/',
+    path: '/dashboard',
     element: <Index />
   },
   {
@@ -152,6 +152,10 @@ const routesWithoutSidebar = [
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: '/dashboard',
     element: <DashboardLayout />,
     errorElement: <NotFound />,
     children: routesWithSidebar

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,7 +51,7 @@ const Login = () => {
     // If already authenticated, redirect based on role
     if (isAuthenticated) {
       if (isAccountant) {
-        navigate('/');
+        navigate('/dashboard');
       } else if (isClient) {
         navigate('/client-portal');
       }
