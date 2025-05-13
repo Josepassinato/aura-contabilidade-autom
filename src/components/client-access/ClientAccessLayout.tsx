@@ -34,7 +34,7 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
           <p className="text-muted-foreground mt-2">Portal de acesso ao cliente</p>
         </div>
         
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6">
           <Button 
             variant="destructive" 
             size="sm" 
@@ -43,16 +43,6 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sair
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex items-center"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Voltar para o login geral
           </Button>
         </div>
         
