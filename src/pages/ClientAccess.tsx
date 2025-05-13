@@ -1,10 +1,11 @@
+
 import React, { useEffect } from "react";
 import { ClientAccessForm } from "@/components/client-access/ClientAccessForm";
 import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
 import { ClientTokenManager } from "@/components/client-access/ClientTokenManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth";
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
@@ -33,7 +34,7 @@ const ClientAccess = () => {
   };
   
   const handleBackToMain = () => {
-    // Force navigation to main dashboard
+    // Navegação direta para o dashboard principal
     window.location.href = '/';
   };
   

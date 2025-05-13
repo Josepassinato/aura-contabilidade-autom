@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,10 +8,8 @@ interface ClientAccessLayoutProps {
 }
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
-  const navigate = useNavigate();
-  
   const handleBackToLogin = () => {
-    // Force navigation to login page
+    // Navegação direta para a página de login usando window.location
     window.location.href = '/login';
   };
   
