@@ -231,7 +231,7 @@ const IntegracoesGov = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <GanttChart className="h-5 w-5 text-primary" />
-                  <CardTitle>Status das Integrações</CardTitle>
+                  <CardTitle>Empresa</CardTitle>
                 </div>
                 <CardDescription>
                   Visualize o status atual das integrações configuradas
