@@ -8,6 +8,7 @@ import TourController from '@/components/dashboard/TourController';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -15,13 +16,25 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
   };
 
+  // Mostrar um indicador de carregamento enquanto verifica a autenticação
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+  
   // Se não estiver autenticado, mostrar botão para ir para o login
   if (!isAuthenticated) {
     return (

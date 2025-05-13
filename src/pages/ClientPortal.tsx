@@ -12,19 +12,22 @@ import { TaxObligations } from "@/components/client-portal/TaxObligations";
 import { ClientPortalTabs } from "@/components/client-portal/ClientPortalTabs";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { useAuth } from "@/contexts/auth";
+import { Loader2 } from "lucide-react";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [clientInfo, setClientInfo] = useState<{ id: string; name: string; cnpj: string } | null>(null);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
-  const { logout } = useAuth();
+  const { enhancedLogout } = useAuth();
 
   useEffect(() => {
     // Verificar se o cliente está autenticado
+    setIsLoading(true);
     const storedClientId = sessionStorage.getItem('client_id');
     const storedClientName = sessionStorage.getItem('client_name');
     const storedClientCnpj = sessionStorage.getItem('client_cnpj');
@@ -39,15 +42,12 @@ const ClientPortal = () => {
     } else {
       setIsAuthenticated(false);
     }
+    setIsLoading(false);
   }, [clientId]);
 
-  const handleLogout = async () => {
-    try {
-      // Clean auth state if user is logged in
-      await logout?.();
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
+  const handleLogout = () => {
+    // Use enhancedLogout para limpar o estado de autenticação
+    enhancedLogout();
     
     // Limpar dados da sessão do cliente
     sessionStorage.removeItem('client_id');
@@ -74,9 +74,16 @@ const ClientPortal = () => {
     }
   };
 
-  // Se o estado de autenticação ainda não foi determinado, mostrar uma tela de carregamento
-  if (isAuthenticated === null) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  // Mostrar tela de carregamento enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
   }
   
   // Se não estiver autenticado, redirecionar para a página de acesso

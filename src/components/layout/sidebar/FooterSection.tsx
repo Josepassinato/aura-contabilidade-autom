@@ -6,17 +6,15 @@ import { Settings, LogOut, HelpCircle, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function FooterSection() {
-  const { isAuthenticated, logout, navigateToLogin } = useAuth();
+  const { isAuthenticated, enhancedLogout } = useAuth();
   const navigate = useNavigate();
   
-  const handleLogout = async () => {
-    try {
-      await logout?.();
-      navigate('/login');
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      window.location.href = '/login';
-    }
+  const handleSettings = () => {
+    navigate('/settings');
+  };
+  
+  const handleHelp = () => {
+    window.open('https://docs.contaflix.com.br', '_blank');
   };
   
   const handleLogin = () => {
@@ -27,7 +25,7 @@ export function FooterSection() {
     <SidebarFooter>
       <SidebarMenuItem>
         <SidebarMenuButton
-          onClick={() => navigate('/settings')}
+          onClick={handleSettings}
           tooltip="Configurações"
         >
           <Settings className="h-5 w-5" />
@@ -37,7 +35,7 @@ export function FooterSection() {
       
       <SidebarMenuItem>
         <SidebarMenuButton
-          onClick={() => window.open('https://docs.contaflix.com.br', '_blank')}
+          onClick={handleHelp}
           tooltip="Ajuda"
         >
           <HelpCircle className="h-5 w-5" />
@@ -48,7 +46,7 @@ export function FooterSection() {
       {isAuthenticated ? (
         <SidebarMenuItem>
           <SidebarMenuButton
-            onClick={handleLogout}
+            onClick={enhancedLogout}
             tooltip="Sair"
           >
             <LogOut className="h-5 w-5" />

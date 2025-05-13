@@ -10,23 +10,11 @@ interface ClientAccessLayoutProps {
 }
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
-  const { logout } = useAuth();
+  const { enhancedLogout } = useAuth();
   const navigate = useNavigate();
   
-  const handleLogout = async () => {
-    console.log('Logout button clicked');
-    
-    try {
-      // Primeiro executamos o logout para limpar o estado
-      await logout?.();
-      console.log('Logout successful, redirecting to login page');
-      // Após o logout, redirecionamos para a página de login
-      navigate('/login');
-    } catch (err) {
-      console.error('Logout failed:', err);
-      // Em caso de falha, tentamos redirecionar diretamente
-      window.location.href = '/login';
-    }
+  const handleLogout = () => {
+    enhancedLogout();
   };
   
   return (
