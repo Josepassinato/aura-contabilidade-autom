@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   apiKey: z.string().min(1, { message: "A chave API é obrigatória" }),
@@ -51,72 +52,76 @@ export function APIConfigForm() {
     defaultValues: storedValues,
   });
 
-  function onSubmit(data: FormValues) {
-    // Store values in localStorage
-    localStorage.setItem("openai-api-key", data.apiKey);
-    localStorage.setItem("openai-model", data.model);
-    localStorage.setItem("openai-temperature", data.temperature.toString());
-    localStorage.setItem("openai-max-tokens", data.maxTokens.toString());
+  async function onSubmit(data: FormValues) {
+    try {
+      // Em produção, isso enviaria a chave API para o Supabase Edge Function
+      // para ser armazenada como segredo
+      const { error } = await supabase.functions.invoke("save-openai-config", {
+        body: {
+          apiKey: data.apiKey,
+          config: {
+            model: data.model,
+            temperature: data.temperature,
+            maxTokens: data.maxTokens,
+          }
+        }
+      });
 
-    toast({
-      title: "Configuração salva",
-      description: "As configurações da API OpenAI foram atualizadas com sucesso.",
-    });
+      if (error) {
+        throw new Error("Erro ao salvar configuração no Supabase");
+      }
+
+      // Armazenar apenas configurações não sensíveis no localStorage para uso temporário
+      localStorage.setItem("openai-model", data.model);
+      localStorage.setItem("openai-temperature", data.temperature.toString());
+      localStorage.setItem("openai-max-tokens", data.maxTokens.toString());
+
+      toast({
+        title: "Configuração salva",
+        description: "As configurações da API OpenAI foram atualizadas com sucesso no Supabase.",
+      });
+    } catch (error) {
+      console.error("Erro ao salvar configurações:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar as configurações no Supabase.",
+        variant: "destructive"
+      });
+    }
   }
 
-  // Função para testar a conexão com a API da OpenAI
+  // Função para testar a conexão com a API da OpenAI através do Supabase
   const testApiConnection = async () => {
     setIsTesting(true);
     setTestResult(null);
 
-    const apiKey = form.getValues("apiKey");
-    const model = form.getValues("model");
-    
-    if (!apiKey) {
-      setTestResult({
-        success: false,
-        message: "Por favor, insira uma chave de API para testar a conexão."
-      });
-      setIsTesting(false);
-      return;
-    }
-
     try {
-      // Chamada simples para a API da OpenAI para verificar se a chave é válida
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [{
-            role: "user",
-            content: "Teste de conexão. Responda apenas com 'Conexão OK'."
-          }],
-          max_tokens: 10
-        })
+      // Chamar uma Edge Function do Supabase que testa a conexão com a OpenAI
+      const { data, error } = await supabase.functions.invoke("test-openai-connection", {
+        body: { apiKey: form.getValues("apiKey"), model: form.getValues("model") }
       });
 
-      if (response.ok) {
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.success) {
         setTestResult({
           success: true,
-          message: "Conexão estabelecida com sucesso! A API da OpenAI está respondendo corretamente."
+          message: "Conexão estabelecida com sucesso via Supabase! A API da OpenAI está respondendo corretamente."
         });
         toast({
           title: "Conexão bem-sucedida",
-          description: "A API da OpenAI está conectada e funcionando corretamente."
+          description: "A API da OpenAI está conectada e funcionando corretamente via Supabase."
         });
       } else {
-        const errorData = await response.json();
         setTestResult({
           success: false,
-          message: `Erro na conexão: ${errorData.error?.message || "Erro desconhecido"}`
+          message: `Erro na conexão: ${data.message || "Erro desconhecido"}`
         });
         toast({
           title: "Falha na conexão",
-          description: errorData.error?.message || "Erro desconhecido ao conectar com a API",
+          description: data.message || "Erro ao conectar com a API via Supabase",
           variant: "destructive"
         });
       }
@@ -124,11 +129,11 @@ export function APIConfigForm() {
       console.error("Erro ao testar a conexão:", error);
       setTestResult({
         success: false,
-        message: `Erro ao testar a conexão: ${error instanceof Error ? error.message : "Erro desconhecido"}`
+        message: `Erro ao testar a conexão via Supabase: ${error instanceof Error ? error.message : "Erro desconhecido"}`
       });
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao tentar se conectar à API. Verifique o console para mais detalhes.",
+        description: "Ocorreu um erro ao tentar se conectar à API via Supabase.",
         variant: "destructive"
       });
     } finally {
@@ -139,9 +144,9 @@ export function APIConfigForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium">Configuração da API OpenAI</h2>
+        <h2 className="text-lg font-medium">Configuração da API OpenAI (via Supabase)</h2>
         <p className="text-sm text-muted-foreground">
-          Configure os parâmetros de conexão com a API da OpenAI para utilização do assistente de voz
+          Configure os parâmetros de conexão com a API da OpenAI através do Supabase para utilização do assistente de voz
           e análise de dados contábeis.
         </p>
       </div>
@@ -153,7 +158,7 @@ export function APIConfigForm() {
             name="apiKey"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Chave API da OpenAI</FormLabel>
+                <FormLabel>Chave API da OpenAI (Supabase Secret)</FormLabel>
                 <FormControl>
                   <Input 
                     type="password" 
@@ -162,7 +167,7 @@ export function APIConfigForm() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Insira sua chave API da OpenAI. Você pode obter uma em{" "}
+                  Insira sua chave API da OpenAI. Será armazenada como segredo no Supabase. Obtenha uma em{" "}
                   <a 
                     href="https://platform.openai.com/api-keys" 
                     target="_blank" 
