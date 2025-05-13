@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 
 interface ClientAccessLayoutProps {
@@ -34,9 +34,19 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
           <p className="text-muted-foreground mt-2">Portal de acesso ao cliente</p>
         </div>
         
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <Button 
-            variant="ghost" 
+            variant="destructive" 
+            size="sm" 
+            className="flex items-center"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
+          
+          <Button 
+            variant="outline" 
             size="sm" 
             className="flex items-center"
             onClick={handleLogout}
