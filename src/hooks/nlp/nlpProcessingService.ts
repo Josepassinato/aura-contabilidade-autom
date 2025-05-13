@@ -1,6 +1,6 @@
-
 import { NLPIntent, NLPResult } from './types';
 import { toast } from '@/components/ui/use-toast';
+import { trackTokenUsage } from './tokenUsageService';
 
 export const processNaturalLanguage = async (text: string): Promise<NLPResult> => {
   try {
@@ -9,6 +9,9 @@ export const processNaturalLanguage = async (text: string): Promise<NLPResult> =
     if (!apiKey) {
       throw new Error("API OpenAI não configurada");
     }
+    
+    // Get the current model being used
+    const model = localStorage.getItem("openai-model") || "gpt-4o-mini";
     
     // Simular latência de rede/processamento 
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -87,6 +90,15 @@ export const processNaturalLanguage = async (text: string): Promise<NLPResult> =
       entities,
       originalText: text
     };
+    
+    // Estimate tokens used: approximately 1 token per 4 characters
+    const estimatedInputTokens = Math.ceil(text.length / 4);
+    // Estimate output tokens based on result data
+    const estimatedOutputTokens = Math.ceil(JSON.stringify(result).length / 4);
+    const totalTokens = estimatedInputTokens + estimatedOutputTokens;
+    
+    // Track token usage with our enhanced tracking service
+    trackTokenUsage(totalTokens, model);
     
     return result;
     
