@@ -39,7 +39,7 @@ export function CommonSection() {
       </SidebarMenuItem>
       
       <SidebarMenuItem>
-        <SidebarMenuButton asChild tooltip="Guias Fiscais">
+        <SidebarMenuButton asChild tooltip="Guias e Documentos Fiscais">
           <Link to="/guias-fiscais">
             <FileText />
             <span>Guias Fiscais</span>
