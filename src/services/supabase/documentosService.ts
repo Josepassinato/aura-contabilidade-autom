@@ -1,8 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { getFileUrl } from "./storageService";
 
 /**
- * Interface para documentos do cliente
+ * Interface for client documents
  */
 export interface ClientDocument {
   id: string;
@@ -12,19 +13,19 @@ export interface ClientDocument {
   size?: number;
   file_path?: string;
   date?: string;
-  status: 'pendente' | 'processado' | 'rejeitado'; // Ensure status is properly typed
+  status: 'pendente' | 'processado' | 'rejeitado';
   created_at?: string;
 }
 
 /**
- * Busca documentos de um cliente
- * @param clientId ID do cliente
- * @param limit Limite de documentos a serem retornados (opcional)
+ * Fetches documents for a client
+ * @param clientId Client ID
+ * @param limit Optional limit of documents to return
  */
 export async function fetchClientDocuments(clientId: string, limit?: number): Promise<ClientDocument[]> {
   try {
     if (!clientId) {
-      throw new Error("ID do cliente não informado");
+      throw new Error("Client ID not provided");
     }
 
     let query = supabase
@@ -47,9 +48,9 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
       return [];
     }
 
-    // Mapear os dados para o formato esperado pelo componente, garantindo que o status padrão seja 'pendente'
+    // Map data to the expected format for the component, ensuring default status is 'pendente'
     return data.map(doc => {
-      // Verificar se doc.status existe e tem um valor válido
+      // Check if doc.status exists and has a valid value
       let docStatus: 'pendente' | 'processado' | 'rejeitado' = 'pendente';
       if (doc.status && ['pendente', 'processado', 'rejeitado'].includes(doc.status)) {
         docStatus = doc.status as 'pendente' | 'processado' | 'rejeitado';
@@ -69,13 +70,13 @@ export async function fetchClientDocuments(clientId: string, limit?: number): Pr
     });
 
   } catch (error) {
-    console.error('Erro ao buscar documentos do cliente:', error);
+    console.error('Error fetching client documents:', error);
     return [];
   }
 }
 
 /**
- * Adiciona um novo documento do cliente
+ * Adds a new client document
  */
 export async function addClientDocument(
   clientId: string,
@@ -89,7 +90,7 @@ export async function addClientDocument(
 ): Promise<string | null> {
   try {
     if (!clientId) {
-      throw new Error("ID do cliente não informado");
+      throw new Error("Client ID not provided");
     }
 
     const { data, error } = await supabase
@@ -102,7 +103,7 @@ export async function addClientDocument(
           type: document.type,
           size: document.size,
           file_path: document.file_path,
-          status: 'pendente' // Definir explicitamente o status como pendente
+          status: 'pendente' // Explicitly set status as pendente
         }
       ])
       .select('id')
@@ -115,7 +116,19 @@ export async function addClientDocument(
     return data?.id || null;
 
   } catch (error) {
-    console.error('Erro ao adicionar documento do cliente:', error);
+    console.error('Error adding client document:', error);
     return null;
   }
 }
+
+/**
+ * Gets a signed URL for viewing a document
+ * @param document The document to view
+ * @returns URL to view the document or null if there was an error
+ */
+export async function getDocumentViewUrl(document: ClientDocument): Promise<string | null> {
+  if (!document.file_path) return null;
+  
+  return getFileUrl(document.file_path);
+}
+

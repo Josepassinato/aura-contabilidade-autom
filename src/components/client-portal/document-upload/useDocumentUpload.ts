@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
+import { uploadFile } from "@/services/supabase/storageService";
 
 export interface FileItem {
   id: string;
@@ -65,19 +66,14 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
     
     try {
       const uploadPromises = files.map(async (fileItem) => {
-        const fileExt = fileItem.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        const filePath = `${clientId}/${documentType}/${fileName}`;
+        // Use the storage service for file uploads
+        const uploadResult = await uploadFile(clientId, fileItem.file, documentType);
         
-        const { error: uploadError, data } = await supabase.storage
-          .from('client-documents')
-          .upload(filePath, fileItem.file);
-          
-        if (uploadError) {
-          throw new Error(`Erro ao fazer upload de ${fileItem.name}: ${uploadError.message}`);
+        if (!uploadResult.success) {
+          throw new Error(`Erro ao fazer upload de ${fileItem.name}: ${uploadResult.error}`);
         }
         
-        // Registrar o documento no banco de dados após upload bem-sucedido
+        // Register the document in the database after successful upload
         const { error: insertError } = await supabase
           .from('client_documents')
           .insert({
@@ -85,8 +81,9 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
             name: fileItem.name,
             type: documentType,
             size: fileItem.size,
-            file_path: filePath,
+            file_path: uploadResult.path,
             status: 'pendente',
+            title: fileItem.name,
             uploaded_at: new Date().toISOString()
           });
           
@@ -97,7 +94,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
         return { success: true, fileName: fileItem.name };
       });
       
-      // Aguardar todos os uploads terminarem
+      // Wait for all uploads to finish
       const results = await Promise.all(uploadPromises.map(p => p.catch(e => ({ success: false, error: e }))));
       
       const successCount = results.filter(r => r.success).length;

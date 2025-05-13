@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
+import { getFileUrl } from "@/services/supabase/storageService";
 
 interface Document {
   id: string;
@@ -25,12 +26,12 @@ export const useClientDocuments = (clientId: string | null) => {
     
     try {
       if (supabase) {
-        // Buscar documentos do cliente no Supabase
+        // Fetch client documents from Supabase
         const { data, error } = await supabase
           .from('client_documents')
           .select('*')
           .eq('client_id', clientId)
-          .order('uploaded_at', { ascending: false });
+          .order('created_at', { ascending: false });
           
         if (error) {
           throw error;
@@ -42,7 +43,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: doc.name,
             type: doc.type,
             size: formatFileSize(doc.size || 0),
-            date: new Date(doc.uploaded_at).toLocaleDateString('pt-BR'),
+            date: new Date(doc.created_at || doc.updated_at).toLocaleDateString('pt-BR'),
             status: doc.status,
             file_path: doc.file_path
           }));
@@ -50,7 +51,7 @@ export const useClientDocuments = (clientId: string | null) => {
           setDocuments(formattedDocs);
         }
       } else {
-        // Fallback para dados mockados quando o Supabase não está disponível
+        // Fallback to mock data when Supabase is not available
         const mockDocuments: Document[] = [
           { id: '1', name: 'NFe-2025-001245.pdf', type: 'nota-fiscal', size: '420 KB', date: '15/05/2025', status: 'processado' },
           { id: '2', name: 'Recibo-Aluguel-Maio.pdf', type: 'recibo', size: '180 KB', date: '10/05/2025', status: 'processado' },
@@ -81,7 +82,7 @@ export const useClientDocuments = (clientId: string | null) => {
   }, [clientId]);
 
   const handleViewDocument = async (document: Document) => {
-    if (!document.file_path || !supabase) {
+    if (!document.file_path) {
       toast({
         title: "Erro ao visualizar documento",
         description: "Não foi possível acessar este documento.",
@@ -91,14 +92,13 @@ export const useClientDocuments = (clientId: string | null) => {
     }
     
     try {
-      const { data, error } = await supabase.storage
-        .from('client-documents')
-        .createSignedUrl(document.file_path, 60); // URL válida por 60 segundos
-        
-      if (error) throw error;
+      // Use the storage service to get a signed URL
+      const signedUrl = await getFileUrl(document.file_path);
       
-      if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank');
+      if (signedUrl) {
+        window.open(signedUrl, '_blank');
+      } else {
+        throw new Error("Não foi possível obter a URL do documento");
       }
     } catch (error) {
       console.error("Erro ao obter URL do documento:", error);
@@ -116,7 +116,7 @@ export const useClientDocuments = (clientId: string | null) => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Filtrar documentos com base no termo de pesquisa
+  // Filter documents based on search term
   const filteredDocuments = documents.filter(doc => 
     doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     doc.type.toLowerCase().includes(searchTerm.toLowerCase())
