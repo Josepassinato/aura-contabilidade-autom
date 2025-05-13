@@ -9,7 +9,8 @@ import {
   BarChart3, 
   Calculator,
   Users,
-  LineChart
+  LineChart,
+  Briefcase
 } from "lucide-react";
 
 import { 
@@ -106,6 +107,15 @@ export function AccountantSection() {
                 <a href="/admin/usage-metrics">
                   <LineChart className="h-4 w-4" />
                   <span>Métricas de Uso</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={currentPath === "/admin/customer-management"}>
+                <a href="/admin/customer-management">
+                  <Briefcase className="h-4 w-4" />
+                  <span>Gestão de Clientes</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

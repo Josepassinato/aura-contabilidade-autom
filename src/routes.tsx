@@ -30,6 +30,7 @@ import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
 import Notifications from "./pages/Notifications";
 import BusinessAnalytics from "./pages/admin/BusinessAnalytics";
 import UsageMetrics from "./pages/admin/UsageMetrics";
+import CustomerManagement from "./pages/admin/CustomerManagement";
 
 // Export the AppRoutes component for use in App.tsx
 export const AppRoutes = () => null;
@@ -154,6 +155,10 @@ const routes = [
   {
     path: "/admin/usage-metrics",
     element: <UsageMetrics />,
+  },
+  {
+    path: "/admin/customer-management",
+    element: <CustomerManagement />,
   },
   {
     path: "*",
