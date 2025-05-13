@@ -1,76 +1,97 @@
 
 import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Radio, RadioGroup, RadioIndicator, RadioItem } from "@/components/ui/radio-group";
+import { CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { UF } from '@/services/governamental/estadualIntegration';
 
 export interface IntegracaoEstadualStatus {
   id: string;
+  uf: UF;
   nome: string;
-  uf: string;
-  status: 'conectado' | 'desconectado' | 'erro' | 'pendente';
+  status: 'conectado' | 'pendente' | 'erro';
   ultimoAcesso?: string;
   proximaRenovacao?: string;
-  mensagem?: string;
+  mensagemErro?: string;
 }
 
 interface IntegracaoStatusProps {
   integracao: IntegracaoEstadualStatus;
+  onSelect?: () => void;
+  isSelected?: boolean;
 }
 
-export function IntegracaoStatus({ integracao }: IntegracaoStatusProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+export function IntegracaoStatus({ integracao, onSelect, isSelected = false }: IntegracaoStatusProps) {
+  const getStatusIcon = () => {
+    switch (integracao.status) {
       case 'conectado':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Conectado</Badge>;
-      case 'desconectado':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Desconectado</Badge>;
-      case 'erro':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Erro</Badge>;
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'pendente':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pendente</Badge>;
+        return <Clock className="h-5 w-5 text-amber-500" />;
+      case 'erro':
+        return <AlertCircle className="h-5 w-5 text-destructive" />;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return null;
+    }
+  };
+
+  const getStatusText = () => {
+    switch (integracao.status) {
+      case 'conectado':
+        return 'Conectado';
+      case 'pendente':
+        return 'Pendente';
+      case 'erro':
+        return 'Erro';
+      default:
+        return 'Desconhecido';
+    }
+  };
+
+  const getStatusColor = () => {
+    switch (integracao.status) {
+      case 'conectado':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'pendente':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'erro':
+        return 'bg-red-100 text-red-800 border-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   return (
-    <div className="border rounded-lg p-4">
-      <div className="flex justify-between items-center">
-        <h3 className="font-medium">{integracao.nome}</h3>
-        {getStatusBadge(integracao.status)}
-      </div>
-      
-      <div className="mt-2 space-y-1 text-sm">
-        {integracao.ultimoAcesso && (
-          <p className="text-muted-foreground">
-            Último acesso: {integracao.ultimoAcesso}
-          </p>
-        )}
-        {integracao.proximaRenovacao && (
-          <p className="text-muted-foreground">
-            Próxima renovação: {integracao.proximaRenovacao}
-          </p>
-        )}
-      </div>
-      
-      {integracao.status === 'erro' && integracao.mensagem && (
-        <Alert variant="destructive" className="mt-2 py-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro de conexão</AlertTitle>
-          <AlertDescription>{integracao.mensagem}</AlertDescription>
-        </Alert>
-      )}
-      
-      {integracao.status === 'conectado' && (
-        <Alert className="mt-2 py-2 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-800">Conectado</AlertTitle>
-          <AlertDescription className="text-green-700">
-            Integração funcionando corretamente
-          </AlertDescription>
-        </Alert>
-      )}
-    </div>
+    <Card className={`cursor-pointer hover:border-primary ${isSelected ? 'border-primary border-2' : ''}`} onClick={onSelect}>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <RadioItem value={integracao.id} className="mt-1" checked={isSelected} />
+          
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold">{integracao.uf} - {integracao.nome}</h3>
+              <Badge variant="outline" className={getStatusColor()}>
+                <div className="flex items-center gap-1">
+                  {getStatusIcon()}
+                  <span>{getStatusText()}</span>
+                </div>
+              </Badge>
+            </div>
+            
+            {integracao.status === 'conectado' && (
+              <div className="text-xs text-muted-foreground mt-2">
+                <p>Último acesso: {integracao.ultimoAcesso || 'N/A'}</p>
+                <p>Renovação: {integracao.proximaRenovacao || 'N/A'}</p>
+              </div>
+            )}
+            
+            {integracao.status === 'erro' && integracao.mensagemErro && (
+              <p className="text-xs text-destructive mt-2">{integracao.mensagemErro}</p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
