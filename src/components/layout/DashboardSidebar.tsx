@@ -28,7 +28,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
         <SidebarMenu>
           <CommonSection />
           
-          {/* Only show accountant section when permissions are available and valid */}
+          {/* Show accountant section for users with accountant/admin permissions */}
           {isAccountantOrAdmin && (
             <AccountantSection />
           )}
@@ -41,3 +41,4 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
 };
 
 export default DashboardSidebar;
+
