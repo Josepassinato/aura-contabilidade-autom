@@ -1,6 +1,6 @@
 
 import { Tables } from '@/integrations/supabase/types';
-import { supabase } from './supabaseService';
+import { supabase } from './supabase/client';
 
 export type { Tables };
 
@@ -61,17 +61,17 @@ export interface AccountingClient extends Tables<"accounting_clients"> {
   // Campos adicionais que não estão na tabela do Supabase
 }
 
-// Usar a instância centralizada do cliente Supabase
-export const supabaseClient = supabase;
+// Re-export the supabase client
+export { supabase };
 
 // Hook para usar o cliente Supabase
 export function useSupabaseClient() {
   // Retorna a instância do cliente Supabase já inicializada
-  return supabaseClient;
+  return supabase;
 }
 
 // Manter compatibilidade com códigos existentes
 export const initializeSupabase = () => {
   // Retorna o cliente já inicializado
-  return supabaseClient;
+  return supabase;
 };

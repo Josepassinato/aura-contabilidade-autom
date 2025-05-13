@@ -1,7 +1,7 @@
 
 import { useSupabaseQuery, useRetry } from './useSupabaseQuery';
 import { handleError } from '@/services/errorHandlingService';
-import { supabase } from '@/lib/supabaseService';
+import { supabase } from '@/lib/supabase/client';
 
 export function useClientDataFetcherOptimized() {
   const { retry } = useRetry();
