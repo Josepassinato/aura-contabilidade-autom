@@ -18,8 +18,14 @@ export const useAuth = () => {
     // Helper function to navigate to login page
     navigateToLogin: () => {
       console.log('Navigating to login page');
-      // Force direct navigation to ensure it works in any context
-      window.location.replace('/login');
+      // Use the most direct and forceful method to navigate
+      window.location.href = '/login';
+      // Force page reload if needed
+      setTimeout(() => {
+        if (window.location.pathname !== '/login') {
+          window.location.replace('/login');
+        }
+      }, 100);
     }
   };
 };

@@ -13,7 +13,14 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
   
   const handleBackToLogin = () => {
     console.log('Back to login button clicked');
-    navigateToLogin();
+    // Try direct navigation first
+    window.location.href = '/login';
+    // Use the context method as fallback
+    setTimeout(() => {
+      if (window.location.pathname !== '/login') {
+        navigateToLogin();
+      }
+    }, 50);
   };
   
   return (
