@@ -1,5 +1,4 @@
 
-// Importing React is necessary for ErrorBoundary component
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 

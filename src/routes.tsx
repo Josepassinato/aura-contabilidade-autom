@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import RelatoriosIA from "@/pages/RelatoriosIA";
 import ClientAccess from "@/pages/ClientAccess";
 import ClientPortal from "@/pages/ClientPortal";
+import GerenciarParametrosFiscais from "@/pages/GerenciarParametrosFiscais";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -77,6 +78,10 @@ const routes = createBrowserRouter([
   {
     path: "/client-portal/:clientId",
     element: <ClientPortal />
+  },
+  {
+    path: "/parametros-fiscais",
+    element: <GerenciarParametrosFiscais />
   }
 ]);
 

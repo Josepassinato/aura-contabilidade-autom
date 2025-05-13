@@ -1,76 +1,67 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
-import { SidebarGroup, SidebarMenuItem, SidebarMenu, SidebarMenuButton } from "@/components/ui/sidebar";
-import {
-  BarChart,
-  Users,
-  FileBox,
-  Calendar,
-  FileText,
-  Calculator,
-  LucideIcon,
-  PieChart,
-  UserCog,
-  Activity,
-  Zap,
-  Database
-} from "lucide-react";
-import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/auth";
-import { Separator } from "@/components/ui/separator";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Calculator, Users, FileText, CreditCard, Calendar, BarChart2, Settings } from 'lucide-react';
 
 export function AccountantSection() {
-  const location = useLocation();
-  const isActive = (path: string) => location.pathname === path;
-  const { isAdmin } = useAuth();
-
-  if (!isAdmin) return null;
-
+  const { pathname } = useLocation();
+  
   return (
-    <>
-      <Separator className="my-2" />
-      
-      <SidebarGroup>
-        <SidebarMenuItem title="Administração">
-          <SidebarMenu>
-            <SidebarMenuButton asChild isActive={isActive("/admin/business-analytics")}>
-              <Link to="/admin/business-analytics">
-                <PieChart className="h-4 w-4" />
-                <span>Analytics de Negócio</span>
-              </Link>
-            </SidebarMenuButton>
-            
-            <SidebarMenuButton asChild isActive={isActive("/admin/customer-management")}>
-              <Link to="/admin/customer-management">
-                <UserCog className="h-4 w-4" />
-                <span>Gestão de Clientes</span>
-              </Link>
-            </SidebarMenuButton>
-            
-            <SidebarMenuButton asChild isActive={isActive("/admin/usage-metrics")}>
-              <Link to="/admin/usage-metrics">
-                <Activity className="h-4 w-4" />
-                <span>Métricas de Uso</span>
-              </Link>
-            </SidebarMenuButton>
-            
-            <SidebarMenuButton asChild isActive={isActive("/admin/openai-management")}>
-              <Link to="/admin/openai-management">
-                <Zap className="h-4 w-4" />
-                <span>Gestão de IA</span>
-              </Link>
-            </SidebarMenuButton>
-            
-            <SidebarMenuButton asChild isActive={isActive("/settings")}>
-              <Link to="/settings">
-                <Database className="h-4 w-4" />
-                <span>Configurações</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenu>
-        </SidebarMenuItem>
-      </SidebarGroup>
-    </>
+    <div className="space-y-1">
+      <Link
+        to="/gerenciar-clientes"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/gerenciar-clientes' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <Users className="h-4 w-4" />
+        <span>Clientes</span>
+      </Link>
+      <Link
+        to="/client-access"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/client-access' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <CreditCard className="h-4 w-4" />
+        <span>Portal do Cliente</span>
+      </Link>
+      <Link
+        to="/calculosfiscais"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/calculosfiscais' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <Calculator className="h-4 w-4" />
+        <span>Cálculos Fiscais</span>
+      </Link>
+      <Link
+        to="/obrigacoesfiscais"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/obrigacoesfiscais' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <Calendar className="h-4 w-4" />
+        <span>Obrigações Fiscais</span>
+      </Link>
+      <Link
+        to="/relatoriosfinanceiros"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/relatoriosfinanceiros' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <BarChart2 className="h-4 w-4" />
+        <span>Relatórios</span>
+      </Link>
+      <Link
+        to="/parametros-fiscais"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/parametros-fiscais' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <Settings className="h-4 w-4" />
+        <span>Parâmetros Fiscais</span>
+      </Link>
+    </div>
   );
 }
