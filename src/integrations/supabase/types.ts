@@ -95,6 +95,48 @@ export type Database = {
           },
         ]
       }
+      atualizacoes_parametros_log: {
+        Row: {
+          data_atualizacao: string | null
+          detalhes: Json | null
+          id: string
+          parametro_id: string
+          tipo_operacao: string
+          usuario_id: string | null
+        }
+        Insert: {
+          data_atualizacao?: string | null
+          detalhes?: Json | null
+          id?: string
+          parametro_id: string
+          tipo_operacao: string
+          usuario_id?: string | null
+        }
+        Update: {
+          data_atualizacao?: string | null
+          detalhes?: Json | null
+          id?: string
+          parametro_id?: string
+          tipo_operacao?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atualizacoes_parametros_log_parametro_id_fkey"
+            columns: ["parametro_id"]
+            isOneToOne: false
+            referencedRelation: "parametros_fiscais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_atualizacoes_parametros_log_parametro"
+            columns: ["parametro_id"]
+            isOneToOne: false
+            referencedRelation: "parametros_fiscais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_access_tokens: {
         Row: {
           client_id: string
@@ -182,6 +224,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      consultorias_fiscais: {
+        Row: {
+          api_key: string
+          ativo: boolean | null
+          atualizacao_automatica: boolean | null
+          contato: string | null
+          data_integracao: string | null
+          email: string | null
+          id: string
+          nome: string
+          notificar_mudancas: boolean | null
+          periodo_atualizacao: string
+          salvar_historico: boolean | null
+          telefone: string | null
+          tipos_atualizacao: string[]
+          url: string
+        }
+        Insert: {
+          api_key: string
+          ativo?: boolean | null
+          atualizacao_automatica?: boolean | null
+          contato?: string | null
+          data_integracao?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          notificar_mudancas?: boolean | null
+          periodo_atualizacao: string
+          salvar_historico?: boolean | null
+          telefone?: string | null
+          tipos_atualizacao: string[]
+          url: string
+        }
+        Update: {
+          api_key?: string
+          ativo?: boolean | null
+          atualizacao_automatica?: boolean | null
+          contato?: string | null
+          data_integracao?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          notificar_mudancas?: boolean | null
+          periodo_atualizacao?: string
+          salvar_historico?: boolean | null
+          telefone?: string | null
+          tipos_atualizacao?: string[]
+          url?: string
+        }
+        Relationships: []
       }
       employees: {
         Row: {
@@ -420,6 +513,50 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parametros_fiscais: {
+        Row: {
+          aplicado_em: string | null
+          ativo: boolean | null
+          consultoria_id: string | null
+          created_at: string | null
+          data_atualizacao: string | null
+          id: string
+          parametros: Json
+          tipo: string
+          versao: string
+        }
+        Insert: {
+          aplicado_em?: string | null
+          ativo?: boolean | null
+          consultoria_id?: string | null
+          created_at?: string | null
+          data_atualizacao?: string | null
+          id?: string
+          parametros: Json
+          tipo: string
+          versao: string
+        }
+        Update: {
+          aplicado_em?: string | null
+          ativo?: boolean | null
+          consultoria_id?: string | null
+          created_at?: string | null
+          data_atualizacao?: string | null
+          id?: string
+          parametros?: Json
+          tipo?: string
+          versao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_parametros_consultoria"
+            columns: ["consultoria_id"]
+            isOneToOne: false
+            referencedRelation: "consultorias_fiscais"
             referencedColumns: ["id"]
           },
         ]

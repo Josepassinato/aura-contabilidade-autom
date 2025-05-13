@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -91,7 +91,30 @@ export function ParametrosFiscaisForm() {
   const [consultoriaId, setConsultoriaId] = useState<string | null>(null);
   const [versaoAtual, setVersaoAtual] = useState("1.0");
   const [dataAtualizacao, setDataAtualizacao] = useState(new Date().toISOString().split('T')[0]);
+  const [consultorias, setConsultorias] = useState<{id: string, nome: string}[]>([]);
   
+  // Carregar consultorias
+  useEffect(() => {
+    const fetchConsultorias = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('consultorias_fiscais')
+          .select('id, nome')
+          .eq('ativo', true);
+          
+        if (error) throw error;
+        
+        if (data) {
+          setConsultorias(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar consultorias:', error);
+      }
+    };
+    
+    fetchConsultorias();
+  }, []);
+
   // Formulários para cada tipo de imposto
   const irpjForm = useForm<z.infer<typeof IRPJSchema>>({
     resolver: zodResolver(IRPJSchema),
@@ -694,9 +717,13 @@ export function ParametrosFiscaisForm() {
                 <SelectValue placeholder="Selecione uma consultoria (opcional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="consultor1">Consultoria Tributária Nacional</SelectItem>
-                <SelectItem value="consultor2">Especialistas em ICMS</SelectItem>
-                <SelectItem value="consultor3">Consultoria Legal Fiscal</SelectItem>
+                {consultorias.length > 0 ? (
+                  consultorias.map(consultoria => (
+                    <SelectItem key={consultoria.id} value={consultoria.id}>{consultoria.nome}</SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>Nenhuma consultoria cadastrada</SelectItem>
+                )}
               </SelectContent>
             </Select>
             <span className="text-sm text-muted-foreground">Associar atualização a uma consultoria</span>
