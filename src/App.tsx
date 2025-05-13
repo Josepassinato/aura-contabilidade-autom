@@ -1,13 +1,14 @@
 
 import React from "react";
-import { AppRoutes } from "./routes";
+import routes from "./routes";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/auth";
+import { RouterProvider } from "react-router-dom";
 
 function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <RouterProvider router={routes} />
       <Toaster />
     </AuthProvider>
   );

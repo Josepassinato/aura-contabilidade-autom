@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -128,7 +127,7 @@ export function OpenAIManagement() {
       </div>
       
       {!isConfigured ? (
-        <Alert variant="warning">
+        <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>OpenAI não configurada</AlertTitle>
           <AlertDescription>

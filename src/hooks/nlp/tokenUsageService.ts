@@ -86,7 +86,7 @@ export const checkUsageLimits = (): void => {
     toast({
       title: "Token usage warning",
       description: `You've used ${Math.round(usagePercentage * 100)}% of your token limit.`,
-      variant: "warning"
+      variant: "default"
     });
   } 
   // Show alert if exceeded limit
@@ -118,4 +118,3 @@ export const getTokenUsageLimit = (): number => {
   const limit = parseInt(localStorage.getItem('openai-token-limit') || '0');
   return limit > 0 ? limit : 1000000; // Return configured limit or default
 };
-
