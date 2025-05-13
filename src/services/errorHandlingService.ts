@@ -1,5 +1,4 @@
 
-
 import { toast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
 import React from "react";
@@ -163,4 +162,3 @@ export const withErrorBoundary = <P extends object>(
     }
   };
 };
-
