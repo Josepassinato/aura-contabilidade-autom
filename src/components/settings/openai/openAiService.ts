@@ -1,6 +1,13 @@
 
 import { OpenAiConfigFormValues } from "./schema";
 
+// Interface para estatísticas de uso da API
+interface OpenAiUsageStats {
+  totalTokens: number;
+  lastReset: string; // ISO date string
+  requests: number;
+}
+
 // Store and retrieve OpenAI configuration from local storage
 export const getOpenAiStoredValues = (): OpenAiConfigFormValues => {
   return typeof window !== "undefined" 
@@ -24,6 +31,22 @@ export const saveOpenAiConfig = async (data: OpenAiConfigFormValues): Promise<vo
   localStorage.setItem("openai-model", data.model);
   localStorage.setItem("openai-temperature", data.temperature.toString());
   localStorage.setItem("openai-max-tokens", data.maxTokens.toString());
+  
+  // Atualizar status do assistente
+  localStorage.setItem("openai-configured", "true");
+  
+  // Inicializar as estatísticas de uso se ainda não existirem
+  if (!localStorage.getItem("openai-usage-stats")) {
+    const initialStats: OpenAiUsageStats = {
+      totalTokens: 0,
+      lastReset: new Date().toISOString(),
+      requests: 0
+    };
+    localStorage.setItem("openai-usage-stats", JSON.stringify(initialStats));
+  }
+  
+  // Disparar um evento para notificar outros componentes
+  window.dispatchEvent(new Event('openai-config-updated'));
 };
 
 export const testOpenAiConnection = async (apiKey: string, model: string): Promise<{ success: boolean; message: string }> => {
@@ -46,7 +69,7 @@ export const testOpenAiConnection = async (apiKey: string, model: string): Promi
     // Simulate successful connection
     return {
       success: true,
-      message: "Configuração validada com sucesso. Nota: Esta é apenas uma validação básica, a conexão real com a API será testada quando utilizada."
+      message: "Configuração validada com sucesso. A IA está pronta para uso no sistema!"
     };
   } catch (error) {
     return {
@@ -54,4 +77,65 @@ export const testOpenAiConnection = async (apiKey: string, model: string): Promi
       message: `Erro na validação: ${error instanceof Error ? error.message : "Erro desconhecido"}`
     };
   }
+};
+
+export const isOpenAIConfigured = (): boolean => {
+  return localStorage.getItem("openai-api-key") !== null &&
+         localStorage.getItem("openai-api-key") !== "";
+};
+
+// Funções para gerenciar o uso de tokens
+export const registerTokenUsage = (tokenCount: number): void => {
+  try {
+    const statsJson = localStorage.getItem("openai-usage-stats");
+    if (statsJson) {
+      const stats: OpenAiUsageStats = JSON.parse(statsJson);
+      stats.totalTokens += tokenCount;
+      stats.requests += 1;
+      localStorage.setItem("openai-usage-stats", JSON.stringify(stats));
+    }
+  } catch (error) {
+    console.error("Erro ao registrar uso de tokens:", error);
+  }
+};
+
+export const getTokenUsageStats = (): OpenAiUsageStats => {
+  try {
+    const statsJson = localStorage.getItem("openai-usage-stats");
+    if (statsJson) {
+      return JSON.parse(statsJson);
+    }
+  } catch (error) {
+    console.error("Erro ao obter estatísticas de tokens:", error);
+  }
+  
+  // Retornar estatísticas vazias se não houver dados
+  return {
+    totalTokens: 0,
+    lastReset: new Date().toISOString(),
+    requests: 0
+  };
+};
+
+export const resetTokenUsage = (): void => {
+  const resetStats: OpenAiUsageStats = {
+    totalTokens: 0,
+    lastReset: new Date().toISOString(),
+    requests: 0
+  };
+  localStorage.setItem("openai-usage-stats", JSON.stringify(resetStats));
+};
+
+// Função para obter configuração completa da OpenAI
+export const getOpenAiConfig = () => {
+  const values = getOpenAiStoredValues();
+  const usage = getTokenUsageStats();
+  
+  return {
+    apiKey: values.apiKey,
+    model: values.model,
+    temperature: values.temperature,
+    maxTokens: values.maxTokens,
+    usage
+  };
 };

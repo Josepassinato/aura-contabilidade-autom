@@ -13,6 +13,7 @@ import {
   ArrowDownToLine,
   CreditCard,
   Users,
+  Bot,
 } from "lucide-react";
 
 export function AccountantSection() {
@@ -46,6 +47,20 @@ export function AccountantSection() {
                 >
                   <CreditCard className="h-5 w-5" />
                   <span>Planos e Preços</span>
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink
+                  to="/relatorios-ia"
+                  className={({ isActive }) =>
+                    isActive ? "bg-secondary" : undefined
+                  }
+                >
+                  <Bot className="h-5 w-5" />
+                  <span>IA & Relatórios</span>
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

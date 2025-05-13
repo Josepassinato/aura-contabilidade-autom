@@ -2,6 +2,11 @@
 import { useState, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import { useNaturalLanguage } from '@/hooks/useNaturalLanguage';
+import { 
+  isOpenAIConfigured, 
+  getOpenAiConfig, 
+  registerTokenUsage 
+} from '@/components/settings/openai/openAiService';
 
 type ClientInfo = {
   id: string;
@@ -26,10 +31,27 @@ export function useVoiceAssistant(
   
   // Verificar se OpenAI está configurada
   const [openAIConfigured, setOpenAIConfigured] = useState(false);
+  const [openAIConfig, setOpenAIConfig] = useState<any>(null);
   
   useEffect(() => {
-    const apiKey = localStorage.getItem("openai-api-key");
-    setOpenAIConfigured(!!apiKey && apiKey.length > 0);
+    const checkConfig = () => {
+      const isConfigured = isOpenAIConfigured();
+      setOpenAIConfigured(isConfigured);
+      
+      if (isConfigured) {
+        const config = getOpenAiConfig();
+        setOpenAIConfig(config);
+      }
+    };
+    
+    checkConfig();
+    
+    // Listener para atualizações na configuração
+    window.addEventListener('openai-config-updated', checkConfig);
+    
+    return () => {
+      window.removeEventListener('openai-config-updated', checkConfig);
+    };
   }, []);
   
   // Initialize welcome message when activated
@@ -145,6 +167,11 @@ export function useVoiceAssistant(
       const nlpResult = await processCommand(command);
       console.log('NLP Result:', nlpResult);
       
+      // Simular uso de tokens para rastreamento
+      // Em uma implementação real, isso viria da resposta da API
+      const estimatedTokens = command.length / 3; // Estimativa simples: 1 token a cada 3 caracteres
+      registerTokenUsage(estimatedTokens);
+      
       // Generate contextual response based on identified intent and client
       const responseText = generateResponse(nlpResult, clientInfo?.name);
       
@@ -222,6 +249,7 @@ export function useVoiceAssistant(
     setManualInput,
     handleProcessCommand,
     startVoiceRecognition,
-    addBotResponse
+    addBotResponse,
+    openAIConfig
   };
 }
