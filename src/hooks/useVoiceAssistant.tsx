@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 import { useNaturalLanguage } from '@/hooks/useNaturalLanguage';
-import { useSupabaseClient } from "@/lib/supabase";
 
 type ClientInfo = {
   id: string;
@@ -21,10 +20,17 @@ export function useVoiceAssistant(
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [conversations, setConversations] = useState<Conversation>([]);
-  const supabase = useSupabaseClient();
   
   // Use the hook of natural language processing
   const { processCommand, generateResponse, isProcessing: isNlpProcessing } = useNaturalLanguage();
+  
+  // Verificar se OpenAI está configurada
+  const [openAIConfigured, setOpenAIConfigured] = useState(false);
+  
+  useEffect(() => {
+    const apiKey = localStorage.getItem("openai-api-key");
+    setOpenAIConfigured(!!apiKey && apiKey.length > 0);
+  }, []);
   
   // Initialize welcome message when activated
   useEffect(() => {
@@ -34,63 +40,87 @@ export function useVoiceAssistant(
 
     // Display welcome message when assistant is activated
     if (conversations.length === 0) {
-      const welcomeMessage = clientInfo 
-        ? `Olá! Sou sua assistente contábil para ${clientInfo.name}. Como posso ajudar você hoje?`
-        : 'Olá! Sou seu assistente de voz contábil. Como posso ajudar você hoje?';
+      let welcomeMessage = "";
+      
+      if (!openAIConfigured) {
+        welcomeMessage = "O assistente de voz não está configurado. Por favor, configure a API OpenAI nas configurações do sistema.";
+      } else {
+        welcomeMessage = clientInfo 
+          ? `Olá! Sou sua assistente contábil para ${clientInfo.name}. Como posso ajudar você hoje?`
+          : 'Olá! Sou seu assistente de voz contábil. Como posso ajudar você hoje?';
+      }
       
       setConversations([{
         type: 'bot',
         text: welcomeMessage
       }]);
     }
-  }, [isActive, conversations.length, clientInfo]);
+  }, [isActive, conversations.length, clientInfo, openAIConfigured]);
 
   // Add a bot response to the conversation
   const addBotResponse = (text: string) => {
     setConversations(prev => [...prev, { type: 'bot', text }]);
   };
 
-  // Function to fetch client data
+  // Function to fetch client data (simplified local version)
   const fetchClientData = async (clientId: string, dataType: string) => {
-    if (!supabase) return null;
-    
+    // Implementação simplificada que retorna dados simulados
     try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       switch (dataType) {
         case 'financial':
-          // Fetch summary financial data
-          const { data: financialData } = await supabase
-            .from('client_financial_data')
-            .select('*')
-            .eq('client_id', clientId)
-            .order('period', { ascending: false })
-            .limit(1)
-            .single();
-          return financialData;
+          return {
+            id: clientId,
+            total_revenue: 125000.00,
+            total_expenses: 78500.00,
+            profit_margin: 0.372,
+            period: "2023-05"
+          };
           
         case 'taxes':
-          // Fetch tax obligations
-          const { data: taxData } = await supabase
-            .from('tax_obligations')
-            .select('*')
-            .eq('client_id', clientId)
-            .order('due_date', { ascending: true });
-          return taxData;
+          return [
+            { 
+              id: 1, 
+              client_id: clientId, 
+              tax_type: "IRPJ", 
+              due_date: "2023-05-30", 
+              amount: 4580.25,
+              status: "pending"
+            },
+            { 
+              id: 2, 
+              client_id: clientId, 
+              tax_type: "COFINS", 
+              due_date: "2023-05-25", 
+              amount: 3250.75,
+              status: "pending"
+            }
+          ];
           
         case 'documents':
-          // Fetch documents
-          const { data: documentsData } = await supabase
-            .from('client_documents')
-            .select('*')
-            .eq('client_id', clientId)
-            .order('created_at', { ascending: false })
-            .limit(5);
-          return documentsData;
+          return [
+            { 
+              id: 1, 
+              client_id: clientId, 
+              name: "Balancete Abril 2023", 
+              created_at: "2023-05-10",
+              file_type: "pdf"
+            },
+            { 
+              id: 2, 
+              client_id: clientId, 
+              name: "DRE Q1 2023", 
+              created_at: "2023-04-15",
+              file_type: "xlsx"
+            }
+          ];
           
         default:
           return null;
       }
     } catch (error) {
-      console.error("Error fetching client data:", error);
+      console.error("Erro ao buscar dados do cliente:", error);
       return null;
     }
   };
@@ -98,6 +128,12 @@ export function useVoiceAssistant(
   // Process voice or text command using NLP
   const handleProcessCommand = async (command: string) => {
     if (!command.trim()) return;
+    
+    // Verificar se OpenAI está configurada
+    if (!openAIConfigured) {
+      addBotResponse("O assistente de voz não está configurado. Por favor, configure a API OpenAI nas configurações do sistema.");
+      return;
+    }
     
     // Add user command to conversation history
     setConversations(prev => [...prev, {type: 'user', text: command}]);
@@ -118,13 +154,13 @@ export function useVoiceAssistant(
       // Notify the user
       toast({
         title: "AI Assistant",
-        description: "New response available",
+        description: "Nova resposta disponível",
       });
     } catch (error) {
       console.error("Error processing command:", error);
       setConversations(prev => [...prev, {
         type: 'bot', 
-        text: 'Sorry, an error occurred while processing your request. Please try again.'
+        text: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.'
       }]);
     } finally {
       setIsProcessing(false);
@@ -133,9 +169,14 @@ export function useVoiceAssistant(
 
   // Start voice recognition simulation
   const startVoiceRecognition = () => {
+    if (!openAIConfigured) {
+      addBotResponse("O assistente de voz não está configurado. Por favor, configure a API OpenAI nas configurações do sistema.");
+      return;
+    }
+    
     toast({
-      title: "Voice Recognition",
-      description: "Listening... Tell me what you need.",
+      title: "Reconhecimento de Voz",
+      description: "Ouvindo... Diga o que você precisa.",
     });
     
     // Simulate recognition after 3 seconds

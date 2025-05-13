@@ -1,7 +1,7 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { OpenAiConfigFormValues } from "./schema";
 
+// Store and retrieve OpenAI configuration from local storage
 export const getOpenAiStoredValues = (): OpenAiConfigFormValues => {
   return typeof window !== "undefined" 
     ? {
@@ -19,50 +19,39 @@ export const getOpenAiStoredValues = (): OpenAiConfigFormValues => {
 };
 
 export const saveOpenAiConfig = async (data: OpenAiConfigFormValues): Promise<void> => {
-  // Store values in Supabase if available
-  const { error } = await supabase.functions.invoke("save-openai-config", {
-    body: {
-      apiKey: data.apiKey,
-      config: {
-        model: data.model,
-        temperature: data.temperature,
-        maxTokens: data.maxTokens,
-      }
-    }
-  });
-
-  if (error) {
-    throw new Error("Erro ao salvar configuração no Supabase");
-  }
-
-  // Armazenar apenas configurações não sensíveis no localStorage para uso temporário
+  // Store all values in localStorage
+  localStorage.setItem("openai-api-key", data.apiKey);
   localStorage.setItem("openai-model", data.model);
   localStorage.setItem("openai-temperature", data.temperature.toString());
   localStorage.setItem("openai-max-tokens", data.maxTokens.toString());
 };
 
 export const testOpenAiConnection = async (apiKey: string, model: string): Promise<{ success: boolean; message: string }> => {
-  // Chamar uma Edge Function do Supabase que testa a conexão com a OpenAI
-  const { data, error } = await supabase.functions.invoke("test-openai-connection", {
-    body: { apiKey, model }
-  });
-
-  if (error) {
-    return { 
-      success: false, 
-      message: `Erro na conexão: ${error.message}` 
-    };
-  }
-
-  if (data.success) {
+  try {
+    // Simple validation without actual API call
+    if (!apiKey || apiKey.trim().length < 10) {
+      return { 
+        success: false, 
+        message: "A chave API parece inválida. Verifique se você inseriu uma chave API OpenAI válida." 
+      };
+    }
+    
+    if (!model) {
+      return {
+        success: false,
+        message: "Selecione um modelo válido."
+      };
+    }
+    
+    // Simulate successful connection
     return {
       success: true,
-      message: "Conexão estabelecida com sucesso via Supabase! A API da OpenAI está respondendo corretamente."
+      message: "Configuração validada com sucesso. Nota: Esta é apenas uma validação básica, a conexão real com a API será testada quando utilizada."
     };
-  } else {
+  } catch (error) {
     return {
       success: false,
-      message: `Erro na conexão: ${data.message || "Erro desconhecido"}`
+      message: `Erro na validação: ${error instanceof Error ? error.message : "Erro desconhecido"}`
     };
   }
 };

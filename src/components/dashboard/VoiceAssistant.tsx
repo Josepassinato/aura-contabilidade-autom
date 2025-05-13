@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { X, FileText, Send, Download } from "lucide-react";
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
@@ -6,6 +5,7 @@ import { ConversationContainer } from './voice-assistant/ConversationContainer';
 import { ChatInput } from './voice-assistant/ChatInput';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth';
 
 interface VoiceAssistantProps {
   isActive: boolean;
@@ -14,6 +14,7 @@ interface VoiceAssistantProps {
 }
 
 export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistantProps) {
+  const { isAdmin } = useAuth();
   const [config, setConfig] = useState<any>(null);
   const [reportGenerating, setReportGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<{
@@ -21,6 +22,8 @@ export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistan
     url: string;
     type: string;
   } | null>(null);
+  
+  const [openAIConfigured, setOpenAIConfigured] = useState(false);
 
   const {
     transcript,
@@ -44,10 +47,26 @@ export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistan
         console.error("Erro ao carregar configuração do assistente:", error);
       }
     }
+
+    // Verificar se OpenAI está configurada
+    const apiKey = localStorage.getItem("openai-api-key");
+    setOpenAIConfigured(!!apiKey && apiKey.length > 0);
   }, []);
 
   // Modificação da função de processamento para detectar comandos de relatórios
   const processWithReportDetection = (input: string) => {
+    // Se OpenAI não estiver configurada e usuário não for admin, mostrar mensagem
+    if (!openAIConfigured && !isAdmin) {
+      addBotResponse("O assistente de voz não está configurado. Por favor, entre em contato com um administrador.");
+      return;
+    }
+    
+    // Se OpenAI não estiver configurada mas é admin, sugere configurar
+    if (!openAIConfigured && isAdmin) {
+      addBotResponse("O assistente de voz não está configurado. Por favor, configure a API OpenAI nas configurações do sistema.");
+      return;
+    }
+
     // Detectar solicitações de relatórios
     const reportKeywords = [
       'relatório',
@@ -190,6 +209,16 @@ export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistan
         </div>
       </div>
       
+      {!openAIConfigured && (
+        <div className="p-3 bg-yellow-50 border-b text-sm">
+          {isAdmin ? (
+            <p>O assistente de voz precisa de configuração. Por favor, configure a API OpenAI nas <Link to="/settings" className="text-primary underline">configurações</Link>.</p>
+          ) : (
+            <p>O assistente de voz não está configurado. Por favor, entre em contato com um administrador.</p>
+          )}
+        </div>
+      )}
+      
       <ConversationContainer 
         messages={conversations}
         isProcessing={isProcessing || reportGenerating}
@@ -218,15 +247,21 @@ export function VoiceAssistant({ isActive, onToggle, clientInfo }: VoiceAssistan
         <ChatInput
           value={manualInput}
           onChange={(e) => setManualInput(e.target.value)}
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            processWithReportDetection(manualInput);
+            setManualInput('');
+          }}
           onVoiceRecognition={startVoiceRecognition}
           isProcessing={isProcessing || reportGenerating}
+          disabled={!openAIConfigured}
         />
         <div className="flex justify-between items-center mt-2">
           <span className="text-xs text-muted-foreground">
-            {isProcessing ? "Processando..." : 
-             reportGenerating ? "Gerando relatório..." : 
-             "Pronto para ouvir"}
+            {!openAIConfigured ? "Assistente não configurado" :
+              isProcessing ? "Processando..." : 
+              reportGenerating ? "Gerando relatório..." : 
+              "Pronto para ouvir"}
           </span>
           <span className="text-xs text-muted-foreground">Powered by Advanced AI</span>
         </div>

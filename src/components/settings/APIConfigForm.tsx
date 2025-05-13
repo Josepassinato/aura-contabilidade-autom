@@ -28,19 +28,19 @@ export function APIConfigForm() {
 
       toast({
         title: "Configuração salva",
-        description: "As configurações da API OpenAI foram atualizadas com sucesso no Supabase.",
+        description: "As configurações da API OpenAI foram atualizadas com sucesso no armazenamento local.",
       });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível salvar as configurações no Supabase.",
+        description: "Não foi possível salvar as configurações.",
         variant: "destructive"
       });
     }
   }
 
-  // Função para testar a conexão com a API da OpenAI através do Supabase
+  // Função para testar a configuração da API da OpenAI
   const testApiConnection = async () => {
     setIsTesting(true);
     setTestResult(null);
@@ -54,21 +54,19 @@ export function APIConfigForm() {
       setTestResult(result);
       
       toast({
-        title: result.success ? "Conexão bem-sucedida" : "Falha na conexão",
-        description: result.success 
-          ? "A API da OpenAI está conectada e funcionando corretamente via Supabase."
-          : result.message || "Erro ao conectar com a API via Supabase",
+        title: result.success ? "Configuração válida" : "Configuração inválida",
+        description: result.message,
         variant: result.success ? "default" : "destructive"
       });
     } catch (error) {
-      console.error("Erro ao testar a conexão:", error);
+      console.error("Erro ao testar a configuração:", error);
       setTestResult({
         success: false,
-        message: `Erro ao testar a conexão via Supabase: ${error instanceof Error ? error.message : "Erro desconhecido"}`
+        message: `Erro ao validar a configuração: ${error instanceof Error ? error.message : "Erro desconhecido"}`
       });
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao tentar se conectar à API via Supabase.",
+        description: "Ocorreu um erro ao tentar validar a configuração.",
         variant: "destructive"
       });
     } finally {
@@ -79,10 +77,10 @@ export function APIConfigForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium">Configuração da API OpenAI (via Supabase)</h2>
+        <h2 className="text-lg font-medium">Configuração da API OpenAI (Local)</h2>
         <p className="text-sm text-muted-foreground">
-          Configure os parâmetros de conexão com a API da OpenAI através do Supabase para utilização do assistente de voz
-          e análise de dados contábeis.
+          Configure os parâmetros de conexão com a API da OpenAI para utilização do assistente de voz
+          e análise de dados contábeis. Estes dados serão armazenados localmente.
         </p>
       </div>
 
@@ -98,7 +96,7 @@ export function APIConfigForm() {
             variant="outline"
             disabled={isTesting}
           >
-            {isTesting ? "Testando..." : "Testar Conexão"}
+            {isTesting ? "Validando..." : "Validar Configuração"}
           </Button>
         </div>
       </OpenAiConfigForm>

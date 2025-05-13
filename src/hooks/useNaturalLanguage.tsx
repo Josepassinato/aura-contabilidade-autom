@@ -1,6 +1,4 @@
-
 import { useState, useCallback } from 'react';
-import { useSupabaseClient } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 
 type NLPIntent = 'fiscal_query' | 'financial_report' | 'anomaly_detection' | 'tax_calculation' | 'payment' | 'unknown';
@@ -15,15 +13,17 @@ interface NLPResult {
 export function useNaturalLanguage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResult, setLastResult] = useState<NLPResult | null>(null);
-  const supabase = useSupabaseClient();
 
   // Processar comando de voz/texto e identificar intenção
   const processCommand = useCallback(async (text: string): Promise<NLPResult> => {
     setIsProcessing(true);
     
     try {
-      // Em produção, enviaria para um Edge Function que faria a chamada para um modelo de NLP
-      // Aqui vamos simular o processamento com regras básicas para demonstração
+      // Verificar se a API OpenAI está configurada
+      const apiKey = localStorage.getItem("openai-api-key");
+      if (!apiKey) {
+        throw new Error("API OpenAI não configurada");
+      }
       
       // Simular latência de rede/processamento 
       await new Promise(resolve => setTimeout(resolve, 500));
