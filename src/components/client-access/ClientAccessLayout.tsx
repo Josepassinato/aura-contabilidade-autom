@@ -12,6 +12,7 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
   const { navigateToLogin } = useAuth();
   
   const handleBackToLogin = () => {
+    console.log('Back to login button clicked');
     navigateToLogin();
   };
   

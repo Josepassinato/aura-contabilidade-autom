@@ -17,8 +17,9 @@ export const useAuth = () => {
     
     // Helper function to navigate to login page
     navigateToLogin: () => {
-      // Forçar navegação para login - isso garante que funcionará independentemente do contexto
-      window.location.href = '/login';
+      console.log('Navigating to login page');
+      // Force direct navigation to ensure it works in any context
+      window.location.replace('/login');
     }
   };
 };
