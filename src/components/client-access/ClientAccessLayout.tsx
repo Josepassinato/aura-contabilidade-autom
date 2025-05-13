@@ -2,15 +2,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/contexts/auth";
 
 interface ClientAccessLayoutProps {
   children: React.ReactNode;
 }
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
+  const { navigateToLogin } = useAuth();
+  
   const handleBackToLogin = () => {
-    // Navegação direta para a página de login usando window.location
-    window.location.href = '/login';
+    navigateToLogin();
   };
   
   return (

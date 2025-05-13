@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { ClientAccessForm } from "@/components/client-access/ClientAccessForm";
 import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
 import { ClientTokenManager } from "@/components/client-access/ClientTokenManager";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 
 const ClientAccess = () => {
-  const { isAuthenticated, isAccountant, isAdmin } = useAuth();
+  const { isAuthenticated, isAccountant, isAdmin, navigateToLogin } = useAuth();
   const isAccountantOrAdmin = isAccountant || isAdmin;
   const { toast } = useToast();
   
