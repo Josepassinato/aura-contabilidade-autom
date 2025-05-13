@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 
 interface ClientAccessLayoutProps {
@@ -9,19 +9,21 @@ interface ClientAccessLayoutProps {
 }
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
-  const { navigateToLogin } = useAuth();
+  const { logout } = useAuth();
   
-  const handleBackToLogin = () => {
-    console.log('Back to login button clicked');
+  const handleLogout = () => {
+    console.log('Logout button clicked');
     
-    // Force immediate navigation with page reload
-    window.location.replace('/login');
-    
-    // Fallback if replace doesn't work
-    setTimeout(() => {
-      console.log('Using fallback navigation');
+    // Primeiro executamos o logout para limpar o estado
+    logout().then(() => {
+      console.log('Logout successful, redirecting to login page');
+      // Após o logout, redirecionamos para a página de login
       window.location.href = '/login';
-    }, 100);
+    }).catch(err => {
+      console.error('Logout failed:', err);
+      // Em caso de falha, tentamos redirecionar diretamente
+      window.location.href = '/login';
+    });
   };
   
   return (
@@ -37,9 +39,9 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
             variant="ghost" 
             size="sm" 
             className="flex items-center"
-            onClick={handleBackToLogin}
+            onClick={handleLogout}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <LogOut className="h-4 w-4 mr-2" />
             Voltar para o login geral
           </Button>
         </div>
