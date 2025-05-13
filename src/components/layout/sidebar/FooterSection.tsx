@@ -1,36 +1,70 @@
 
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { Settings } from "lucide-react";
-import {
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { SidebarFooter, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/auth";
+import { Settings, LogOut, HelpCircle, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export const FooterSection = () => {
+export function FooterSection() {
+  const { isAuthenticated, logout, navigateToLogin } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await logout?.();
+      navigateToLogin();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+  
+  const handleLogin = () => {
+    navigateToLogin();
+  };
+  
   return (
-    <SidebarFooter className="p-2">
-      <SidebarMenu>
+    <SidebarFooter>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={() => navigate('/settings')}
+          tooltip="Configurações"
+        >
+          <Settings className="h-5 w-5" />
+          <span>Configurações</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={() => window.open('https://docs.contaflix.com.br', '_blank')}
+          tooltip="Ajuda"
+        >
+          <HelpCircle className="h-5 w-5" />
+          <span>Ajuda</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      {isAuthenticated ? (
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
-                  isActive ? "bg-accent" : "hover:bg-accent hover:text-accent-foreground"
-                )
-              }
-            >
-              <Settings className="h-5 w-5" />
-              <span>Configurações</span>
-            </NavLink>
+          <SidebarMenuButton
+            onClick={handleLogout}
+            tooltip="Sair"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Sair</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
-      </SidebarMenu>
+      ) : (
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            onClick={handleLogin}
+            tooltip="Login"
+          >
+            <LogIn className="h-5 w-5" />
+            <span>Entrar</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )}
     </SidebarFooter>
   );
-};
+}

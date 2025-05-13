@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { AuthContext } from './AuthContext';
 import { useSupabaseClient } from '@/lib/supabase';
 import { UserRole } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -12,21 +13,26 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   
+  // Função de navegação para o login com fallback para redirecionamento direto
+  const navigateToLogin = () => {
+    console.log('Navegando para a página de login...');
+    
+    try {
+      // Primeiro tenta navegar via window.location para garantir uma navegação completa
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro ao navegar para login:', error);
+      
+      // Emergencial: caso falhe o redirecionamento primário
+      setTimeout(() => {
+        console.log('Usando fallback de navegação para login');
+        document.location.replace('/login');
+      }, 100);
+    }
+  };
+  
   return {
     ...context,
-    
-    // Helper function to navigate to login page
-    navigateToLogin: () => {
-      console.log('Navigating to login page');
-      
-      // Force immediate replacement of current URL with login page
-      window.location.replace('/login');
-      
-      // Emergency fallback if replace doesn't work
-      setTimeout(() => {
-        console.log('Using emergency fallback for navigation');
-        document.location.href = '/login';
-      }, 200);
-    }
+    navigateToLogin
   };
 };
