@@ -1,7 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UF } from "@/services/governamental/estadualIntegration";
-import { saveIntegracaoEstadual, saveIntegracaoSimplesNacional, fetchIntegracoesEstaduais } from "@/services/supabase/integracoesService";
+import { 
+  saveIntegracaoEstadual, 
+  saveIntegracaoSimplesNacional, 
+  fetchIntegracoesEstaduais 
+} from "@/services/supabase/integracoesService";
 import { fetchClientById } from "@/services/supabase/clientsService";
 
 export interface IntegracaoStatus {
