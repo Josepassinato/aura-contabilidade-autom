@@ -12,6 +12,7 @@ import {
 import {
   ArrowDownToLine,
   CreditCard,
+  Users,
 } from "lucide-react";
 
 export function AccountantSection() {
@@ -29,8 +30,8 @@ export function AccountantSection() {
                     isActive ? "bg-secondary" : undefined
                   }
                 >
-                  <ArrowDownToLine className="h-5 w-5" />
-                  <span>Acesso Clientes</span>
+                  <Users className="h-5 w-5" />
+                  <span>Portal de Clientes</span>
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -54,4 +55,3 @@ export function AccountantSection() {
     </>
   );
 }
-

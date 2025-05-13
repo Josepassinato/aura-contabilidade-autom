@@ -122,6 +122,36 @@ export async function addClientDocument(
 }
 
 /**
+ * Updates the status of a document
+ * @param documentId Document ID
+ * @param status New status
+ */
+export async function updateDocumentStatus(
+  documentId: string, 
+  status: 'pendente' | 'processado' | 'rejeitado'
+): Promise<boolean> {
+  try {
+    if (!documentId) {
+      throw new Error("Document ID not provided");
+    }
+
+    const { error } = await supabase
+      .from('client_documents')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', documentId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating document status:', error);
+    return false;
+  }
+}
+
+/**
  * Gets a signed URL for viewing a document
  * @param document The document to view
  * @returns URL to view the document or null if there was an error
@@ -131,4 +161,3 @@ export async function getDocumentViewUrl(document: ClientDocument): Promise<stri
   
   return getFileUrl(document.file_path);
 }
-

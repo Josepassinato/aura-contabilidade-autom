@@ -5,14 +5,32 @@ import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayou
 import { ClientTokenManager } from "@/components/client-access/ClientTokenManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const ClientAccess = () => {
   const { isAuthenticated, isAccountant, isAdmin } = useAuth();
   const isAccountantOrAdmin = isAccountant || isAdmin;
+  const { toast } = useToast();
   
   // Se o usuário logado for um contador ou administrador, mostrar a página de gerenciamento de tokens
   // Caso contrário, mostrar o formulário de acesso para clientes
+  
+  const accessTestAccount = () => {
+    // Configurar cliente de exemplo para teste
+    sessionStorage.setItem('client_id', 'test-client-123');
+    sessionStorage.setItem('client_name', 'Empresa Teste');
+    sessionStorage.setItem('client_cnpj', '12.345.678/0001-90');
+    
+    toast({
+      title: "Acesso direto ativado",
+      description: "Você está acessando como cliente de teste",
+    });
+    
+    // Redirecionar para o portal do cliente
+    window.location.href = '/client-portal';
+  };
   
   if (isAuthenticated && isAccountantOrAdmin) {
     return (
@@ -26,6 +44,14 @@ const ClientAccess = () => {
           </TabsList>
           
           <TabsContent value="form" className="space-y-4">
+            <div className="flex justify-end mb-4">
+              <Button 
+                variant="secondary" 
+                onClick={accessTestAccount}
+              >
+                Acessar como Cliente Teste
+              </Button>
+            </div>
             <ClientAccessLayout>
               <ClientAccessForm />
             </ClientAccessLayout>
@@ -42,6 +68,15 @@ const ClientAccess = () => {
   // Para usuários não autenticados ou clientes, mostrar apenas o formulário de acesso
   return (
     <ClientAccessLayout>
+      <div className="mb-4 text-center">
+        <Button
+          variant="secondary"
+          onClick={accessTestAccount}
+          className="mx-auto"
+        >
+          Acessar como Cliente Teste
+        </Button>
+      </div>
       <ClientAccessForm />
     </ClientAccessLayout>
   );
