@@ -101,7 +101,7 @@ export function useClients(enabled = true) {
           description: "Não foi possível carregar a lista de clientes",
           variant: "destructive",
         });
-      },
+      }
     }
   );
 }
