@@ -9,6 +9,32 @@ import { UserProfile } from './supabase';
 const SUPABASE_URL = "https://watophocqlcyimirzrpe.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdG9waG9jcWxjeWltaXJ6cnBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5OTUyNjQsImV4cCI6MjA2MjU3MTI2NH0.aTF2XWWUhxtrrp4V08BvM5WAGQULlppgkIhXnCSLXrg";
 
+// Verifica estados problemáticos de autenticação
+const checkForAuthLimboState = () => {
+  // Verificar tokens expirados ou corrompidos no localStorage
+  try {
+    const storedSession = localStorage.getItem('supabase.auth.token');
+    if (storedSession) {
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        const expiresAt = parsedSession?.expiresAt;
+        
+        if (expiresAt && new Date(expiresAt * 1000) < new Date()) {
+          // Sessão expirada, limpar
+          console.warn('Detectada sessão expirada, limpando estado de autenticação');
+          cleanupAuthState();
+        }
+      } catch (e) {
+        // Token corrompido, limpar
+        console.warn('Token de autenticação corrompido, limpando');
+        cleanupAuthState();
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao verificar estado de autenticação:', err);
+  }
+};
+
 // Configuração explícita da instância do cliente Supabase
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
