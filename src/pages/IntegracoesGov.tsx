@@ -110,7 +110,7 @@ const IntegracoesGov = () => {
             status: spIntegracao.status,
             ultimoAcesso: spIntegracao.ultimoAcesso,
             proximaRenovacao: spIntegracao.proximaRenovacao,
-            mensagem: spIntegracao.mensagem
+            mensagem: spIntegracao.mensagemErro // Fixed: using mensagemErro instead of mensagem
           };
         }
       }
@@ -125,7 +125,7 @@ const IntegracoesGov = () => {
             status: rjIntegracao.status,
             ultimoAcesso: rjIntegracao.ultimoAcesso,
             proximaRenovacao: rjIntegracao.proximaRenovacao,
-            mensagem: rjIntegracao.mensagem
+            mensagem: rjIntegracao.mensagemErro // Fixed: using mensagemErro instead of mensagem
           };
         }
       }
