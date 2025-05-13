@@ -1,176 +1,164 @@
 
-import React from 'react';
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import ClientAccess from "./pages/ClientAccess";
+import ClientPortal from "./pages/ClientPortal";
+import Settings from "./pages/Settings";
+import GerenciarClientes from "./pages/GerenciarClientes";
+import Onboarding from "./pages/Onboarding";
+import OnboardingWelcome from "./pages/OnboardingWelcome";
+import ObrigacoesFiscais from "./pages/ObrigacoesFiscais";
+import RelatoriosFinanceiros from "./pages/RelatoriosFinanceiros"; 
+import CalculosFiscais from "./pages/CalculosFiscais";
+import AutomacaoBancaria from "./pages/AutomacaoBancaria";
+import IntegracoesGov from "./pages/IntegracoesGov";
+import IntegracoesEstaduais from "./pages/IntegracoesEstaduais";
+import PlansAndPricing from "./pages/PlansAndPricing";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
+import Colaboradores from "./pages/Colaboradores";
+import EmailService from "./pages/EmailService";
+import GuiasFiscais from "./pages/GuiasFiscais";
+import FolhaPagamento from "./pages/FolhaPagamento";
+import ClientDocuments from "./pages/ClientDocuments";
+import RegimeFiscal from "./pages/RegimeFiscal";
+import AnalisesPreditivas from "./pages/AnalisesPreditivas";
+import RelatoriosIA from "./pages/RelatoriosIA";
+import ApuracaoAutomatica from "./pages/ApuracaoAutomatica";
+import Notifications from "./pages/Notifications";
+import BusinessAnalytics from "./pages/admin/BusinessAnalytics";
+import UsageMetrics from "./pages/admin/UsageMetrics";
 
-// Import pages
-import Index from '@/pages/Index';
-import Settings from '@/pages/Settings';
-import FolhaPagamento from '@/pages/FolhaPagamento';
-import ObrigacoesFiscais from '@/pages/ObrigacoesFiscais';
-import GuiasFiscais from '@/pages/GuiasFiscais';
-import GerenciarClientes from '@/pages/GerenciarClientes';
-import Colaboradores from '@/pages/Colaboradores';
-import AnalisesPreditivas from '@/pages/AnalisesPreditivas';
-import ApuracaoAutomatica from '@/pages/ApuracaoAutomatica';
-import RelatoriosFinanceiros from '@/pages/RelatoriosFinanceiros';
-import RelatoriosIA from '@/pages/RelatoriosIA';
-import CalculosFiscais from '@/pages/CalculosFiscais';
-import AutomacaoBancaria from '@/pages/AutomacaoBancaria';
-import RegimeFiscal from '@/pages/RegimeFiscal';
-import Notifications from '@/pages/Notifications';
-import Login from '@/pages/Login';
-import NotFound from '@/pages/NotFound';
-import IntegracoesGov from '@/pages/IntegracoesGov';
-import IntegracoesEstaduais from '@/pages/IntegracoesEstaduais';
-import ClientAccess from '@/pages/ClientAccess';
-import ClientPortal from '@/pages/ClientPortal';
-import PlansAndPricing from '@/pages/PlansAndPricing';
-import PaymentSuccess from '@/pages/PaymentSuccess';
-import PaymentCanceled from '@/pages/PaymentCanceled';
-import ClientDocuments from '@/pages/ClientDocuments';
-import EmailService from '@/pages/EmailService';
-import Onboarding from '@/pages/Onboarding';
-import OnboardingWelcome from '@/pages/OnboardingWelcome';
-import BusinessAnalytics from '@/pages/admin/BusinessAnalytics';
+// Export the AppRoutes component for use in App.tsx
+export const AppRoutes = () => null;
 
-// Routes that should have the sidebar
-const routesWithSidebar = [
-  {
-    path: '', // No leading slash here - this becomes relative to parent
-    element: <Index />
-  },
-  {
-    path: 'settings',  // No leading slash - relative path
-    element: <Settings />
-  },
-  {
-    path: 'folha-pagamento',
-    element: <FolhaPagamento />
-  },
-  {
-    path: 'client-access',
-    element: <ClientAccess />
-  },
-  {
-    path: 'obrigacoes-fiscais',
-    element: <ObrigacoesFiscais />
-  },
-  {
-    path: 'guias-fiscais',
-    element: <GuiasFiscais />
-  },
-  {
-    path: 'gerenciar-clientes',
-    element: <GerenciarClientes />
-  },
-  {
-    path: 'colaboradores',
-    element: <Colaboradores />
-  },
-  {
-    path: 'analises-preditivas',
-    element: <AnalisesPreditivas />
-  },
-  {
-    path: 'apuracao-automatica',
-    element: <ApuracaoAutomatica />
-  },
-  {
-    path: 'relatorios-financeiros',
-    element: <RelatoriosFinanceiros />
-  },
-  {
-    path: 'relatorios-ia',
-    element: <RelatoriosIA />
-  },
-  {
-    path: 'calculos-fiscais',
-    element: <CalculosFiscais />
-  },
-  {
-    path: 'automacao-bancaria',
-    element: <AutomacaoBancaria />
-  },
-  {
-    path: 'regime-fiscal',
-    element: <RegimeFiscal />
-  },
-  {
-    path: 'notifications',
-    element: <Notifications />
-  },
-  {
-    path: 'integracoes-gov',
-    element: <IntegracoesGov />
-  },
-  {
-    path: 'integracoes-estaduais',
-    element: <IntegracoesEstaduais />
-  },
-  {
-    path: 'plans',
-    element: <PlansAndPricing />
-  },
-  {
-    path: 'documentos',
-    element: <ClientDocuments />
-  },
-  {
-    path: 'email-service',
-    element: <EmailService />
-  },
-  // Add new admin routes
-  {
-    path: 'admin/business-analytics',
-    element: <BusinessAnalytics />
-  }
-];
-
-// Routes for non-authenticated users or special pages
 const routes = [
   {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />
+    path: "/",
+    element: <Index />,
   },
   {
-    path: '/login',
-    element: <Login />
+    path: "/login",
+    element: <Login />,
   },
   {
-    path: '/dashboard/*',
-    children: routesWithSidebar
+    path: "/dashboard",
+    element: <Index />,
   },
   {
-    path: '/client-portal',
-    element: <ClientPortal />
+    path: "/settings",
+    element: <Settings />,
   },
   {
-    path: '/payment/success',
-    element: <PaymentSuccess />
+    path: "/client-access",
+    element: <ClientAccess />,
   },
   {
-    path: '/payment/canceled',
-    element: <PaymentCanceled />
+    path: "/client-portal",
+    element: <ClientPortal />,
   },
   {
-    path: '/onboarding',
-    element: <Onboarding />
+    path: "/client-documents",
+    element: <ClientDocuments />,
   },
   {
-    path: '/welcome',
-    element: <OnboardingWelcome />
+    path: "/clients",
+    element: <GerenciarClientes />,
   },
   {
-    path: '*',
-    element: <NotFound />
+    path: "/onboarding",
+    element: <Onboarding />,
+  },
+  {
+    path: "/welcome",
+    element: <OnboardingWelcome />,
+  },
+  {
+    path: "/obrigacoes-fiscais",
+    element: <ObrigacoesFiscais />,
+  },
+  {
+    path: "/relatorios",
+    element: <RelatoriosFinanceiros />,
+  },
+  {
+    path: "/calculos-fiscais",
+    element: <CalculosFiscais />,
+  },
+  {
+    path: "/automacao-bancaria",
+    element: <AutomacaoBancaria />,
+  },
+  {
+    path: "/integracoes-gov",
+    element: <IntegracoesGov />,
+  },
+  {
+    path: "/integracoes-estaduais",
+    element: <IntegracoesEstaduais />,
+  },
+  {
+    path: "/plans",
+    element: <PlansAndPricing />,
+  },
+  {
+    path: "/payment/success",
+    element: <PaymentSuccess />,
+  },
+  {
+    path: "/payment/canceled",
+    element: <PaymentCanceled />,
+  },
+  {
+    path: "/colaboradores",
+    element: <Colaboradores />,
+  },
+  {
+    path: "/email",
+    element: <EmailService />,
+  },
+  {
+    path: "/guias-fiscais",
+    element: <GuiasFiscais />,
+  },
+  {
+    path: "/folha-pagamento",
+    element: <FolhaPagamento />,
+  },
+  {
+    path: "/regime-fiscal",
+    element: <RegimeFiscal />,
+  },
+  {
+    path: "/analises-preditivas",
+    element: <AnalisesPreditivas />,
+  },
+  {
+    path: "/relatorios-ia",
+    element: <RelatoriosIA />,
+  },
+  {
+    path: "/apuracao-automatica",
+    element: <ApuracaoAutomatica />,
+  },
+  {
+    path: "/notifications",
+    element: <Notifications />,
+  },
+  {
+    path: "/admin/business-analytics",
+    element: <BusinessAnalytics />,
+  },
+  {
+    path: "/admin/usage-metrics",
+    element: <UsageMetrics />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ];
 
-const router = createBrowserRouter(routes);
-
-// Create an AppRoutes component to export
-export function AppRoutes() {
-  return <RouterProvider router={router} />;
-}
-
-export default router;
+export const router = createBrowserRouter(routes);

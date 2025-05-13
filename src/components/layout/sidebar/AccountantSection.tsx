@@ -1,194 +1,117 @@
 
-import React from 'react';
+import React from "react";
+import { useLocation } from "react-router-dom";
 import { 
-  BarChart4, Users, FileText, Calendar, Calculator, 
-  FileSpreadsheet, Building2, BadgePercent, Receipt, 
-  CreditCard, Activity, PieChart, Lock, Building
-} from 'lucide-react';
+  Building, 
+  Calendar, 
+  FileText, 
+  CreditCard, 
+  BarChart3, 
+  Calculator,
+  Users,
+  LineChart
+} from "lucide-react";
+
 import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton 
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { useAuth } from '@/contexts/auth';
-import { Separator } from '@/components/ui/separator';
 
 export function AccountantSection() {
-  const { isAdmin, isAccountant } = useAuth();
-
-  // If not admin or accountant, don't show this section
-  if (!isAdmin && !isAccountant) {
-    return null;
-  }
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   return (
     <>
-      <div className="px-4 my-2">
-        <h2 className="mb-2 text-lg font-semibold tracking-tight">
-          Contabilidade
-        </h2>
-        <div className="space-y-1">
-          {isAccountant && (
+      <SidebarGroup>
+        <SidebarGroupLabel>Contabilidade</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Guias Fiscais">
-                <a href="/dashboard/guias-fiscais">
-                  <FileText />
-                  <span>Guias Fiscais</span>
+              <SidebarMenuButton asChild active={currentPath === "/clients"}>
+                <a href="/clients">
+                  <Building className="h-4 w-4" />
+                  <span>Clientes</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )}
-          
-          {isAccountant && (
+            
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Obrigações Fiscais">
-                <a href="/dashboard/obrigacoes-fiscais">
-                  <Calendar />
+              <SidebarMenuButton asChild active={currentPath === "/obrigacoes-fiscais"}>
+                <a href="/obrigacoes-fiscais">
+                  <Calendar className="h-4 w-4" />
                   <span>Obrigações Fiscais</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )}
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Regime Fiscal">
-              <a href="/dashboard/regime-fiscal">
-                <BadgePercent />
-                <span>Regime Fiscal</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Cálculos Fiscais">
-              <a href="/dashboard/calculos-fiscais">
-                <Calculator />
-                <span>Cálculos Fiscais</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          {isAccountant && (
+            
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Apuração Automática">
-                <a href="/dashboard/apuracao-automatica">
-                  <Receipt />
-                  <span>Apuração Automática</span>
+              <SidebarMenuButton asChild active={currentPath === "/guias-fiscais"}>
+                <a href="/guias-fiscais">
+                  <FileText className="h-4 w-4" />
+                  <span>Guias Fiscais</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )}
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Folha de Pagamento">
-              <a href="/dashboard/folha-pagamento">
-                <Users />
-                <span>Folha de Pagamento</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Relatórios Financeiros">
-              <a href="/dashboard/relatorios-financeiros">
-                <FileSpreadsheet />
-                <span>Relatórios Financeiros</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </div>
-      </div>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild active={currentPath === "/folha-pagamento"}>
+                <a href="/folha-pagamento">
+                  <CreditCard className="h-4 w-4" />
+                  <span>Folha de Pagamento</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild active={currentPath === "/calculos-fiscais"}>
+                <a href="/calculos-fiscais">
+                  <Calculator className="h-4 w-4" />
+                  <span>Cálculos Fiscais</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
       
-      <Separator className="my-2" />
-      
-      {/* Gestão section */}
-      <div className="px-4 my-2">
-        <h2 className="mb-2 text-lg font-semibold tracking-tight">
-          Gestão
-        </h2>
-        <div className="space-y-1">
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Clientes">
-              <a href="/dashboard/gerenciar-clientes">
-                <Building2 />
-                <span>Clientes</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          {isAccountant && (
+      <SidebarGroup>
+        <SidebarGroupLabel>Administração</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Automação Bancária">
-                <a href="/dashboard/automacao-bancaria">
-                  <CreditCard />
-                  <span>Automação Bancária</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
-          
-          {isAccountant && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Acesso de Clientes">
-                <a href="/dashboard/client-access">
-                  <Lock />
-                  <span>Acesso de Clientes</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
-          
-          {isAdmin && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Colaboradores">
-                <a href="/dashboard/colaboradores">
-                  <Users />
+              <SidebarMenuButton asChild active={currentPath === "/colaboradores"}>
+                <a href="/colaboradores">
+                  <Users className="h-4 w-4" />
                   <span>Colaboradores</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )}
-        </div>
-      </div>
-      
-      <Separator className="my-2" />
-      
-      {/* Analytics section */}
-      <div className="px-4 my-2">
-        <h2 className="mb-2 text-lg font-semibold tracking-tight">
-          Analytics
-        </h2>
-        <div className="space-y-1">
-          {isAdmin && (
+            
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Indicadores de Negócio">
-                <a href="/dashboard/admin/business-analytics">
-                  <BarChart4 />
-                  <span>Indicadores de Negócio</span>
+              <SidebarMenuButton asChild active={currentPath === "/admin/business-analytics"}>
+                <a href="/admin/business-analytics">
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Análise de Negócio</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )}
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Análises Preditivas">
-              <a href="/dashboard/analises-preditivas">
-                <Activity />
-                <span>Análises Preditivas</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="IA Insights">
-              <a href="/dashboard/relatorios-ia">
-                <PieChart />
-                <span>IA Insights</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </div>
-      </div>
+            
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild active={currentPath === "/admin/usage-metrics"}>
+                <a href="/admin/usage-metrics">
+                  <LineChart className="h-4 w-4" />
+                  <span>Métricas de Uso</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     </>
   );
 }
