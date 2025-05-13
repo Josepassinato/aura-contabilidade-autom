@@ -45,7 +45,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {toggleVoiceAssistant && (
               <VoiceAssistantButton 
                 isActive={isVoiceActive || false} 
-                onToggle={toggleVoiceAssistant} 
+                onClick={toggleVoiceAssistant} 
               />
             )}
           </>
