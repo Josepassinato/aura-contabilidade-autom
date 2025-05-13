@@ -1,6 +1,7 @@
 
 import { toast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
+import React from "react";
 
 // Tipos de erros comuns
 export type APIError = {
