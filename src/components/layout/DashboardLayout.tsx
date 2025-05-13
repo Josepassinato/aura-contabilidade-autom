@@ -22,7 +22,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background">
         <div className="sidebar-nav">
-          <DashboardSidebar />
+          <DashboardSidebar 
+            isVoiceActive={isVoiceActive}
+            toggleVoiceAssistant={toggleVoiceAssistant}
+          />
         </div>
         
         <main className="flex-1 overflow-auto dashboard-main">

@@ -8,7 +8,8 @@ import {
   Clock, 
   Building2, 
   Users, 
-  Key
+  Key,
+  LineChart
 } from "lucide-react";
 
 import {
@@ -43,6 +44,15 @@ export function CommonSection() {
           <Link to="/guias-fiscais">
             <FileText />
             <span>Guias Fiscais</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild tooltip="Relatórios Financeiros">
+          <Link to="/relatorios-financeiros">
+            <LineChart />
+            <span>Relatórios Financeiros</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

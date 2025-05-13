@@ -16,7 +16,10 @@ interface DashboardSidebarProps {
   toggleVoiceAssistant?: () => void;
 }
 
-const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
+const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
+  isVoiceActive,
+  toggleVoiceAssistant
+}) => {
   // Get permissions, with a fallback for when auth context is not available
   const { isAccountantOrAdmin } = useSidebarPermissions();
 
@@ -41,4 +44,3 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = () => {
 };
 
 export default DashboardSidebar;
-
