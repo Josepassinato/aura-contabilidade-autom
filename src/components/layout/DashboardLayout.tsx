@@ -5,9 +5,10 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
+import { Outlet } from 'react-router-dom';
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -31,7 +32,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           />
           
           <div className="p-6">
-            {children}
+            {children || <Outlet />}
           </div>
         </main>
         

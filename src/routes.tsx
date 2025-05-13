@@ -27,16 +27,13 @@ import RegimeFiscal from './pages/RegimeFiscal';
 import Notifications from './pages/Notifications';
 import IntegracoesGov from './pages/IntegracoesGov';
 import IntegracoesEstaduais from './pages/IntegracoesEstaduais';
+import DashboardLayout from './components/layout/DashboardLayout';
 
-export const router = createBrowserRouter([
+// Routes that should have the sidebar
+const routesWithSidebar = [
   {
     path: '/',
-    element: <Index />,
-    errorElement: <NotFound />
-  },
-  {
-    path: '/login',
-    element: <Login />
+    element: <Index />
   },
   {
     path: '/settings',
@@ -49,14 +46,6 @@ export const router = createBrowserRouter([
   {
     path: '/client-access',
     element: <ClientAccess />
-  },
-  {
-    path: '/client-portal/:clientId',
-    element: <ClientPortal />,
-  },
-  {
-    path: '/client-documents/:clientId',
-    element: <ClientDocuments />
   },
   {
     path: '/obrigacoes-fiscais',
@@ -99,26 +88,6 @@ export const router = createBrowserRouter([
     element: <AutomacaoBancaria />
   },
   {
-    path: '/onboarding',
-    element: <Onboarding />
-  },
-  {
-    path: '/onboarding-welcome',
-    element: <OnboardingWelcome />
-  },
-  {
-    path: '/plans',
-    element: <PlansAndPricing />
-  },
-  {
-    path: '/payment-success',
-    element: <PaymentSuccess />
-  },
-  {
-    path: '/payment-canceled',
-    element: <PaymentCanceled />
-  },
-  {
     path: '/regime-fiscal',
     element: <RegimeFiscal />
   },
@@ -133,7 +102,53 @@ export const router = createBrowserRouter([
   {
     path: '/integracoes-estaduais',
     element: <IntegracoesEstaduais />
+  },
+  {
+    path: '/plans',
+    element: <PlansAndPricing />
+  },
+];
+
+// Routes that should NOT have the sidebar
+const routesWithoutSidebar = [
+  {
+    path: '/login',
+    element: <Login />
+  },
+  {
+    path: '/onboarding',
+    element: <Onboarding />
+  },
+  {
+    path: '/onboarding-welcome',
+    element: <OnboardingWelcome />
+  },
+  {
+    path: '/payment-success',
+    element: <PaymentSuccess />
+  },
+  {
+    path: '/payment-canceled',
+    element: <PaymentCanceled />
+  },
+  {
+    path: '/client-portal/:clientId',
+    element: <ClientPortal />
+  },
+  {
+    path: '/client-documents/:clientId',
+    element: <ClientDocuments />
   }
+];
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <DashboardLayout />,
+    errorElement: <NotFound />,
+    children: routesWithSidebar
+  },
+  ...routesWithoutSidebar
 ]);
 
 export function AppRoutes() {
