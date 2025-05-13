@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 
 // Import pages
 import Index from '@/pages/Index';
@@ -167,5 +167,10 @@ const routes = [
 ];
 
 const router = createBrowserRouter(routes);
+
+// Create an AppRoutes component to export
+export function AppRoutes() {
+  return <RouterProvider router={router} />;
+}
 
 export default router;

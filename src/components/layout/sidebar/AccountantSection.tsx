@@ -5,7 +5,11 @@ import {
   FileSpreadsheet, Building2, BadgePercent, Receipt, 
   CreditCard, Activity, PieChart, Lock, Building
 } from 'lucide-react';
-import { SidebarItem } from "@/components/ui/sidebar";
+import { 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton 
+} from "@/components/ui/sidebar";
 import { useAuth } from '@/contexts/auth';
 import { Separator } from '@/components/ui/separator';
 
@@ -25,38 +29,73 @@ export function AccountantSection() {
         </h2>
         <div className="space-y-1">
           {isAccountant && (
-            <SidebarItem icon={<FileText />} href="/dashboard/guias-fiscais">
-              Guias Fiscais
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Guias Fiscais">
+                <a href="/dashboard/guias-fiscais">
+                  <FileText />
+                  <span>Guias Fiscais</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
           {isAccountant && (
-            <SidebarItem icon={<Calendar />} href="/dashboard/obrigacoes-fiscais">
-              Obrigações Fiscais
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Obrigações Fiscais">
+                <a href="/dashboard/obrigacoes-fiscais">
+                  <Calendar />
+                  <span>Obrigações Fiscais</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
-          <SidebarItem icon={<BadgePercent />} href="/dashboard/regime-fiscal">
-            Regime Fiscal
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Regime Fiscal">
+              <a href="/dashboard/regime-fiscal">
+                <BadgePercent />
+                <span>Regime Fiscal</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
-          <SidebarItem icon={<Calculator />} href="/dashboard/calculos-fiscais">
-            Cálculos Fiscais
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Cálculos Fiscais">
+              <a href="/dashboard/calculos-fiscais">
+                <Calculator />
+                <span>Cálculos Fiscais</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
           {isAccountant && (
-            <SidebarItem icon={<Receipt />} href="/dashboard/apuracao-automatica">
-              Apuração Automática
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Apuração Automática">
+                <a href="/dashboard/apuracao-automatica">
+                  <Receipt />
+                  <span>Apuração Automática</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
-          <SidebarItem icon={<Users />} href="/dashboard/folha-pagamento">
-            Folha de Pagamento
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Folha de Pagamento">
+              <a href="/dashboard/folha-pagamento">
+                <Users />
+                <span>Folha de Pagamento</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
-          <SidebarItem icon={<FileSpreadsheet />} href="/dashboard/relatorios-financeiros">
-            Relatórios Financeiros
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Relatórios Financeiros">
+              <a href="/dashboard/relatorios-financeiros">
+                <FileSpreadsheet />
+                <span>Relatórios Financeiros</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </div>
       </div>
       
@@ -68,26 +107,46 @@ export function AccountantSection() {
           Gestão
         </h2>
         <div className="space-y-1">
-          <SidebarItem icon={<Building2 />} href="/dashboard/gerenciar-clientes">
-            Clientes
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Clientes">
+              <a href="/dashboard/gerenciar-clientes">
+                <Building2 />
+                <span>Clientes</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
           {isAccountant && (
-            <SidebarItem icon={<CreditCard />} href="/dashboard/automacao-bancaria">
-              Automação Bancária
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Automação Bancária">
+                <a href="/dashboard/automacao-bancaria">
+                  <CreditCard />
+                  <span>Automação Bancária</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
           {isAccountant && (
-            <SidebarItem icon={<Lock />} href="/dashboard/client-access">
-              Acesso de Clientes
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Acesso de Clientes">
+                <a href="/dashboard/client-access">
+                  <Lock />
+                  <span>Acesso de Clientes</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
           {isAdmin && (
-            <SidebarItem icon={<Users />} href="/dashboard/colaboradores">
-              Colaboradores
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Colaboradores">
+                <a href="/dashboard/colaboradores">
+                  <Users />
+                  <span>Colaboradores</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
         </div>
       </div>
@@ -101,18 +160,33 @@ export function AccountantSection() {
         </h2>
         <div className="space-y-1">
           {isAdmin && (
-            <SidebarItem icon={<BarChart4 />} href="/dashboard/admin/business-analytics">
-              Indicadores de Negócio
-            </SidebarItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Indicadores de Negócio">
+                <a href="/dashboard/admin/business-analytics">
+                  <BarChart4 />
+                  <span>Indicadores de Negócio</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           )}
           
-          <SidebarItem icon={<Activity />} href="/dashboard/analises-preditivas">
-            Análises Preditivas
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Análises Preditivas">
+              <a href="/dashboard/analises-preditivas">
+                <Activity />
+                <span>Análises Preditivas</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
-          <SidebarItem icon={<PieChart />} href="/dashboard/relatorios-ia">
-            IA Insights
-          </SidebarItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="IA Insights">
+              <a href="/dashboard/relatorios-ia">
+                <PieChart />
+                <span>IA Insights</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </div>
       </div>
     </>
