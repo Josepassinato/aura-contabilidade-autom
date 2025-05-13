@@ -10,6 +10,7 @@ interface ChatInputProps {
   onSubmit: (e: React.FormEvent) => void;
   onVoiceRecognition: () => void;
   isProcessing: boolean;
+  disabled?: boolean; // Added the disabled prop
 }
 
 export function ChatInput({
@@ -17,7 +18,8 @@ export function ChatInput({
   onChange,
   onSubmit,
   onVoiceRecognition,
-  isProcessing
+  isProcessing,
+  disabled
 }: ChatInputProps) {
   return (
     <form onSubmit={onSubmit} className="flex items-center gap-2">
@@ -25,7 +27,7 @@ export function ChatInput({
         value={value}
         onChange={onChange}
         placeholder="Digite sua mensagem..."
-        disabled={isProcessing}
+        disabled={isProcessing || disabled}
         className="flex-1"
       />
       <Button
@@ -33,7 +35,7 @@ export function ChatInput({
         size="icon"
         variant="ghost"
         onClick={onVoiceRecognition}
-        disabled={isProcessing}
+        disabled={isProcessing || disabled}
         className={isProcessing ? "animate-pulse bg-primary/10" : ""}
       >
         <Mic className="h-4 w-4" />
@@ -41,7 +43,7 @@ export function ChatInput({
       <Button
         type="submit"
         size="icon"
-        disabled={!value.trim() || isProcessing}
+        disabled={!value.trim() || isProcessing || disabled}
       >
         <Send className="h-4 w-4" />
       </Button>

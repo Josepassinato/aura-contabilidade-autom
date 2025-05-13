@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { X, FileText, Send, Download } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
 import { ConversationContainer } from './voice-assistant/ConversationContainer';
 import { ChatInput } from './voice-assistant/ChatInput';
