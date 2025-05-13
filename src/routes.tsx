@@ -12,6 +12,7 @@ import CustomerManagement from "@/pages/admin/CustomerManagement";
 import UsageMetrics from "@/pages/admin/UsageMetrics";
 import Settings from "@/pages/Settings";
 import RelatoriosIA from "@/pages/RelatoriosIA";
+import ClientAccess from "@/pages/ClientAccess";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -63,6 +64,10 @@ const routes = createBrowserRouter([
   {
     path: "/relatorios-ia",
     element: <RelatoriosIA />
+  },
+  {
+    path: "/client-access",
+    element: <ClientAccess />
   }
 ]);
 
