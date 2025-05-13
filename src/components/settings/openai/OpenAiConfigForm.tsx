@@ -18,9 +18,10 @@ import { openAiConfigSchema, OpenAiConfigFormValues } from "./schema";
 type OpenAiConfigFormProps = {
   onSubmit: (data: OpenAiConfigFormValues) => Promise<void>;
   initialValues: OpenAiConfigFormValues;
+  children?: React.ReactNode; // Add support for children prop
 };
 
-export function OpenAiConfigForm({ onSubmit, initialValues }: OpenAiConfigFormProps) {
+export function OpenAiConfigForm({ onSubmit, initialValues, children }: OpenAiConfigFormProps) {
   const form = useForm<OpenAiConfigFormValues>({
     resolver: zodResolver(openAiConfigSchema),
     defaultValues: initialValues,
@@ -133,7 +134,7 @@ export function OpenAiConfigForm({ onSubmit, initialValues }: OpenAiConfigFormPr
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 pt-2">
-          <slot name="form-actions" />
+          {children}
         </div>
       </form>
     </Form>

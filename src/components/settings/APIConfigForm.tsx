@@ -90,7 +90,7 @@ export function APIConfigForm() {
         onSubmit={onSubmit}
         initialValues={storedValues}
       >
-        <div slot="form-actions" className="flex flex-col sm:flex-row gap-4 pt-2">
+        <div className="flex flex-col sm:flex-row gap-4 pt-2">
           <Button type="submit">Salvar Configurações</Button>
           <Button 
             type="button" 
