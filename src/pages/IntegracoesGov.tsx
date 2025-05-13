@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
@@ -8,11 +9,14 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Building2, AlertCircle, CheckCircle, GanttChart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, AlertCircle, CheckCircle, GanttChart, MapPin } from "lucide-react";
 import { IntegracaoStatus, IntegracaoEstadualStatus } from "@/components/integracoes/IntegracaoStatus";
 import { saveIntegracaoEstadual, saveIntegracaoSimplesNacional, fetchIntegracoesEstaduais } from "@/services/supabase/integracoesService";
 import { fetchClientById } from "@/services/supabase/clientsService";
-import { getDefaultIntegracoes } from "@/components/integracoes/constants";
+import { getDefaultIntegracoes, ESTADOS } from "@/components/integracoes/constants";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { UF } from "@/services/governamental/estadualIntegration";
 
 interface IntegracaoStatus {
   id: string;
@@ -28,6 +32,8 @@ const IntegracoesGov = () => {
   const [selectedClientName, setSelectedClientName] = useState<string>('');
   const [selectedClientCnpj, setSelectedClientCnpj] = useState<string>('');
   const [activeTab, setActiveTab] = useState("ecac");
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [selectedState, setSelectedState] = useState<UF | null>(null);
   
   // Estado para as integrações
   const [integracoes, setIntegracoes] = useState<IntegracaoStatus[]>([
@@ -148,12 +154,10 @@ const IntegracoesGov = () => {
           saved = true;
           break;
           
-        case "sefaz_sp":
-          saved = await saveIntegracaoEstadual(selectedClientId, "SP", data);
-          break;
-          
-        case "sefaz_rj":
-          saved = await saveIntegracaoEstadual(selectedClientId, "RJ", data);
+        case "sefaz":
+          if (selectedState) {
+            saved = await saveIntegracaoEstadual(selectedClientId, selectedState, data);
+          }
           break;
           
         case "simples_nacional":
@@ -167,7 +171,7 @@ const IntegracoesGov = () => {
       
       // Atualizar o estado local
       setIntegracoes(prev => prev.map(integracao => 
-        integracao.id === activeTab ? {
+        integracao.id === activeTab || (activeTab === "sefaz" && integracao.id === `sefaz_${selectedState?.toLowerCase()}`) ? {
           ...integracao,
           status: 'conectado',
           ultimoAcesso: new Date().toLocaleString('pt-BR'),
@@ -177,6 +181,12 @@ const IntegracoesGov = () => {
     } catch (error) {
       console.error("Erro ao salvar integração:", error);
     }
+  };
+  
+  const handleStateSelect = (uf: UF) => {
+    setSelectedState(uf);
+    setActiveTab("sefaz");
+    setShowStateDropdown(false);
   };
   
   const getStatusBadge = (status: string) => {
@@ -273,12 +283,31 @@ const IntegracoesGov = () => {
             </Card>
             
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="ecac">e-CAC</TabsTrigger>
-                <TabsTrigger value="sefaz_sp">SEFAZ-SP</TabsTrigger>
-                <TabsTrigger value="sefaz_rj">SEFAZ-RJ</TabsTrigger>
-                <TabsTrigger value="simples_nacional">Simples Nacional</TabsTrigger>
-              </TabsList>
+              <div className="flex items-center gap-2 mb-2">
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="ecac">e-CAC</TabsTrigger>
+                  <TabsTrigger value="sefaz">
+                    SEFAZ {selectedState ? `- ${selectedState}` : ""}
+                  </TabsTrigger>
+                  <TabsTrigger value="simples_nacional">Simples Nacional</TabsTrigger>
+                </TabsList>
+                
+                <DropdownMenu open={showStateDropdown} onOpenChange={setShowStateDropdown}>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      Selecionar Estado
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 max-h-[280px] overflow-y-auto">
+                    {ESTADOS.map((estado) => (
+                      <DropdownMenuItem key={estado.uf} onClick={() => handleStateSelect(estado.uf)}>
+                        {estado.uf} - {estado.nome}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               
               <div className="mt-6">
                 <TabsContent value="ecac">
@@ -289,22 +318,23 @@ const IntegracoesGov = () => {
                   />
                 </TabsContent>
                 
-                <TabsContent value="sefaz_sp">
-                  <IntegracaoEstadualForm 
-                    clientId={selectedClientId}
-                    clientName={selectedClientName}
-                    uf="SP"
-                    onSave={handleSaveIntegracao}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="sefaz_rj">
-                  <IntegracaoEstadualForm 
-                    clientId={selectedClientId}
-                    clientName={selectedClientName}
-                    uf="RJ"
-                    onSave={handleSaveIntegracao}
-                  />
+                <TabsContent value="sefaz">
+                  {selectedState ? (
+                    <IntegracaoEstadualForm 
+                      clientId={selectedClientId}
+                      clientName={selectedClientName}
+                      uf={selectedState}
+                      onSave={handleSaveIntegracao}
+                    />
+                  ) : (
+                    <div className="p-8 text-center border rounded-lg">
+                      <MapPin className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 text-lg font-medium">Selecione um estado</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Escolha um estado no botão acima para configurar a integração com sua SEFAZ
+                      </p>
+                    </div>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="simples_nacional">
