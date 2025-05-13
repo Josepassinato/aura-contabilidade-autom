@@ -18,14 +18,15 @@ export const useAuth = () => {
     // Helper function to navigate to login page
     navigateToLogin: () => {
       console.log('Navigating to login page');
-      // Use the most direct and forceful method to navigate
-      window.location.href = '/login';
-      // Force page reload if needed
+      
+      // Force immediate replacement of current URL with login page
+      window.location.replace('/login');
+      
+      // Emergency fallback if replace doesn't work
       setTimeout(() => {
-        if (window.location.pathname !== '/login') {
-          window.location.replace('/login');
-        }
-      }, 100);
+        console.log('Using emergency fallback for navigation');
+        document.location.href = '/login';
+      }, 200);
     }
   };
 };

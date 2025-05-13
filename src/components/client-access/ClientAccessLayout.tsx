@@ -13,14 +13,15 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
   
   const handleBackToLogin = () => {
     console.log('Back to login button clicked');
-    // Try direct navigation first
-    window.location.href = '/login';
-    // Use the context method as fallback
+    
+    // Force immediate navigation with page reload
+    window.location.replace('/login');
+    
+    // Fallback if replace doesn't work
     setTimeout(() => {
-      if (window.location.pathname !== '/login') {
-        navigateToLogin();
-      }
-    }, 50);
+      console.log('Using fallback navigation');
+      window.location.href = '/login';
+    }, 100);
   };
   
   return (
