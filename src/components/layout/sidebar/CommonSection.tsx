@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -11,7 +10,7 @@ import {
   Key,
   LineChart,
   Calculator,
-  Bank,
+  Ban,
   Bell,
   CloudLightning,
   BarChart,
@@ -122,7 +121,7 @@ export function CommonSection() {
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Automação Bancária">
           <Link to="/automacao-bancaria">
-            <Bank />
+            <Ban />
             <span>Automação Bancária</span>
           </Link>
         </SidebarMenuButton>
