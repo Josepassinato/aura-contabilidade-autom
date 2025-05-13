@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, UseQueryOptions, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from "@/hooks/use-toast";
-import { supabase } from '@/lib/supabaseService';
+import { supabase } from '@/lib/supabase';
 import { PostgrestError } from '@supabase/supabase-js';
 
 // Cliente React Query centralizado
