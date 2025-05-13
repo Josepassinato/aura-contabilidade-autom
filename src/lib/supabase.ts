@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -16,6 +15,7 @@ export interface Employee {
   status: string;
   created_at?: string;
   cpf?: string;
+  notes?: string | null;
 }
 
 export interface PayrollEntry {
