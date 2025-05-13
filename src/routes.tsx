@@ -21,6 +21,10 @@ const routes = createBrowserRouter([
     element: <Index />
   },
   {
+    path: "/dashboard",
+    element: <Index />
+  },
+  {
     path: "/login",
     element: <Login />
   },
