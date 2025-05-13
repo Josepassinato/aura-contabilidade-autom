@@ -1,11 +1,10 @@
-
 import React, { useEffect } from "react";
 import { ClientAccessForm } from "@/components/client-access/ClientAccessForm";
 import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
 import { ClientTokenManager } from "@/components/client-access/ClientTokenManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
@@ -33,15 +32,23 @@ const ClientAccess = () => {
     window.location.href = '/client-portal';
   };
   
+  const handleBackToMain = () => {
+    // Force navigation to main dashboard
+    window.location.href = '/';
+  };
+  
   if (isAuthenticated && isAccountantOrAdmin) {
     return (
       <div className="container max-w-4xl py-8">
         <div className="mb-6">
-          <Button variant="ghost" size="sm" asChild className="flex items-center">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para o painel principal
-            </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center"
+            onClick={handleBackToMain}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para o painel principal
           </Button>
         </div>
         

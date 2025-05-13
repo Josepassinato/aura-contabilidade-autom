@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,6 +9,13 @@ interface ClientAccessLayoutProps {
 }
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
+  const navigate = useNavigate();
+  
+  const handleBackToLogin = () => {
+    // Force navigation to login page
+    window.location.href = '/login';
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="max-w-md w-full">
@@ -18,11 +25,14 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
         </div>
         
         <div className="mb-6">
-          <Button variant="ghost" size="sm" asChild className="flex items-center">
-            <Link to="/login">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para o login geral
-            </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center"
+            onClick={handleBackToLogin}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para o login geral
           </Button>
         </div>
         
