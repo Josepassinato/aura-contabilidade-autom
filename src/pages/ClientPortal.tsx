@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,20 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { LogOut, Building, FileText, Calendar, DollarSign } from "lucide-react";
 import { useSupabaseClient } from "@/lib/supabase";
-
-// Componente para o cabeçalho do portal do cliente
-const ClientHeader = ({ clientName, onLogout }: { clientName: string, onLogout: () => void }) => (
-  <header className="h-16 px-6 border-b flex items-center justify-between bg-background">
-    <div className="flex items-center space-x-2">
-      <Building className="h-5 w-5 text-primary" />
-      <h1 className="text-lg font-medium">{clientName}</h1>
-    </div>
-    <Button variant="outline" size="sm" onClick={onLogout}>
-      <LogOut className="h-4 w-4 mr-2" />
-      Sair
-    </Button>
-  </header>
-);
+import { ClientHeader } from "@/components/client-portal/ClientHeader";
 
 // Componente para exibir um resumo financeiro
 const FinancialSummary = ({ clientId }: { clientId: string }) => {
@@ -105,44 +92,11 @@ const TaxObligations = ({ clientId }: { clientId: string }) => {
   );
 };
 
-// Componente para exibir documentos
-const Documents = ({ clientId }: { clientId: string }) => {
-  const [documents, setDocuments] = useState([
-    { id: 1, name: 'Balanço Patrimonial', date: '10/05/2025', type: 'contábil' },
-    { id: 2, name: 'DRE', date: '10/05/2025', type: 'contábil' },
-    { id: 3, name: 'Notas Fiscais Abril', date: '05/05/2025', type: 'fiscal' }
-  ]);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Documentos Recentes
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {documents.map(doc => (
-            <div key={doc.id} className="flex justify-between p-2 border-b">
-              <div>
-                <p className="font-medium">{doc.name}</p>
-                <p className="text-xs text-muted-foreground">{doc.date}</p>
-              </div>
-              <div>
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                  {doc.type}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+// Utilizando nosso componente Documents já existente
+import { Documents } from "@/components/client-portal/Documents";
 
 const ClientPortal = () => {
+  const { clientId } = useParams<{ clientId: string }>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [clientInfo, setClientInfo] = useState<{ id: string; name: string; cnpj: string } | null>(null);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
@@ -151,17 +105,21 @@ const ClientPortal = () => {
 
   useEffect(() => {
     // Verificar se o cliente está autenticado
-    const clientId = sessionStorage.getItem('client_id');
-    const clientName = sessionStorage.getItem('client_name');
-    const clientCnpj = sessionStorage.getItem('client_cnpj');
+    const storedClientId = sessionStorage.getItem('client_id');
+    const storedClientName = sessionStorage.getItem('client_name');
+    const storedClientCnpj = sessionStorage.getItem('client_cnpj');
     
-    if (clientId && clientName && clientCnpj) {
-      setClientInfo({ id: clientId, name: clientName, cnpj: clientCnpj });
+    if (storedClientId && storedClientName && storedClientCnpj) {
+      setClientInfo({ 
+        id: clientId || storedClientId, 
+        name: storedClientName, 
+        cnpj: storedClientCnpj 
+      });
       setIsAuthenticated(true);
     } else {
       setIsAuthenticated(false);
     }
-  }, []);
+  }, [clientId]);
 
   const handleLogout = () => {
     // Limpar dados da sessão

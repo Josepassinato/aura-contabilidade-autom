@@ -107,6 +107,10 @@ const routesWithSidebar = [
     path: '/plans',
     element: <PlansAndPricing />
   },
+  {
+    path: '/documentos',
+    element: <ClientDocuments />
+  }
 ];
 
 // Routes that should NOT have the sidebar
@@ -132,7 +136,11 @@ const routesWithoutSidebar = [
     element: <PaymentCanceled />
   },
   {
-    path: '/client-portal/:clientId',
+    path: '/client-portal/:clientId?',
+    element: <ClientPortal />
+  },
+  {
+    path: '/client-portal',
     element: <ClientPortal />
   },
   {
