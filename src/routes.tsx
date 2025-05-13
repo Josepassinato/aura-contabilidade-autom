@@ -32,83 +32,83 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Routes that should have the sidebar
 const routesWithSidebar = [
   {
-    path: '/dashboard',
+    path: '', // No leading slash here - this becomes relative to parent
     element: <Index />
   },
   {
-    path: '/settings',
+    path: 'settings',  // No leading slash - relative path
     element: <Settings />
   },
   {
-    path: '/folha-pagamento',
+    path: 'folha-pagamento',
     element: <FolhaPagamento />
   },
   {
-    path: '/client-access',
+    path: 'client-access',
     element: <ClientAccess />
   },
   {
-    path: '/obrigacoes-fiscais',
+    path: 'obrigacoes-fiscais',
     element: <ObrigacoesFiscais />
   },
   {
-    path: '/guias-fiscais',
+    path: 'guias-fiscais',
     element: <GuiasFiscais />
   },
   {
-    path: '/gerenciar-clientes',
+    path: 'gerenciar-clientes',
     element: <GerenciarClientes />
   },
   {
-    path: '/colaboradores',
+    path: 'colaboradores',
     element: <Colaboradores />
   },
   {
-    path: '/analises-preditivas',
+    path: 'analises-preditivas',
     element: <AnalisesPreditivas />
   },
   {
-    path: '/apuracao-automatica',
+    path: 'apuracao-automatica',
     element: <ApuracaoAutomatica />
   },
   {
-    path: '/relatorios-financeiros',
+    path: 'relatorios-financeiros',
     element: <RelatoriosFinanceiros />
   },
   {
-    path: '/relatorios-ia',
+    path: 'relatorios-ia',
     element: <RelatoriosIA />
   },
   {
-    path: '/calculos-fiscais',
+    path: 'calculos-fiscais',
     element: <CalculosFiscais />
   },
   {
-    path: '/automacao-bancaria',
+    path: 'automacao-bancaria',
     element: <AutomacaoBancaria />
   },
   {
-    path: '/regime-fiscal',
+    path: 'regime-fiscal',
     element: <RegimeFiscal />
   },
   {
-    path: '/notifications',
+    path: 'notifications',
     element: <Notifications />
   },
   {
-    path: '/integracoes-gov',
+    path: 'integracoes-gov',
     element: <IntegracoesGov />
   },
   {
-    path: '/integracoes-estaduais',
+    path: 'integracoes-estaduais',
     element: <IntegracoesEstaduais />
   },
   {
-    path: '/plans',
+    path: 'plans',
     element: <PlansAndPricing />
   },
   {
-    path: '/documentos',
+    path: 'documentos',
     element: <ClientDocuments />
   }
 ];
