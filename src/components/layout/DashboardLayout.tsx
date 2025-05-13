@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { isAuthenticated, navigateToLogin } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
   const toggleVoiceAssistant = () => {

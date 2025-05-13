@@ -12,14 +12,15 @@ export function FooterSection() {
   const handleLogout = async () => {
     try {
       await logout?.();
-      navigateToLogin();
+      navigate('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+      window.location.href = '/login';
     }
   };
   
   const handleLogin = () => {
-    navigateToLogin();
+    navigate('/login');
   };
   
   return (

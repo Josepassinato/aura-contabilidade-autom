@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
+import { useNavigate } from "react-router-dom";
 
 interface ClientAccessLayoutProps {
   children: React.ReactNode;
@@ -10,20 +11,22 @@ interface ClientAccessLayoutProps {
 
 export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log('Logout button clicked');
     
-    // Primeiro executamos o logout para limpar o estado
-    logout().then(() => {
+    try {
+      // Primeiro executamos o logout para limpar o estado
+      await logout?.();
       console.log('Logout successful, redirecting to login page');
       // Após o logout, redirecionamos para a página de login
-      window.location.href = '/login';
-    }).catch(err => {
+      navigate('/login');
+    } catch (err) {
       console.error('Logout failed:', err);
       // Em caso de falha, tentamos redirecionar diretamente
       window.location.href = '/login';
-    });
+    }
   };
   
   return (

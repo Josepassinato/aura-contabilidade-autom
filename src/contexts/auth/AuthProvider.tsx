@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { useSupabaseClient, UserProfile, UserRole } from '@/lib/supabase';
@@ -134,6 +135,10 @@ export const AuthProvider = ({ children }) => {
     try {
       localStorage.removeItem('mock_session');
       localStorage.removeItem('user_role');
+      sessionStorage.removeItem('client_id');
+      sessionStorage.removeItem('client_name');
+      sessionStorage.removeItem('client_cnpj');
+      
       setIsAuthenticated(false);
       setUserProfile(null);
       setSession(null);

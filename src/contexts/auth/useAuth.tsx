@@ -15,6 +15,7 @@ export const useAuth = () => {
   const navigateToLogin = () => {
     console.info("Navegando para a página de login...");
     try {
+      // First try using React Router's navigate
       navigate("/login");
     } catch (error) {
       console.error("Erro ao navegar com useNavigate:", error);

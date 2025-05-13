@@ -11,6 +11,7 @@ import { FinancialSummary } from "@/components/client-portal/FinancialSummary";
 import { TaxObligations } from "@/components/client-portal/TaxObligations";
 import { ClientPortalTabs } from "@/components/client-portal/ClientPortalTabs";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
+import { useAuth } from "@/contexts/auth";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -20,6 +21,7 @@ const ClientPortal = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
+  const { logout } = useAuth();
 
   useEffect(() => {
     // Verificar se o cliente está autenticado
@@ -39,8 +41,15 @@ const ClientPortal = () => {
     }
   }, [clientId]);
 
-  const handleLogout = () => {
-    // Limpar dados da sessão
+  const handleLogout = async () => {
+    try {
+      // Clean auth state if user is logged in
+      await logout?.();
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+    
+    // Limpar dados da sessão do cliente
     sessionStorage.removeItem('client_id');
     sessionStorage.removeItem('client_name');
     sessionStorage.removeItem('client_cnpj');
