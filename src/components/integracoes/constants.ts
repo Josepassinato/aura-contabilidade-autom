@@ -39,6 +39,6 @@ export const getDefaultIntegracoes = (): IntegracaoEstadualStatus[] => {
     id: `sefaz_${estado.uf.toLowerCase()}`,
     nome: `SEFAZ-${estado.uf}`,
     uf: estado.uf,
-    status: 'desconectado' as 'conectado' | 'desconectado' | 'erro' | 'pendente'
+    status: 'desconectado'
   }));
 };

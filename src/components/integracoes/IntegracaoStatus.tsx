@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Radio, RadioGroup, RadioIndicator, RadioItem } from "@/components/ui/radio-group";
+import { RadioItem } from "@/components/ui/radio-group";
 import { CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UF } from '@/services/governamental/estadualIntegration';
@@ -10,7 +10,7 @@ export interface IntegracaoEstadualStatus {
   id: string;
   uf: UF;
   nome: string;
-  status: 'conectado' | 'pendente' | 'erro';
+  status: 'conectado' | 'pendente' | 'erro' | 'desconectado';
   ultimoAcesso?: string;
   proximaRenovacao?: string;
   mensagemErro?: string;
@@ -44,6 +44,8 @@ export function IntegracaoStatus({ integracao, onSelect, isSelected = false }: I
         return 'Pendente';
       case 'erro':
         return 'Erro';
+      case 'desconectado':
+        return 'Desconectado';
       default:
         return 'Desconhecido';
     }
@@ -57,6 +59,8 @@ export function IntegracaoStatus({ integracao, onSelect, isSelected = false }: I
         return 'bg-amber-100 text-amber-800 border-amber-300';
       case 'erro':
         return 'bg-red-100 text-red-800 border-red-300';
+      case 'desconectado':
+        return 'bg-gray-100 text-gray-800 border-gray-300';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300';
     }

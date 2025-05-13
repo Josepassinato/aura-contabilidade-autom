@@ -32,6 +32,12 @@ export function IntegracaoStatusGrid({ integracoes, selectedUf, onUfSelect }: In
         <RadioGroup 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
           value={selectedUf}
+          onValueChange={(value) => {
+            const selectedIntegracao = integracoes.find(i => i.uf === value);
+            if (selectedIntegracao) {
+              onUfSelect(selectedIntegracao.uf);
+            }
+          }}
         >
           {integracoes.map((integracao) => (
             <IntegracaoStatus 

@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { useSupabaseClient, UserProfile, UserRole } from '@/lib/supabase';
 import { getUserProfile, mapUserToProfile, signOut, signInWithEmail } from './authUtils';
 import { toast } from '@/hooks/use-toast';
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [session, setSession] = useState<any>(null);
-  const [user, setUser] = useState<any>(null);
+export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
   const supabase = useSupabaseClient();
 
   useEffect(() => {
@@ -38,11 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(mockSessionUser);
           
           // Criar perfil baseado no role salvo no localStorage
-          const mockProfile: UserProfile = {
+          const mockProfile = {
             id: mockSessionUser.id,
             email: mockSessionUser.email,
             name: mockSessionUser.user_metadata.name,
-            role: (userRole as UserRole) || UserRole.ACCOUNTANT,
+            role: (userRole || 'accountant'),
             full_name: mockSessionUser.user_metadata.name,
             company_id: userRole === 'client' ? 'client-123' : 'contaflix-001'
           };
@@ -74,14 +73,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Mock login para testes
       if (email && password) {
         // Determinar o perfil baseado no email
-        let role = UserRole.ACCOUNTANT;
+        let role = 'accountant';
         let name = 'Contador Teste';
         
         if (email.includes('cliente')) {
-          role = UserRole.CLIENT;
+          role = 'client';
           name = 'Empresa Cliente';
         } else if (email.includes('admin')) {
-          role = UserRole.ADMIN;
+          role = 'admin';
           name = 'Admin Contaflix';
         }
         
@@ -98,13 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         };
 
-        const mockProfile: UserProfile = {
+        const mockProfile = {
           id: '123',
           email: email,
           name: name,
           role: role,
           full_name: name,
-          company_id: role === UserRole.CLIENT ? 'client-123' : 'contaflix-001'
+          company_id: role === 'client' ? 'client-123' : 'contaflix-001'
         };
         
         setUser(mockUser);
@@ -199,9 +198,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const isAdmin = userProfile?.role === UserRole.ADMIN;
-  const isAccountant = userProfile?.role === UserRole.ACCOUNTANT || isAdmin;
-  const isClient = userProfile?.role === UserRole.CLIENT;
+  const isAdmin = userProfile?.role === 'admin';
+  const isAccountant = userProfile?.role === 'accountant' || isAdmin;
+  const isClient = userProfile?.role === 'client';
 
   return (
     <AuthContext.Provider
