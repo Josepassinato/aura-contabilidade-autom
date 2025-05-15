@@ -29,7 +29,8 @@ export function useAlerts() {
   const auth = useAuth();
 
   // Verificar se temos dados contábeis reais antes de mostrar alertas de divergência
-  const hasAccountingData = false; // Em produção, esta variável seria baseada em dados reais
+  // Definimos como false para garantir que não apareçam alertas de divergência sem dados reais
+  const hasAccountingData = false; 
 
   // Busca de alertas
   useEffect(() => {
