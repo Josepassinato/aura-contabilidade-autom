@@ -12,9 +12,9 @@ export const queryClient = new QueryClient({
       retry: 1,
       staleTime: 30000, // 30 segundos
       refetchOnWindowFocus: false,
-      refetchOnMount: true,
-    },
-  },
+      refetchOnMount: true
+    }
+  }
 });
 
 // Provedor para o React Query
@@ -35,7 +35,7 @@ export function useSupabaseQuery<T>(
   return useQuery({
     queryKey,
     queryFn,
-    ...options,
+    ...options
   });
 }
 
@@ -56,13 +56,13 @@ export function useSupabaseMutation<TData, TVariables>(
         toast({
           title: "Erro",
           description: options?.errorMessage || result.error.message,
-          variant: "destructive",
+          variant: "destructive"
         });
         options?.onError?.(new Error(result.error.message));
       } else if (options?.successMessage) {
         toast({
           title: "Sucesso",
-          description: options.successMessage,
+          description: options.successMessage
         });
         options?.onSuccess?.(result);
       } else {
@@ -73,7 +73,7 @@ export function useSupabaseMutation<TData, TVariables>(
       toast({
         title: "Erro",
         description: options?.errorMessage || error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
       options?.onError?.(error);
     }
@@ -99,7 +99,7 @@ export function useClients(enabled = true) {
         toast({
           title: "Erro ao carregar clientes",
           description: "Não foi possível carregar a lista de clientes",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     }
