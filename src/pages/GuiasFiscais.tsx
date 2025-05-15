@@ -9,6 +9,7 @@ import { FileText, FileUp } from "lucide-react";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { TaxGuide } from "@/types/taxGuides";
 
+// Mock data for tax guides with appropriate status
 const mockGuias: TaxGuide[] = [
   {
     id: "1",

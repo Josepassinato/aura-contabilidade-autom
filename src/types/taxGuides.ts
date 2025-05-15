@@ -1,6 +1,6 @@
 
-export type TaxGuideStatus = "pendente" | "pago" | "vencido";
-export type TaxGuideType = "DARF" | "GPS" | "DAS" | "ISS" | "ICMS" | "Outro";
+export type TaxGuideType = 'DARF' | 'GPS' | 'DAS' | 'ISS' | 'ICMS' | 'Outro';
+export type TaxGuideStatus = 'pendente' | 'pago' | 'vencido';
 
 export interface TaxGuide {
   id: string;
@@ -11,6 +11,6 @@ export interface TaxGuide {
   dueDate: string;
   amount: number;
   status: TaxGuideStatus;
-  barCode?: string;
   generatedAt: string;
+  barCode?: string;
 }
