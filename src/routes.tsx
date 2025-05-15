@@ -15,6 +15,12 @@ import RelatoriosIA from "@/pages/RelatoriosIA";
 import ClientAccess from "@/pages/ClientAccess";
 import ClientPortal from "@/pages/ClientPortal";
 import GerenciarParametrosFiscais from "@/pages/GerenciarParametrosFiscais";
+import CalculosFiscais from "@/pages/CalculosFiscais";
+import AutomacaoBancaria from "@/pages/AutomacaoBancaria";
+import FolhaPagamento from "@/pages/FolhaPagamento";
+import ObrigacoesFiscais from "@/pages/ObrigacoesFiscais";
+import RelatoriosFinanceiros from "@/pages/RelatoriosFinanceiros";
+import NotFound from "@/pages/NotFound";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -82,6 +88,32 @@ const routes = createBrowserRouter([
   {
     path: "/parametros-fiscais",
     element: <GerenciarParametrosFiscais />
+  },
+  // Adicionando rotas para páginas do contador
+  {
+    path: "/calculosfiscais",
+    element: <CalculosFiscais />
+  },
+  {
+    path: "/automacao-bancaria",
+    element: <AutomacaoBancaria />
+  },
+  {
+    path: "/folha-pagamento",
+    element: <FolhaPagamento />
+  },
+  {
+    path: "/obrigacoesfiscais",
+    element: <ObrigacoesFiscais />
+  },
+  {
+    path: "/relatoriosfinanceiros",
+    element: <RelatoriosFinanceiros />
+  },
+  // Rota de fallback para página não encontrada
+  {
+    path: "*",
+    element: <NotFound />
   }
 ]);
 

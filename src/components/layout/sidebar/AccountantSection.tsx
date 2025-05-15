@@ -62,6 +62,24 @@ export function AccountantSection() {
         <Settings className="h-4 w-4" />
         <span>Parâmetros Fiscais</span>
       </Link>
+      <Link
+        to="/automacao-bancaria"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/automacao-bancaria' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <CreditCard className="h-4 w-4" />
+        <span>Automação Bancária</span>
+      </Link>
+      <Link
+        to="/folha-pagamento"
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
+          pathname === '/folha-pagamento' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
+        }`}
+      >
+        <FileText className="h-4 w-4" />
+        <span>Folha de Pagamento</span>
+      </Link>
     </div>
   );
 }

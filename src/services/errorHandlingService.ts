@@ -1,91 +1,117 @@
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { toast } from '@/hooks/use-toast';
+/**
+ * Serviço para tratamento centralizado de erros na aplicação
+ * Fornece funções para lidar com erros de diferentes fontes e apresentá-los de forma consistente
+ */
 
-// Options for error handling
-interface ErrorHandlingOptions {
-  context?: string;
-  fallbackMessage?: string;
-  showToast?: boolean;
-  logToConsole?: boolean;
-  captureToSentry?: boolean;
+import { toast } from "@/hooks/use-toast";
+
+// Tipos de erros que podemos tratar
+type ErrorSource = 'api' | 'database' | 'auth' | 'form' | 'unknown';
+
+// Interface para erro padronizado
+interface StandardError {
+  message: string;
+  code?: string;
+  source: ErrorSource;
+  details?: any;
+  timestamp: string;
 }
 
-// Centralized error handling service
-export function handleError(
-  error: unknown,
-  options: ErrorHandlingOptions = {}
-): void {
-  const {
-    context = 'Operação',
-    fallbackMessage = 'Ocorreu um erro inesperado',
-    showToast = true,
-    logToConsole = true,
-    captureToSentry = false
-  } = options;
+/**
+ * Normaliza diferentes tipos de erros em um formato padrão
+ */
+export function normalizeError(error: any): StandardError {
+  // Se já for um erro padronizado, retorna como está
+  if (error && error.source && error.message) {
+    return {
+      ...error,
+      timestamp: error.timestamp || new Date().toISOString()
+    };
+  }
 
-  // Get error message
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  
-  // Log to console
-  if (logToConsole) {
-    console.error(`Erro em ${context}:`, error);
+  // Supabase error
+  if (error && error.code && (error.message || error.error_description)) {
+    return {
+      message: error.message || error.error_description,
+      code: error.code,
+      source: 'api',
+      details: error,
+      timestamp: new Date().toISOString()
+    };
   }
-  
-  // Show toast notification
-  if (showToast) {
-    toast({
-      title: `Erro em ${context}`,
-      description: errorMessage || fallbackMessage,
-      variant: "destructive"
-    });
+
+  // Error object
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      source: 'unknown',
+      details: { stack: error.stack },
+      timestamp: new Date().toISOString()
+    };
   }
-  
-  // Send to error tracking service (e.g. Sentry)
-  if (captureToSentry) {
-    // This is where you would send the error to Sentry or other error tracking service
-    // Sentry.captureException(error);
-    console.log('Error would be sent to error tracking service:', error);
+
+  // String error
+  if (typeof error === 'string') {
+    return {
+      message: error,
+      source: 'unknown',
+      timestamp: new Date().toISOString()
+    };
   }
+
+  // Object with message
+  if (error && error.message) {
+    return {
+      message: error.message,
+      source: 'unknown',
+      details: error,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  // Fallback for unknown error formats
+  return {
+    message: 'Ocorreu um erro desconhecido',
+    source: 'unknown',
+    details: error,
+    timestamp: new Date().toISOString()
+  };
 }
 
-// Error boundary component for React components
-interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: React.ReactNode;
+/**
+ * Registra erro no console e opcionalmente em serviços de monitoramento
+ */
+export function logError(error: any, context?: string): void {
+  const standardError = normalizeError(error);
+  console.error(
+    `[${standardError.timestamp}] ${context ? `[${context}] ` : ''}Error: ${standardError.message}`,
+    standardError.details || ''
+  );
+  
+  // Aqui você pode adicionar integrações com serviços como Sentry, LogRocket, etc.
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean;
+/**
+ * Apresenta erro para o usuário através de um toast
+ */
+export function notifyError(error: any): void {
+  const standardError = normalizeError(error);
+  
+  toast({
+    title: "Erro",
+    description: standardError.message,
+    variant: "destructive",
+  });
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state = { hasError: false };
+/**
+ * Trata erros de forma abrangente - loga e notifica
+ */
+export function handleError(error: any, context?: string, shouldNotify = true): void {
+  logError(error, context);
   
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
-  }
-  
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    handleError(error, {
-      context: 'Renderização de componente',
-      logToConsole: true,
-      showToast: true,
-      captureToSentry: true
-    });
-    console.error('Component error details:', errorInfo);
-  }
-  
-  render(): React.ReactNode {
-    if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="p-4 border border-red-500 rounded bg-red-50 text-red-700">
-          <h3 className="font-bold mb-2">Algo deu errado</h3>
-          <p>Ocorreu um problema ao renderizar este componente. Por favor, tente novamente mais tarde.</p>
-        </div>
-      );
-    }
-    
-    return this.props.children;
+  if (shouldNotify) {
+    notifyError(error);
   }
 }
