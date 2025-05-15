@@ -1,6 +1,6 @@
 
 import React, { Suspense } from 'react';
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -21,7 +21,7 @@ const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement
 const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Index />
+    element: <Navigate to="/login" replace />
   },
   {
     path: "/dashboard",

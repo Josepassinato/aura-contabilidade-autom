@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
@@ -18,6 +18,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Redirecionar para login se não estiver autenticado
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
