@@ -28,7 +28,10 @@ export function useAlerts() {
   const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
 
-  // Simular busca de alertas
+  // Verificar se temos dados contábeis reais antes de mostrar alertas de divergência
+  const hasAccountingData = false; // Em produção, esta variável seria baseada em dados reais
+
+  // Busca de alertas
   useEffect(() => {
     const fetchAlerts = async () => {
       setLoading(true);
@@ -38,7 +41,7 @@ export function useAlerts() {
         // Em um ambiente real, você buscaria do seu backend
         // await api.get('/alerts')
         
-        // Simulação de dados
+        // Simulação de dados - agora só mostra alertas de divergência se houver dados contábeis
         await new Promise(resolve => setTimeout(resolve, 800));
         const mockAlerts: Alert[] = [
           {
@@ -56,8 +59,12 @@ export function useAlerts() {
                 action: () => window.location.href = '/obrigacoes-fiscais'
               }
             ]
-          },
-          {
+          }
+        ];
+        
+        // Só adiciona o alerta de divergência contábil se houver dados contábeis
+        if (hasAccountingData) {
+          mockAlerts.push({
             id: '2',
             title: 'Divergência encontrada em lançamentos contábeis',
             message: 'Foram identificadas divergências entre os lançamentos contábeis e extratos bancários do cliente Tech Solutions.',
@@ -71,17 +78,19 @@ export function useAlerts() {
                 action: () => window.location.href = '/analises-preditivas'
               }
             ]
-          },
-          {
-            id: '3',
-            title: 'Documentos pendentes de análise',
-            message: 'Existem 5 documentos fiscais pendentes de análise do cliente XYZ Comércio S.A.',
-            type: 'documento',
-            priority: 'media',
-            date: new Date(Date.now() - 86400000).toISOString(),
-            isAcknowledged: true
-          }
-        ];
+          });
+        }
+        
+        // Adicione outros alertas de tipos diferentes conforme necessário
+        mockAlerts.push({
+          id: '3',
+          title: 'Documentos pendentes de análise',
+          message: 'Existem 5 documentos fiscais pendentes de análise do cliente XYZ Comércio S.A.',
+          type: 'documento',
+          priority: 'media',
+          date: new Date(Date.now() - 86400000).toISOString(),
+          isAcknowledged: true
+        });
         
         setAlerts(mockAlerts);
       } catch (err) {
