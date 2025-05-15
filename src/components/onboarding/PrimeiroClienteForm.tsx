@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,10 +16,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
+import { formatCNPJ } from "@/components/client-access/formatCNPJ";
+import { validateCNPJ } from "@/utils/validators";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
-  cnpj: z.string().min(14, { message: "CNPJ deve ter 14 dígitos" }),
+  cnpj: z.string()
+    .min(14, { message: "CNPJ deve ter 14 dígitos" })
+    .refine(val => validateCNPJ(val), { message: "CNPJ inválido" }),
   email: z.string().email({ message: "Email inválido" }),
   phone: z.string().optional(),
   regime: z.enum(["lucro_presumido", "simples_nacional", "lucro_real"], { 
@@ -44,9 +48,12 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
       regime: "lucro_presumido",
     },
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: FormValues) => {
     try {
+      setIsSubmitting(true);
       console.log("Dados do primeiro cliente:", data);
       // Aqui seria a integração com o backend para salvar o cliente
       
@@ -60,10 +67,17 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
       console.error("Erro ao adicionar cliente:", error);
       toast({
         title: "Erro ao adicionar cliente",
-        description: "Ocorreu um erro ao cadastrar o cliente. Tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao cadastrar o cliente. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+  
+  const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedCNPJ = formatCNPJ(e.target.value);
+    form.setValue("cnpj", formattedCNPJ);
   };
 
   return (
@@ -91,8 +105,15 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
               <FormItem>
                 <FormLabel>CNPJ</FormLabel>
                 <FormControl>
-                  <Input placeholder="00.000.000/0000-00" {...field} />
+                  <Input 
+                    placeholder="00.000.000/0000-00" 
+                    {...field}
+                    onChange={handleCNPJChange} 
+                  />
                 </FormControl>
+                <FormDescription>
+                  Digite um CNPJ válido no formato XX.XXX.XXX/XXXX-XX
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -157,7 +178,9 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Limpar
           </Button>
-          <Button type="submit">Adicionar Cliente</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Adicionando..." : "Adicionar Cliente"}
+          </Button>
         </div>
       </form>
     </Form>

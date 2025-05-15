@@ -232,6 +232,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: result.success ? null : new Error(result.error) };
     } catch (error) {
       console.error('Erro no SignIn:', error);
+      toast({
+        title: "Falha no login",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
       return { error: new Error('Falha na autenticação') };
     }
   };
@@ -248,12 +253,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await login(email, password);
         return { error: null };
       }
+      toast({
+        title: "Erro no cadastro",
+        description: "Credenciais inválidas",
+        variant: "destructive"
+      });
       return { error: new Error('Credenciais inválidas') };
     } catch (error) {
       console.error('Erro no SignUp:', error);
       toast({
         title: "Erro no cadastro",
-        description: "Não foi possível criar sua conta",
+        description: error instanceof Error ? error.message : "Não foi possível criar sua conta",
         variant: "destructive"
       });
       return { error: new Error('Falha no cadastro') };
@@ -265,6 +275,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await logout();
     } catch (error) {
       console.error('Erro no SignOut:', error);
+      toast({
+        title: "Erro ao sair",
+        description: error instanceof Error ? error.message : "Falha ao fazer logout",
+        variant: "destructive"
+      });
       
       // Forçar limpeza e redirecionamento em caso de erro
       cleanupAuthState();

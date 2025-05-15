@@ -22,6 +22,7 @@ export interface ResultadoCalculo {
   valorFinal: number;
   dataVencimento: string;
   codigoReceita?: string;
+  dadosOrigem?: any;  // Adicionar propriedade que estava faltando
 }
 
 export interface ImpostoConfig {

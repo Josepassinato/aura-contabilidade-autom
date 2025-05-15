@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,12 +20,60 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/auth';
 import { UserRole } from '@/lib/supabase';
 import { LogIn, User, Building } from 'lucide-react';
+import { formatCNPJ } from '@/components/client-access/formatCNPJ';
 
 // Schema para validação do formulário de login
 const loginFormSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
 });
+
+// Função para validar CNPJ
+const validateCNPJ = (value: string) => {
+  // Remove caracteres não numéricos
+  const numbers = value.replace(/\D/g, "");
+  
+  // Verifica se tem 14 dígitos
+  if (numbers.length !== 14) {
+    return false;
+  }
+
+  // Validação básica: verifica se todos os dígitos são iguais
+  if (/^(\d)\1+$/.test(numbers)) {
+    return false;
+  }
+
+  // Implementação do algoritmo de validação de CNPJ
+  let size = numbers.length - 2;
+  let numbers_array = numbers.substring(0, size);
+  const digits = numbers.substring(size);
+  let sum = 0;
+  let pos = size - 7;
+
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers_array.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(0))) {
+    return false;
+  }
+
+  size = size + 1;
+  numbers_array = numbers.substring(0, size);
+  sum = 0;
+  pos = size - 7;
+
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers_array.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  
+  return result === parseInt(digits.charAt(1));
+};
 
 // Schema para validação do formulário de cadastro
 const signupFormSchema = z.object({
@@ -35,7 +84,11 @@ const signupFormSchema = z.object({
     required_error: "Selecione um tipo de usuário",
   }),
   company: z.string().optional(),
-  cnpj: z.string().optional(),
+  cnpj: z.string()
+    .optional()
+    .refine(val => !val || validateCNPJ(val), { 
+      message: "CNPJ inválido"
+    }),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -111,7 +164,12 @@ const Login = () => {
       
       if (!error) {
         setActiveTab("login");
+      } else {
+        // Mostrar mensagem de erro para o usuário
+        console.error("Signup error:", error);
       }
+    } catch (error) {
+      console.error("Unexpected error during signup:", error);
     } finally {
       setIsLoading(false);
     }
@@ -147,24 +205,6 @@ const Login = () => {
     }
   };
   
-  const formatCNPJ = (value: string) => {
-    // Remove caracteres não numéricos
-    const numbers = value.replace(/\D/g, "");
-    
-    // Formato CNPJ: XX.XXX.XXX/YYYY-ZZ
-    if (numbers.length <= 2) {
-      return numbers;
-    } else if (numbers.length <= 5) {
-      return `${numbers.slice(0, 2)}.${numbers.slice(2)}`;
-    } else if (numbers.length <= 8) {
-      return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5)}`;
-    } else if (numbers.length <= 12) {
-      return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}/${numbers.slice(8)}`;
-    } else {
-      return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}/${numbers.slice(8, 12)}-${numbers.slice(12, 14)}`;
-    }
-  };
-
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedCNPJ = formatCNPJ(e.target.value);
     signupForm.setValue("cnpj", formattedCNPJ);
@@ -392,6 +432,9 @@ const Login = () => {
                                   onChange={handleCNPJChange}
                                 />
                               </FormControl>
+                              <FormDescription>
+                                Digite um CNPJ válido ou deixe em branco
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
