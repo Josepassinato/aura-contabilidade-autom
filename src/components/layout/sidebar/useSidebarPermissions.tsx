@@ -12,7 +12,7 @@ export const useSidebarPermissions = () => {
     // Accountants and admins can view certain sections
     const isAccountantOrAdmin = isAccountant || isAdmin;
     
-    return { isAccountantOrAdmin };
+    return { isAccountantOrAdmin, isAdmin, isAccountant };
   } catch (error) {
     // Fallback to manual context if the hook fails (should not happen in normal circumstances)
     console.warn("Falling back to manual context check in useSidebarPermissions");
@@ -23,7 +23,7 @@ export const useSidebarPermissions = () => {
     // If the context isn't available, return default values
     if (!authContext) {
       console.warn("AuthContext não disponível em useSidebarPermissions. O componente pode não estar dentro de um AuthProvider.");
-      return { isAccountantOrAdmin: false };
+      return { isAccountantOrAdmin: false, isAdmin: false, isAccountant: false };
     }
     
     try {
@@ -33,11 +33,11 @@ export const useSidebarPermissions = () => {
       // Accountants and admins can view certain sections
       const isAccountantOrAdmin = isAccountant || isAdmin;
       
-      return { isAccountantOrAdmin };
+      return { isAccountantOrAdmin, isAdmin, isAccountant };
     } catch (error) {
       console.error("Erro em useSidebarPermissions:", error);
       // Return default values to prevent UI breaking
-      return { isAccountantOrAdmin: false };
+      return { isAccountantOrAdmin: false, isAdmin: false, isAccountant: false };
     }
   }
 };

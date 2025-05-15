@@ -8,6 +8,7 @@ import {
 import { HeaderSection } from "./sidebar/HeaderSection";
 import { CommonSection } from "./sidebar/CommonSection";
 import { AccountantSection } from "./sidebar/AccountantSection";
+import { AdminSection } from "./sidebar/AdminSection";
 import { FooterSection } from "./sidebar/FooterSection";
 import { useSidebarPermissions } from "./sidebar/useSidebarPermissions";
 
@@ -21,7 +22,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   toggleVoiceAssistant
 }) => {
   // Get permissions, with a fallback for when auth context is not available
-  const { isAccountantOrAdmin } = useSidebarPermissions();
+  const { isAdmin, isAccountant } = useSidebarPermissions();
 
   return (
     <Sidebar>
@@ -29,11 +30,19 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
       <SidebarContent className="p-2 flex-1 overflow-auto">
         <SidebarMenu>
-          <CommonSection />
-          
-          {/* Show accountant section for users with accountant/admin permissions */}
-          {isAccountantOrAdmin && (
-            <AccountantSection />
+          {isAdmin ? (
+            // Show admin-specific section for admin users
+            <AdminSection />
+          ) : (
+            // Show common sections for non-admin users
+            <>
+              <CommonSection />
+              
+              {/* Show accountant section for users with accountant permissions */}
+              {isAccountant && (
+                <AccountantSection />
+              )}
+            </>
           )}
         </SidebarMenu>
       </SidebarContent>
