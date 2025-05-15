@@ -37,7 +37,7 @@ export function handleError(
     toast({
       title: `Erro em ${context}`,
       description: errorMessage || fallbackMessage,
-      variant: "destructive",
+      variant: "destructive"
     });
   }
   
