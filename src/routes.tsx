@@ -27,7 +27,7 @@ const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement
 const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" replace />
+    element: <Navigate to="/dashboard" replace />
   },
   {
     path: "/dashboard",
@@ -89,7 +89,6 @@ const routes = createBrowserRouter([
     path: "/parametros-fiscais",
     element: <GerenciarParametrosFiscais />
   },
-  // Adicionando rotas para páginas do contador
   {
     path: "/calculosfiscais",
     element: <CalculosFiscais />

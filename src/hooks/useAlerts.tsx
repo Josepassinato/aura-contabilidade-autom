@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth';
@@ -28,7 +27,6 @@ export function useAlerts() {
   const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
 
-  // Verificar se temos dados contábeis reais antes de mostrar alertas de divergência
   // Definimos como false para garantir que não apareçam alertas de divergência sem dados reais
   const hasAccountingData = false; 
 
@@ -57,7 +55,7 @@ export function useAlerts() {
             actions: [
               {
                 label: 'Ver detalhes',
-                action: () => window.location.href = '/obrigacoes-fiscais'
+                action: () => window.location.href = '/obrigacoesfiscais'
               }
             ]
           }
