@@ -43,10 +43,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6 text-muted-foreground">Você precisa fazer login para acessar esta página</p>
           <Button 
-            onClick={() => {
-              console.log("Redirecionando para login...");
-              navigate("/login");
-            }} 
+            onClick={() => navigate("/login")}
             size="lg"
           >
             Ir para o Login
