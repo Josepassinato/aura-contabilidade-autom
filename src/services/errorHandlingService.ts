@@ -50,13 +50,19 @@ export function handleError(
 }
 
 // Error boundary component for React components
-export class ErrorBoundary extends Component<
-  { children: ReactNode; fallback?: React.ReactNode }, 
-  { hasError: boolean }
-> {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state = { hasError: false };
   
-  static getDerivedStateFromError(): { hasError: boolean } {
+  static getDerivedStateFromError(): ErrorBoundaryState {
     return { hasError: true };
   }
   
