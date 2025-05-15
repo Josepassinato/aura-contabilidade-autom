@@ -191,7 +191,7 @@ export function DashboardView() {
   // Dashboard para administrador
   const renderAdminDashboard = () => (
     <div className="space-y-6">
-      <ContabilAlerts />
+      {/* Removido ContabilAlerts do dashboard do administrador */}
       <FiscalDeadlineAlerts />
       
       {/* Métricas do administrador */}
@@ -263,3 +263,4 @@ export function DashboardView() {
     return renderClientDashboard();
   }
 }
+
