@@ -111,11 +111,11 @@ export function useRetry() {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   
-  const retry = useCallback(async <T>(
+  const retry = useCallback(async function<T>(
     operation: () => Promise<T>,
     maxRetries = 3,
     delay = 1000
-  ): Promise<{ result: T | null; error: Error | null; success: boolean }> => {
+  ): Promise<{ result: T | null; error: Error | null; success: boolean }> {
     setIsRetrying(true);
     
     try {
