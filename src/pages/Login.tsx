@@ -43,20 +43,22 @@ type SignupFormValues = z.infer<typeof signupFormSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, isAuthenticated, isAccountant, isClient } = useAuth();
+  const { signIn, signUp, isAuthenticated, isAccountant, isAdmin, isClient, enhancedLogin } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("login");
 
   React.useEffect(() => {
     // If already authenticated, redirect based on role
     if (isAuthenticated) {
-      if (isAccountant) {
+      if (isAdmin) {
+        navigate('/admin/business-analytics');
+      } else if (isAccountant) {
         navigate('/dashboard');
       } else if (isClient) {
         navigate('/client-portal');
       }
     }
-  }, [isAuthenticated, isAccountant, isClient, navigate]);
+  }, [isAuthenticated, isAccountant, isAdmin, isClient, navigate]);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -82,10 +84,12 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(data.email, data.password);
+      // Use the enhanced login function that handles redirections
+      const result = await enhancedLogin(data.email, data.password);
       
-      if (!error) {
-        // Redirect will happen in useEffect when auth state changes
+      // No need for manual redirects as enhancedLogin handles it
+      if (!result.success && result.error) {
+        console.error("Login error:", result.error);
       }
     } finally {
       setIsLoading(false);
@@ -117,12 +121,7 @@ const Login = () => {
   const loginAsAccountant = async () => {
     setIsLoading(true);
     try {
-      const { error } = await signIn("contador@contaflix.com.br", "senha123");
-      
-      if (!error) {
-        // A página será redirecionada automaticamente no useEffect
-        localStorage.setItem('user_role', 'accountant');
-      }
+      await enhancedLogin("contador@contaflix.com.br", "senha123");
     } finally {
       setIsLoading(false);
     }
@@ -132,11 +131,7 @@ const Login = () => {
   const loginAsClient = async () => {
     setIsLoading(true);
     try {
-      const { error } = await signIn("cliente@empresa.com.br", "senha123");
-      
-      if (!error) {
-        localStorage.setItem('user_role', 'client');
-      }
+      await enhancedLogin("cliente@empresa.com.br", "senha123");
     } finally {
       setIsLoading(false);
     }
@@ -146,11 +141,7 @@ const Login = () => {
   const loginAsAdmin = async () => {
     setIsLoading(true);
     try {
-      const { error } = await signIn("admin@contaflix.com.br", "senha123");
-      
-      if (!error) {
-        localStorage.setItem('user_role', 'admin');
-      }
+      await enhancedLogin("admin@contaflix.com.br", "senha123");
     } finally {
       setIsLoading(false);
     }

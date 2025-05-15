@@ -75,10 +75,14 @@ export const useAuth = () => {
         });
         
         // Navegação apropriada com base no perfil
-        if (context.isClient) {
+        if (context.isAdmin) {
+          navigate('/admin/business-analytics', { replace: true });
+        } else if (context.isClient) {
           navigate('/client-portal', { replace: true });
+        } else if (context.isAccountant) {
+          navigate('/dashboard', { replace: true });
         } else {
-          navigate('/', { replace: true });
+          navigate('/dashboard', { replace: true });
         }
         
         return { success: true, error: null };
