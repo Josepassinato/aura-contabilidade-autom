@@ -1,18 +1,20 @@
 
-export const formatCNPJ = (value: string) => {
+/**
+ * Formata um CNPJ adicionando pontuação
+ * @param value String contendo apenas números do CNPJ
+ * @returns CNPJ formatado (XX.XXX.XXX/XXXX-XX)
+ */
+export const formatCNPJ = (value: string): string => {
   // Remove caracteres não numéricos
-  const numbers = value.replace(/\D/g, "");
+  const cnpj = value.replace(/\D/g, '');
   
-  // Formato CNPJ: XX.XXX.XXX/YYYY-ZZ
-  if (numbers.length <= 2) {
-    return numbers;
-  } else if (numbers.length <= 5) {
-    return `${numbers.slice(0, 2)}.${numbers.slice(2)}`;
-  } else if (numbers.length <= 8) {
-    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5)}`;
-  } else if (numbers.length <= 12) {
-    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}/${numbers.slice(8)}`;
-  } else {
-    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}/${numbers.slice(8, 12)}-${numbers.slice(12, 14)}`;
-  }
+  // Limita a 14 dígitos
+  const cnpjLimit = cnpj.slice(0, 14);
+  
+  // Formata o CNPJ: XX.XXX.XXX/XXXX-XX
+  return cnpjLimit
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2');
 };

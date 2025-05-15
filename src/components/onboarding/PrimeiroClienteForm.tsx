@@ -55,7 +55,16 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
     try {
       setIsSubmitting(true);
       console.log("Dados do primeiro cliente:", data);
-      // Aqui seria a integração com o backend para salvar o cliente
+      
+      // Exemplo de uso de Promise.all para paralelizar requisições
+      // (substituir com chamadas reais ao backend quando implementado)
+      const [clienteRegistrado, configuracoesIniciais] = await Promise.all([
+        // Aqui seriam as chamadas reais para a API
+        simulateClientRegistration(data),
+        simulateInitialSetup(data.regime)
+      ]);
+      
+      console.log("Resultados em paralelo:", { clienteRegistrado, configuracoesIniciais });
       
       onSubmit(data);
       
@@ -78,6 +87,18 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedCNPJ = formatCNPJ(e.target.value);
     form.setValue("cnpj", formattedCNPJ);
+  };
+  
+  // Simulações de chamadas à API para demonstrar o Promise.all
+  // Estas funções seriam substituídas por chamadas reais à API
+  const simulateClientRegistration = async (clientData: FormValues): Promise<{ success: boolean, clientId: string }> => {
+    await new Promise(resolve => setTimeout(resolve, 300)); // Simular latência de rede
+    return { success: true, clientId: `client-${Date.now()}` };
+  };
+  
+  const simulateInitialSetup = async (regime: string): Promise<{ success: boolean, config: string }> => {
+    await new Promise(resolve => setTimeout(resolve, 200)); // Simular latência de rede
+    return { success: true, config: `config-${regime}-${Date.now()}` };
   };
 
   return (
