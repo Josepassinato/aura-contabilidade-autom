@@ -4,11 +4,17 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, FileText, Database } from "lucide-react";
+import { Calculator, FileText, Database, SparklesIcon, Settings, BrainCircuit } from "lucide-react";
 import { useSupabaseClient } from "@/lib/supabase";
 import { ApuracaoResults } from "@/components/apuracao/ApuracaoResults";
 import { ProcessamentoStatus } from "@/components/apuracao/ProcessamentoStatus";
 import { ConfiguracaoApuracao } from "@/components/apuracao/ConfiguracaoApuracao";
+import { IntelligentApuracaoForm } from "@/components/apuracao/IntelligentApuracaoForm";
+import { 
+  processarApuracao,
+  processarApuracaoEmLote, 
+  ResultadoApuracao 
+} from "@/services/apuracao/apuracaoService";
 
 const ApuracaoAutomatica = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -16,9 +22,12 @@ const ApuracaoAutomatica = () => {
   const [progress, setProgress] = useState(0);
   const [clientesProcessados, setClientesProcessados] = useState(0);
   const [totalClientes, setTotalClientes] = useState(0);
-  const [resultados, setResultados] = useState<any[]>([]);
+  const [resultados, setResultados] = useState<ResultadoApuracao[]>([]);
   const [regimeTributario, setRegimeTributario] = useState("lucro_presumido");
   const supabaseClient = useSupabaseClient();
+  
+  // Estado para resultado individual da apuração inteligente
+  const [resultadoInteligente, setResultadoInteligente] = useState<ResultadoApuracao | null>(null);
   
   // Iniciar o processamento automático
   const iniciarProcessamento = async () => {
@@ -51,44 +60,34 @@ const ApuracaoAutomatica = () => {
       
       setTotalClientes(clientes.length);
       
-      // Processar cada cliente
-      const resultadosProcessamento = [];
-      for (const cliente of clientes) {
-        try {
-          // Em produção, aqui seria feita a chamada para o serviço de apuração real
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulação de tempo de processamento
-          
-          // Informação básica sobre o processamento
-          const resultado = {
-            cliente: {
-              nome: cliente.name,
-              cnpj: cliente.cnpj || '00.000.000/0000-00',
-            },
-            trimestre: "1° Trimestre/2025",
-            status: "Processado",
-            timestamp: new Date().toISOString(),
-            receita: Math.floor(Math.random() * 1000000) + 1000,
-            baseCalculo: Math.floor(Math.random() * 500000) + 1000,
-            imposto: Math.floor(Math.random() * 100000) + 100
-          };
-          
-          resultadosProcessamento.push(resultado);
-          
-          // Atualizar progresso
-          setClientesProcessados(prev => prev + 1);
-          setProgress(Math.round(((resultadosProcessamento.length) / clientes.length) * 100));
-        } catch (clienteError) {
-          console.error(`Erro ao processar cliente ${cliente.name}:`, clienteError);
-        }
-      }
+      // Extrair IDs dos clientes
+      const clienteIds = clientes.map(cliente => cliente.id);
       
-      // Finalizar processamento
-      setResultados(resultadosProcessamento);
+      // Período atual (mês/ano)
+      const periodoAtual = new Date().toISOString().substr(0, 7);
+      
+      // Processar clientes em lote usando nosso novo serviço
+      const resultado = await processarApuracaoEmLote(
+        clienteIds,
+        periodoAtual,
+        {
+          integrarNFe: true,
+          integrarBancos: true,
+          analisarInconsistencias: true,
+          calcularImpostos: true,
+          categorizacaoAutomatica: true
+        }
+      );
+      
+      // Atualizar progresso e resultados
+      setResultados(resultado.resultados);
+      setClientesProcessados(resultado.estadoProcessamento.clientesProcessados);
+      setProgress(resultado.estadoProcessamento.progresso);
       setActiveTab("resultados");
       
       toast({
         title: "Processamento concluído",
-        description: `${resultadosProcessamento.length} empresas foram processadas com sucesso.`,
+        description: `${resultado.resultados.length} empresas foram processadas com sucesso.`,
       });
     } catch (error) {
       console.error("Erro no processamento:", error);
@@ -100,6 +99,15 @@ const ApuracaoAutomatica = () => {
     } finally {
       setProcessando(false);
     }
+  };
+
+  // Callback quando uma apuração inteligente é processada
+  const handleApuracaoProcessada = (resultado: ResultadoApuracao) => {
+    setResultadoInteligente(resultado);
+    setActiveTab("resultados");
+    
+    // Adicionar ao array de resultados
+    setResultados(prev => [resultado, ...prev]);
   };
 
   return (
@@ -117,12 +125,16 @@ const ApuracaoAutomatica = () => {
             <Calculator className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
+          <TabsTrigger value="inteligente" className="flex items-center gap-2">
+            <BrainCircuit className="h-4 w-4" />
+            IA Assistant
+          </TabsTrigger>
           <TabsTrigger value="resultados" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Resultados
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
+            <Settings className="h-4 w-4" />
             Configurações
           </TabsTrigger>
         </TabsList>
@@ -186,6 +198,42 @@ const ApuracaoAutomatica = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Nova aba para apuração inteligente com NLP */}
+        <TabsContent value="inteligente" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2">
+                <SparklesIcon className="h-5 w-5 text-primary" />
+                Apuração Contábil com IA
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-6">
+                Utilize comandos de texto ou voz para iniciar apurações contábeis inteligentes.
+                O assistente de IA compreende linguagem natural e extrai automaticamente parâmetros
+                relevantes como período, regime tributário e tipo de relatório.
+              </p>
+              
+              <IntelligentApuracaoForm onApuracaoProcessada={handleApuracaoProcessada} />
+              
+              {resultadoInteligente && (
+                <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+                  <h3 className="font-medium mb-2">Resumo do último processamento:</h3>
+                  <p className="text-sm whitespace-pre-line">
+                    Cliente: {resultadoInteligente.cliente.nome} <br/>
+                    Período: {resultadoInteligente.periodo} <br/>
+                    Regime: {resultadoInteligente.regimeTributario} <br/>
+                    Status: {resultadoInteligente.status === 'processado' ? 'Concluído' : 'Com inconsistências'} <br/>
+                    Lançamentos: {resultadoInteligente.lancamentos.total} ({resultadoInteligente.lancamentos.debitos} débitos, {resultadoInteligente.lancamentos.creditos} créditos) <br/>
+                    {resultadoInteligente.lancamentos.anomalias > 0 && 
+                      `⚠️ Anomalias detectadas: ${resultadoInteligente.lancamentos.anomalias}`}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="resultados" className="space-y-4">
