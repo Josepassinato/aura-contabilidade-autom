@@ -1,68 +1,94 @@
 
 import { useState, useEffect } from 'react';
-import { useSupabaseClient } from '@/lib/supabase';
-import { useToast } from "@/hooks/use-toast";
 import { PayrollEntry } from '@/lib/supabase';
 
-export function usePayrollData(selectedClientId: string | null, period: string) {
+// Mock data for payrolls
+const mockPayrolls: PayrollEntry[] = [
+  {
+    id: '1',
+    client_id: 'client-123',
+    employee_id: 'emp-1',
+    period: '2025-05',
+    base_salary: 5000,
+    gross_salary: 5500,
+    deductions: 1500,
+    net_salary: 4000,
+    status: 'paid',
+    created_at: '2025-05-10T00:00:00Z',
+    updated_at: '2025-05-10T00:00:00Z'
+  },
+  {
+    id: '2',
+    client_id: 'client-456',
+    employee_id: 'emp-2',
+    period: '2025-05',
+    base_salary: 3000,
+    gross_salary: 3200,
+    deductions: 900,
+    net_salary: 2300,
+    status: 'approved',
+    created_at: '2025-05-12T00:00:00Z',
+    updated_at: '2025-05-12T00:00:00Z'
+  }
+];
+
+export function usePayrollData(clientId: string | null, period: string) {
   const [payrolls, setPayrolls] = useState<PayrollEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = useSupabaseClient();
-  const { toast } = useToast();
-
+  const [error, setError] = useState<Error | null>(null);
+  
   useEffect(() => {
-    if (!supabase) return;
-    
     const fetchPayrolls = async () => {
-      setIsLoading(true);
-      
       try {
-        // Using RPC to fetch payrolls with filters
-        const { data, error } = await supabase.rpc<PayrollEntry[], any>(
-          'get_filtered_payrolls',
-          { 
-            p_client_id: selectedClientId,
-            p_period: period
-          }
-        );
+        setIsLoading(true);
         
-        if (error) throw error;
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        setPayrolls(data || []);
-      } catch (error) {
-        console.error('Error fetching payrolls:', error);
-        toast({
-          title: "Erro ao buscar folhas de pagamento",
-          description: "Não foi possível carregar as folhas de pagamento.",
-          variant: "destructive",
+        // Filter mock data based on clientId and period
+        const filtered = mockPayrolls.filter(p => {
+          if (clientId && p.client_id !== clientId) return false;
+          if (period && p.period !== period) return false;
+          return true;
         });
+        
+        setPayrolls(filtered);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching payroll data:', err);
+        setError(err as Error);
+        setPayrolls([]);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchPayrolls();
-  }, [supabase, selectedClientId, period, toast]);
-
+  }, [clientId, period]);
+  
   const refreshPayrolls = async () => {
-    if (!supabase) return;
-    
     try {
-      const { data, error } = await supabase.rpc<PayrollEntry[], any>(
-        'get_filtered_payrolls',
-        { 
-          p_client_id: selectedClientId,
-          p_period: period
-        }
-      );
+      setIsLoading(true);
       
-      if (error) throw error;
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      setPayrolls(data || []);
-    } catch (error) {
-      console.error('Error refreshing payrolls:', error);
+      // Filter mock data based on clientId and period
+      const filtered = mockPayrolls.filter(p => {
+        if (clientId && p.client_id !== clientId) return false;
+        if (period && p.period !== period) return false;
+        return true;
+      });
+      
+      setPayrolls(filtered);
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing payroll data:', err);
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  return { payrolls, isLoading, refreshPayrolls, setPayrolls };
+  
+  return { payrolls, isLoading, error, refreshPayrolls };
 }

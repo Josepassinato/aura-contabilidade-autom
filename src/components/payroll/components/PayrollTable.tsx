@@ -2,7 +2,6 @@
 import React from 'react';
 import { PayrollEntry } from '@/lib/supabase';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -53,10 +52,12 @@ export function PayrollTable({
     return clientNames[clientId] || `Empresa ${clientId.slice(0, 5)}...`;
   };
 
-  const renderTableContent = () => {
-    if (payrolls.length === 0) return null;
-    
-    return (
+  if (isLoading || payrolls.length === 0) {
+    return <div className="border rounded-md">{renderEmptyState()}</div>;
+  }
+
+  return (
+    <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
@@ -94,12 +95,6 @@ export function PayrollTable({
           ))}
         </TableBody>
       </Table>
-    );
-  };
-
-  return (
-    <div className="border rounded-md">
-      {renderEmptyState() || renderTableContent()}
     </div>
   );
 }

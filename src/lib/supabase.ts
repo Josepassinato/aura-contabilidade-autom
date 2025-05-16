@@ -1,4 +1,3 @@
-
 // Definições de tipos para o Supabase
 import { Database } from '../integrations/supabase/types';
 
@@ -45,6 +44,7 @@ export interface PayrollEntry {
   net_salary: number;
   status: string;
   created_at: string;
+  updated_at: string;
 }
 
 // Document type

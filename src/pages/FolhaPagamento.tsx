@@ -1,34 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/auth';
 import { PayrollList } from '@/components/payroll/PayrollList';
 import { EmployeesList } from '@/components/payroll/EmployeesList';
 import { PayrollReports } from '@/components/payroll/PayrollReports';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 import { toast } from '@/hooks/use-toast';
 
 const FolhaPagamento = () => {
-  const { requireAuth } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("folhas");
 
-  // Check for auth limbo state when component mounts
-  useEffect(() => {
-    if (checkForAuthLimboState()) {
-      toast({
-        title: "Estado de autenticação inconsistente",
-        description: "Detectamos um problema com sua sessão. Por favor, faça login novamente.",
-        variant: "destructive",
-      });
-      // The requireAuth function will handle the redirect
-    }
-  }, []);
-
-  // Verify authentication before rendering
-  const { authenticated, loading } = requireAuth();
-  
-  if (loading) {
+  // Simple loading state instead of using requireAuth
+  if (isLoading) {
     return <div className="flex h-screen items-center justify-center">
       <div className="text-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
@@ -37,8 +22,10 @@ const FolhaPagamento = () => {
     </div>;
   }
   
-  if (!authenticated) {
-    return null; // Will be redirected by requireAuth
+  // Simple check for authentication
+  if (!isAuthenticated) {
+    // We'll be redirected by the ProtectedRoute in routes.tsx
+    return null;
   }
 
   return (

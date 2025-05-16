@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PayrollEntry } from '@/lib/supabase';
 import { PayrollTable } from './components/PayrollTable';
 import { PayrollHeader } from './components/PayrollHeader';
 import { PayrollFilter } from './components/PayrollFilter';
 import { PayrollDialogs } from './components/PayrollDialogs';
 import { usePayrollData } from './hooks/usePayrollData';
-import { fetchClientById } from '@/services/supabase/clientsService';
 
 export function PayrollList() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -16,36 +15,8 @@ export function PayrollList() {
   const [period, setPeriod] = useState<string>(getCurrentPeriod());
   const [clientNames, setClientNames] = useState<Record<string, string>>({});
   
-  // Use our custom hook for payroll data
+  // Use our custom hook for payroll data with error handling
   const { payrolls, isLoading, refreshPayrolls } = usePayrollData(selectedClientId, period);
-  
-  // Fetch client names for all payrolls
-  useEffect(() => {
-    const fetchClientNames = async () => {
-      if (!payrolls.length) return;
-      
-      // Get unique client IDs from payrolls
-      const uniqueClientIds = [...new Set(payrolls.map(p => p.client_id))];
-      
-      // Fetch client names in parallel
-      const results = await Promise.all(
-        uniqueClientIds.map(async (id) => {
-          const client = await fetchClientById(id);
-          return { id, name: client?.name || `Cliente ${id.slice(0, 5)}...` };
-        })
-      );
-      
-      // Create a map of client ID to client name
-      const namesMap = results.reduce((acc, { id, name }) => {
-        acc[id] = name;
-        return acc;
-      }, {} as Record<string, string>);
-      
-      setClientNames(namesMap);
-    };
-    
-    fetchClientNames();
-  }, [payrolls]);
   
   function getCurrentPeriod() {
     const now = new Date();
