@@ -26,7 +26,7 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
     setIsLoading(true);
     
     try {
-      // Simular busca de dados relacionados à anomalia
+      // Buscar dados relacionados à anomalia
       const related = await PredictiveAnalyticsService.getRelatedTransactions(anomaly.id);
       setRelatedData(related);
     } catch (error) {
@@ -178,10 +178,18 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
                     <div className="space-y-2">
                       <p className="font-medium">Ações recomendadas:</p>
                       <ul className="list-disc list-inside space-y-1 text-sm">
-                        <li>Verificar a documentação relacionada a este lançamento.</li>
-                        <li>Confirmar a autenticidade da transação com a contraparte.</li>
-                        <li>Revisar a classificação contábil e fiscal.</li>
-                        <li>Documentar a resolução para futuro treinamento do modelo.</li>
+                        {selectedAnomaly.recommendations && selectedAnomaly.recommendations.length > 0 ? (
+                          selectedAnomaly.recommendations.map((rec, idx) => (
+                            <li key={idx}>{rec}</li>
+                          ))
+                        ) : (
+                          <>
+                            <li>Verificar a documentação relacionada a este lançamento.</li>
+                            <li>Confirmar a autenticidade da transação com a contraparte.</li>
+                            <li>Revisar a classificação contábil e fiscal.</li>
+                            <li>Documentar a resolução para futuro treinamento do modelo.</li>
+                          </>
+                        )}
                       </ul>
                     </div>
                   </TabsContent>

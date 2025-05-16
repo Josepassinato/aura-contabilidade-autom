@@ -1,4 +1,3 @@
-
 import { useSupabaseClient } from "@/lib/supabase";
 
 // Tipos para análises preditivas
@@ -40,6 +39,8 @@ export interface AccountingAnomaly {
   date: string;
   severityScore: number; // 0-100
   recommendations: string[];
+  detectionConfidence?: number; // Added this property
+  details?: string; // Added this property
 }
 
 /**
@@ -162,7 +163,9 @@ export const PredictiveAnalyticsService = {
             "Verificar documentação fiscal",
             "Confirmar autorização da despesa",
             "Revisar classificação contábil"
-          ]
+          ],
+          detectionConfidence: 0.95,
+          details: "Possível erro de classificação em lançamento como despesa operacional"
         },
         {
           id: "anom-002",
@@ -250,6 +253,51 @@ export const PredictiveAnalyticsService = {
     } catch (error) {
       console.error('Erro ao gerar projeção financeira:', error);
       throw error;
+    }
+  },
+  
+  /**
+   * Buscar transações relacionadas a uma anomalia específica
+   */
+  getRelatedTransactions: async (anomalyId: string): Promise<any[]> => {
+    const supabase = useSupabaseClient();
+    
+    try {
+      // Em produção, buscaria dados no banco relacionados à anomalia
+      if (supabase) {
+        console.log('Buscando transações relacionadas à anomalia:', anomalyId);
+      }
+      
+      // Simulação de dados relacionados
+      return [
+        {
+          id: "trans-001",
+          description: "Pagamento para fornecedor XYZ",
+          date: "2025-05-08",
+          value: 15780.50,
+          category: "Despesas Operacionais",
+          account: "Conta Corrente Principal"
+        },
+        {
+          id: "trans-002",
+          description: "Fatura de consultoria",
+          date: "2025-05-09",
+          value: 32400.00,
+          category: "Serviços Profissionais",
+          account: "Conta Corrente Principal"
+        },
+        {
+          id: "trans-003",
+          description: "Transferência entre contas",
+          date: "2025-05-10",
+          value: 18500.00,
+          category: "Transferência Interna",
+          account: "Conta Investimento"
+        }
+      ];
+    } catch (error) {
+      console.error('Erro ao buscar transações relacionadas:', error);
+      return [];
     }
   }
 };

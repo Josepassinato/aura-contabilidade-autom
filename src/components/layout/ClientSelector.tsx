@@ -14,10 +14,11 @@ import { Tables } from "@/integrations/supabase/types";
 export interface ClientSelectorProps {
   onClientSelect?: (client: { id: string; name: string }) => void;
   onSelectClient?: (clientId: string) => void;
+  onClientChange?: (client: any) => void; // Added this prop
   defaultValue?: string;
 }
 
-export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
+export function ClientSelector({ onClientSelect, onSelectClient, onClientChange, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
   const [selectedClient, setSelectedClient] = useState(defaultValue);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([
     { id: '', name: 'Visão Geral' }
@@ -58,12 +59,17 @@ export function ClientSelector({ onClientSelect, onSelectClient, defaultValue = 
     // Encontrar o cliente selecionado pelo nome
     const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
     
+    // Call all available callback handlers
     if (onClientSelect) {
       onClientSelect(selectedClientData);
     }
 
     if (onSelectClient && selectedClientData.id) {
       onSelectClient(selectedClientData.id);
+    }
+    
+    if (onClientChange) {
+      onClientChange(selectedClientData);
     }
   };
   
