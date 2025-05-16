@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { GuiasFiscaisGenerator } from "@/components/guias-fiscais/GuiasFiscaisGenerator";
 import { GuiasFiscaisList } from "@/components/guias-fiscais/GuiasFiscaisList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +57,7 @@ const GuiasFiscais = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Guias Fiscais</h1>
@@ -104,7 +102,7 @@ const GuiasFiscais = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -131,120 +130,119 @@ const Colaboradores = () => {
   };
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Colaboradores</h1>
-            <p className="text-muted-foreground">
-              Gerencie os colaboradores dos seus clientes
-            </p>
-          </div>
-          <div>
-            <ClientSelector onClientSelect={handleClientSelect} />
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Colaboradores</h1>
+          <p className="text-muted-foreground">
+            Gerencie os colaboradores dos seus clientes
+          </p>
         </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 w-full max-w-md">
-            <TabsTrigger value="lista">Lista de Colaboradores</TabsTrigger>
-            <TabsTrigger value="adicionar">
-              {editingColaboradorId ? "Editar Colaborador" : "Adicionar Colaborador"}
-            </TabsTrigger>
-          </TabsList>
-          
-          <div className="mt-6">
-            <TabsContent value="lista">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    <span>Colaboradores</span>
-                  </CardTitle>
-                  <Button size="sm" onClick={handleAddNew}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Adicionar
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {colaboradores.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p>Nenhum colaborador cadastrado</p>
-                    </div>
-                  ) : (
-                    <div className="border rounded-lg overflow-hidden">
-                      <table className="w-full">
-                        <thead className="bg-muted">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-sm font-medium">Nome</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium">CPF</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium">Cargo</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {colaboradores.map((colaborador) => (
-                            <tr key={colaborador.id}>
-                              <td className="px-4 py-3 text-sm">{colaborador.nome}</td>
-                              <td className="px-4 py-3 text-sm">{formatCPF(colaborador.cpf)}</td>
-                              <td className="px-4 py-3 text-sm">{colaborador.cargo}</td>
-                              <td className="px-4 py-3 text-sm">
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  colaborador.status === "ativo" ? "bg-green-100 text-green-800" :
-                                  colaborador.status === "ferias" ? "bg-blue-100 text-blue-800" :
-                                  colaborador.status === "licenca" ? "bg-yellow-100 text-yellow-800" :
-                                  "bg-gray-100 text-gray-800"
-                                }`}>
-                                  {colaborador.status === "ativo" ? "Ativo" :
-                                   colaborador.status === "ferias" ? "Férias" :
-                                   colaborador.status === "licenca" ? "Licença" : "Inativo"}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 text-sm text-right">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleEditColaborador(colaborador.id)}
-                                >
-                                  Editar
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="text-red-500 hover:text-red-700"
-                                  onClick={() => handleDeleteIntent(colaborador.id)}
-                                >
-                                  Excluir
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="adicionar">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {editingColaboradorId ? "Editar Colaborador" : "Adicionar Novo Colaborador"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-center text-muted-foreground py-8">
-                    Formulário de cadastro de colaboradores estará disponível em breve.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </div>
-        </Tabs>
+        <div>
+          <ClientSelector onClientSelect={handleClientSelect} />
+        </div>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="lista">Lista de Colaboradores</TabsTrigger>
+          <TabsTrigger value="adicionar">
+            {editingColaboradorId ? "Editar Colaborador" : "Adicionar Colaborador"}
+          </TabsTrigger>
+        </TabsList>
+        
+        <div className="mt-6">
+          <TabsContent value="lista">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  <span>Colaboradores</span>
+                </CardTitle>
+                <Button size="sm" onClick={handleAddNew}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {colaboradores.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p>Nenhum colaborador cadastrado</p>
+                  </div>
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-medium">Nome</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium">CPF</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium">Cargo</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                          <th className="px-4 py-3 text-right text-sm font-medium">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {colaboradores.map((colaborador) => (
+                          <tr key={colaborador.id}>
+                            <td className="px-4 py-3 text-sm">{colaborador.nome}</td>
+                            <td className="px-4 py-3 text-sm">{formatCPF(colaborador.cpf)}</td>
+                            <td className="px-4 py-3 text-sm">{colaborador.cargo}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                colaborador.status === "ativo" ? "bg-green-100 text-green-800" :
+                                colaborador.status === "ferias" ? "bg-blue-100 text-blue-800" :
+                                colaborador.status === "licenca" ? "bg-yellow-100 text-yellow-800" :
+                                "bg-gray-100 text-gray-800"
+                              }`}>
+                                {colaborador.status === "ativo" ? "Ativo" :
+                                 colaborador.status === "ferias" ? "Férias" :
+                                 colaborador.status === "licenca" ? "Licença" : "Inativo"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditColaborador(colaborador.id)}
+                              >
+                                Editar
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleDeleteIntent(colaborador.id)}
+                              >
+                                Excluir
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="adicionar">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {editingColaboradorId ? "Editar Colaborador" : "Adicionar Novo Colaborador"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-muted-foreground py-8">
+                  Formulário de cadastro de colaboradores estará disponível em breve.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>

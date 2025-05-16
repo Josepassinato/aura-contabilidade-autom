@@ -23,6 +23,9 @@ import ObrigacoesFiscais from "@/pages/ObrigacoesFiscais";
 import RelatoriosFinanceiros from "@/pages/RelatoriosFinanceiros";
 import NotFound from "@/pages/NotFound";
 import EmailService from "@/pages/EmailService";
+import GuiasFiscais from "@/pages/GuiasFiscais";
+import AnalisesPreditivas from "@/pages/AnalisesPreditivas";
+import Colaboradores from "@/pages/Colaboradores";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -123,6 +126,19 @@ const routes = createBrowserRouter([
       {
         path: "email-service",
         element: <EmailService />
+      },
+      // Novas rotas adicionadas
+      {
+        path: "guias-fiscais",
+        element: <GuiasFiscais />
+      },
+      {
+        path: "analises-preditivas",
+        element: <AnalisesPreditivas />
+      },
+      {
+        path: "colaboradores",
+        element: <Colaboradores />
       }
     ]
   },
