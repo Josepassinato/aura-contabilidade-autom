@@ -59,6 +59,7 @@ const AppRoutes = () => {
       
       {/* Rotas protegidas */}
       <Route path="/" element={<Index />} />
+      <Route path="/dashboard" element={<Index />} />
       <Route path="/clientes" element={<GerenciarClientes />} />
       <Route path="/relatorios" element={<RelatoriosFinanceiros />} />
       <Route path="/relatorios-ia" element={<RelatoriosIA />} />
@@ -83,6 +84,7 @@ const AppRoutes = () => {
       
       {/* Rotas de administração */}
       <Route path="/admin/analytics" element={<BusinessAnalytics />} />
+      <Route path="/admin/business-analytics" element={<BusinessAnalytics />} />
       <Route path="/admin/customers" element={<CustomerManagement />} />
       <Route path="/admin/usage" element={<UsageMetrics />} />
       <Route path="/admin/openai" element={<OpenAIManagement />} />

@@ -223,8 +223,9 @@ const Login = () => {
         description: "Acessando como Contador Teste",
       });
       
-      // Force page reload to ensure clean state
-      window.location.href = "/dashboard";
+      // Navigate to dashboard
+      navigate("/dashboard");
+      window.location.reload();
     } catch (error) {
       console.error("Erro no login como contador:", error);
       toast({
@@ -253,8 +254,9 @@ const Login = () => {
         description: "Acessando como Empresa Cliente",
       });
       
-      // Force page reload to ensure clean state
-      window.location.href = "/client-portal";
+      // Navigate to client portal
+      navigate("/client-portal");
+      window.location.reload();
     } catch (error) {
       console.error("Erro no login como cliente:", error);
       toast({
@@ -283,8 +285,9 @@ const Login = () => {
         description: "Acessando como Admin Contaflix",
       });
       
-      // Force page reload to ensure clean state
-      window.location.href = "/admin/business-analytics";
+      // Navigate to admin analytics
+      navigate("/admin/analytics");
+      window.location.reload();
     } catch (error) {
       console.error("Erro no login como admin:", error);
       toast({

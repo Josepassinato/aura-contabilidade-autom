@@ -75,20 +75,18 @@ export const useAuth = () => {
         });
         
         // Navegação apropriada com base no perfil
-        setTimeout(() => {
-          const role = localStorage.getItem('user_role');
-          
-          if (role === 'admin') {
-            navigate('/admin/business-analytics', { replace: true });
-          } else if (role === 'client') {
-            navigate('/client-portal', { replace: true });
-          } else if (role === 'accountant') {
-            navigate('/dashboard', { replace: true });
-          } else {
-            // Fallback
-            navigate('/dashboard', { replace: true });
-          }
-        }, 100);
+        const role = localStorage.getItem('user_role');
+        
+        if (role === 'admin') {
+          navigate('/admin/analytics', { replace: true });
+        } else if (role === 'client') {
+          navigate('/client-portal', { replace: true });
+        } else if (role === 'accountant') {
+          navigate('/dashboard', { replace: true });
+        } else {
+          // Fallback
+          navigate('/dashboard', { replace: true });
+        }
         
         return { success: true, error: null };
       } else {
