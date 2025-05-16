@@ -14,7 +14,7 @@ import { Tables } from "@/integrations/supabase/types";
 export interface ClientSelectorProps {
   onClientSelect?: (client: { id: string; name: string }) => void;
   onSelectClient?: (clientId: string) => void;
-  onClientChange?: (client: any) => void; // Added this prop
+  onClientChange?: (client: any) => void; // Adicionado esta prop
   defaultValue?: string;
 }
 

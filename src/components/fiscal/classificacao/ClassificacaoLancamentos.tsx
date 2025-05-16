@@ -15,6 +15,7 @@ import {
   Lancamento 
 } from "@/services/fiscal/classificacao/classificacaoML";
 import { PainelExcecoes } from "./PainelExcecoes";
+import { ProcessamentoAvancado } from "./ProcessamentoAvancado";
 import { toast } from "@/hooks/use-toast";
 
 // Dados de exemplo para demonstração
@@ -158,6 +159,26 @@ export function ClassificacaoLancamentos() {
     // Atualiza estatísticas após reclassificação
     setEstatisticas(obterEstatisticasModelo());
   };
+
+  // Tratamento para processamento avançado concluído
+  const handleProcessamentoAvancadoCompleto = (resultado: any) => {
+    // Atualizar a lista de lançamentos classificados com os resultados do processamento avançado
+    setClassificados(resultado.lancamentosProcessados);
+    
+    // Atualiza estatísticas
+    setEstatisticas(obterEstatisticasModelo());
+  };
+  
+  // Tratamento para lançamentos automáticos realizados
+  const handleLancamentosRealizados = (sucessos: number, falhas: number) => {
+    toast({
+      title: "Ciclo contábil completado",
+      description: `${sucessos} lançamentos foram processados e registrados automaticamente no sistema contábil.`,
+      variant: "default"
+    });
+    
+    // Aqui poderiam ser feitas atualizações adicionais na interface
+  };
   
   return (
     <div className="space-y-4">
@@ -194,6 +215,7 @@ export function ClassificacaoLancamentos() {
             <TabsList className="mb-4">
               <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
               <TabsTrigger value="excecoes">Painel de Exceções</TabsTrigger>
+              <TabsTrigger value="avancado">Processamento Avançado</TabsTrigger>
               <TabsTrigger value="modelo">Modelo ML</TabsTrigger>
               <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
             </TabsList>
@@ -275,6 +297,14 @@ export function ClassificacaoLancamentos() {
               <PainelExcecoes 
                 lancamentosClassificados={classificados} 
                 onReclassificar={handleReclassificacaoExterna}
+              />
+            </TabsContent>
+            
+            <TabsContent value="avancado">
+              <ProcessamentoAvancado 
+                lancamentos={classificados.length > 0 ? classificados : lancamentos}
+                onProcessamentoCompleto={handleProcessamentoAvancadoCompleto}
+                onLancamentosRealizados={handleLancamentosRealizados}
               />
             </TabsContent>
             

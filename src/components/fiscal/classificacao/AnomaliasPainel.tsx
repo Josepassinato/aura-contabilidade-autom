@@ -79,6 +79,52 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
     return { text: "Baixa", color: "bg-blue-500 text-white" };
   };
 
+  // Função para solicitar processamento automático da anomalia
+  const handleProcessarAutomaticamente = async () => {
+    if (!selectedAnomaly) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Usar a nova função de análise para automação
+      const analise = await PredictiveAnalyticsService.analyzeTransactionForAutomation(
+        {
+          id: selectedAnomaly.id,
+          description: selectedAnomaly.description,
+          amount: selectedAnomaly.amount,
+          date: selectedAnomaly.date,
+          type: selectedAnomaly.type
+        },
+        clientId
+      );
+      
+      if (analise.requiresHumanReview) {
+        toast({
+          title: "Revisão manual necessária",
+          description: `Confiança insuficiente (${Math.round(analise.automationConfidence * 100)}%) para processamento automático.`,
+          variant: "warning",
+        });
+      } else {
+        toast({
+          title: "Processado automaticamente",
+          description: `Anomalia processada com ${Math.round(analise.automationConfidence * 100)}% de confiança.`,
+        });
+        
+        setSelectedAnomaly(null);
+        setRelatedData(null);
+      }
+    } catch (error) {
+      console.error("Erro ao processar anomalia:", error);
+      toast({
+        title: "Erro no processamento",
+        description: "Não foi possível processar automaticamente esta anomalia.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
@@ -129,7 +175,7 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Confiança de detecção</p>
-                    <p className="font-medium">{selectedAnomaly.detectionConfidence || 0}%</p>
+                    <p className="font-medium">{selectedAnomaly.detectionConfidence ? `${(selectedAnomaly.detectionConfidence * 100).toFixed(0)}%` : "N/A"}</p>
                   </div>
                 </div>
                 
@@ -201,9 +247,14 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
         
         {selectedAnomaly && (
           <CardFooter className="flex justify-between pt-4">
-            <Button variant="outline" onClick={handleIgnorarAnomalia}>
-              Ignorar
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleIgnorarAnomalia}>
+                Ignorar
+              </Button>
+              <Button variant="outline" onClick={handleProcessarAutomaticamente} disabled={isLoading}>
+                {isLoading ? "Processando..." : "Processar Automaticamente"}
+              </Button>
+            </div>
             <Button onClick={handleCorrigirAnomalia}>
               Marcar como Corrigida
             </Button>

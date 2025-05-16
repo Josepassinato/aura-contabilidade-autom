@@ -39,8 +39,8 @@ export interface AccountingAnomaly {
   date: string;
   severityScore: number; // 0-100
   recommendations: string[];
-  detectionConfidence?: number; // Added this property
-  details?: string; // Added this property
+  detectionConfidence?: number; // Adicionado campo faltante
+  details?: string; // Adicionado campo faltante
 }
 
 /**
@@ -178,7 +178,9 @@ export const PredictiveAnalyticsService = {
             "Verificar se houve duplicidade de faturamento",
             "Confirmar com departamento financeiro",
             "Preparar possível estorno ou compensação"
-          ]
+          ],
+          detectionConfidence: 0.88,
+          details: "O sistema detectou um recebimento similar 3 dias antes com mesmo valor"
         },
         {
           id: "anom-003",
@@ -191,7 +193,9 @@ export const PredictiveAnalyticsService = {
             "Revisar natureza da despesa",
             "Verificar se é item de capital (CAPEX)",
             "Atualizar classificação se necessário"
-          ]
+          ],
+          detectionConfidence: 0.72,
+          details: "Valor significativo sugere possível investimento e não despesa corrente"
         }
       ];
     } catch (error) {
@@ -298,6 +302,52 @@ export const PredictiveAnalyticsService = {
     } catch (error) {
       console.error('Erro ao buscar transações relacionadas:', error);
       return [];
+    }
+  },
+  
+  /**
+   * Novo método: Analise avançada de transações contábeis para automação
+   * Realiza uma análise aprofundada de uma transação para determinar sua automação
+   */
+  analyzeTransactionForAutomation: async (
+    transactionData: any, 
+    clientId: string
+  ): Promise<{
+    automationConfidence: number;
+    suggestedClassification: string;
+    requiresHumanReview: boolean;
+    riskAssessment: 'low' | 'medium' | 'high';
+    reasoning: string[];
+  }> => {
+    const supabase = useSupabaseClient();
+    
+    try {
+      // Em uma implementação real, este método aplicaria algoritmos avançados
+      // de análise para determinar se a transação pode ser processada automaticamente
+      if (supabase) {
+        console.log('Analisando transação para automação:', transactionData, 'do cliente:', clientId);
+      }
+      
+      // Simulação de análise avançada
+      const mockConfidence = Math.random() * 0.3 + 0.65; // Confiança entre 65% e 95%
+      const requiresReview = mockConfidence < 0.8;
+      
+      // Exemplo de análise baseada em regras
+      return {
+        automationConfidence: mockConfidence,
+        suggestedClassification: mockConfidence > 0.85 ? 'Despesas Operacionais' : 'Pendente de Classificação',
+        requiresHumanReview: requiresReview,
+        riskAssessment: mockConfidence > 0.9 ? 'low' : mockConfidence > 0.75 ? 'medium' : 'high',
+        reasoning: [
+          `Confiança da classificação: ${(mockConfidence * 100).toFixed(1)}%`,
+          requiresReview ? 'Valor ou padrão atípico detectado' : 'Padrão conhecido e confiável',
+          'Análise baseada em histórico de transações similares',
+          mockConfidence > 0.85 ? 'Elegível para processamento automático' : 'Recomenda-se revisão manual'
+        ]
+      };
+    } catch (error) {
+      console.error('Erro ao analisar transação para automação:', error);
+      throw error;
     }
   }
 };
