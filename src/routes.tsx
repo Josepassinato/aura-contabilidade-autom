@@ -26,8 +26,11 @@ import EmailService from "@/pages/EmailService";
 import GuiasFiscais from "@/pages/GuiasFiscais";
 import AnalisesPreditivas from "@/pages/AnalisesPreditivas";
 import Colaboradores from "@/pages/Colaboradores";
+import RegimeFiscal from "@/pages/RegimeFiscal";
+import ClientDocuments from "@/pages/ClientDocuments";
 import IntegracoesGov from "@/pages/IntegracoesGov";
 import IntegracoesEstaduais from "@/pages/IntegracoesEstaduais";
+import ApuracaoAutomatica from "@/pages/ApuracaoAutomatica";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -129,7 +132,6 @@ const routes = createBrowserRouter([
         path: "email-service",
         element: <EmailService />
       },
-      // Ensuring these routes are properly defined
       {
         path: "guias-fiscais",
         element: <GuiasFiscais />
@@ -142,12 +144,18 @@ const routes = createBrowserRouter([
         path: "colaboradores",
         element: <Colaboradores />
       },
-      // Adding missing paths to match sidebar links
       {
         path: "obrigacoes-fiscais",
         element: <ObrigacoesFiscais />
       },
-      // Adding missing routes for Integrações governamentais
+      {
+        path: "regime-fiscal",
+        element: <RegimeFiscal />
+      },
+      {
+        path: "documentos",
+        element: <ClientDocuments />
+      },
       {
         path: "integracoes-gov",
         element: <IntegracoesGov />
@@ -155,6 +163,11 @@ const routes = createBrowserRouter([
       {
         path: "integracoes-estaduais",
         element: <IntegracoesEstaduais />
+      },
+      // Adding the apuracao-automatica route
+      {
+        path: "apuracao-automatica",
+        element: <ApuracaoAutomatica />
       }
     ]
   },

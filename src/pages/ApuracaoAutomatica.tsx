@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,10 +60,16 @@ const ApuracaoAutomatica = () => {
           
           // Informação básica sobre o processamento
           const resultado = {
-            cliente: cliente,
+            cliente: {
+              nome: cliente.name,
+              cnpj: cliente.cnpj || '00.000.000/0000-00',
+            },
             trimestre: "1° Trimestre/2025",
             status: "Processado",
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            receita: Math.floor(Math.random() * 1000000) + 1000,
+            baseCalculo: Math.floor(Math.random() * 500000) + 1000,
+            imposto: Math.floor(Math.random() * 100000) + 100
           };
           
           resultadosProcessamento.push(resultado);
@@ -98,117 +103,115 @@ const ApuracaoAutomatica = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Apuração Automática</h1>
-          <p className="text-muted-foreground">
-            Sistema de processamento automático para apuração contábil e fiscal
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Apuração Automática</h1>
+        <p className="text-muted-foreground">
+          Sistema de processamento automático para apuração contábil e fiscal
+        </p>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Calculator className="h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="resultados" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Resultados
-            </TabsTrigger>
-            <TabsTrigger value="configuracoes" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              Configurações
-            </TabsTrigger>
-          </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="dashboard" className="flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="resultados" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Resultados
+          </TabsTrigger>
+          <TabsTrigger value="configuracoes" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Configurações
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Iniciar Processamento Automático</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="font-medium">Regime Tributário</label>
-                    <select 
-                      className="w-full p-2 border rounded"
-                      value={regimeTributario}
-                      onChange={(e) => setRegimeTributario(e.target.value)}
-                    >
-                      <option value="lucro_presumido">Lucro Presumido</option>
-                      <option value="lucro_real">Lucro Real</option>
-                      <option value="simples_nacional">Simples Nacional</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="font-medium">Período</label>
-                    <select className="w-full p-2 border rounded">
-                      <option value="2025-t1">1° Trimestre/2025</option>
-                      <option value="2024-t4">4° Trimestre/2024</option>
-                      <option value="2024-t3">3° Trimestre/2024</option>
-                    </select>
-                  </div>
+        <TabsContent value="dashboard" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Iniciar Processamento Automático</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="font-medium">Regime Tributário</label>
+                  <select 
+                    className="w-full p-2 border rounded"
+                    value={regimeTributario}
+                    onChange={(e) => setRegimeTributario(e.target.value)}
+                  >
+                    <option value="lucro_presumido">Lucro Presumido</option>
+                    <option value="lucro_real">Lucro Real</option>
+                    <option value="simples_nacional">Simples Nacional</option>
+                  </select>
                 </div>
                 
-                {processando ? (
-                  <div className="space-y-4">
-                    <ProcessamentoStatus 
-                      progress={progress} 
-                      clientesProcessados={clientesProcessados}
-                      totalClientes={totalClientes}
-                    />
-                  </div>
-                ) : (
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={iniciarProcessamento}
-                  >
-                    Iniciar Apuração Automática
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-            
-            {resultados.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Últimos Resultados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ApuracaoResults resultados={resultados.slice(0, 3)} />
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="resultados" className="space-y-4">
+                <div className="space-y-2">
+                  <label className="font-medium">Período</label>
+                  <select className="w-full p-2 border rounded">
+                    <option value="2025-t1">1° Trimestre/2025</option>
+                    <option value="2024-t4">4° Trimestre/2024</option>
+                    <option value="2024-t3">3° Trimestre/2024</option>
+                  </select>
+                </div>
+              </div>
+              
+              {processando ? (
+                <div className="space-y-4">
+                  <ProcessamentoStatus 
+                    progress={progress} 
+                    clientesProcessados={clientesProcessados}
+                    totalClientes={totalClientes}
+                  />
+                </div>
+              ) : (
+                <Button 
+                  className="w-full mt-4" 
+                  onClick={iniciarProcessamento}
+                >
+                  Iniciar Apuração Automática
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+          
+          {resultados.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Resultados da Apuração</CardTitle>
+                <CardTitle>Últimos Resultados</CardTitle>
               </CardHeader>
               <CardContent>
-                {resultados.length > 0 ? (
-                  <ApuracaoResults resultados={resultados} />
-                ) : (
-                  <div className="text-center py-10">
-                    <p className="text-muted-foreground">
-                      Nenhum processamento realizado ainda. Inicie uma apuração automática.
-                    </p>
-                  </div>
-                )}
+                <ApuracaoResults resultados={resultados.slice(0, 3)} />
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
+        </TabsContent>
 
-          <TabsContent value="configuracoes">
-            <ConfiguracaoApuracao />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </DashboardLayout>
+        <TabsContent value="resultados" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Resultados da Apuração</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {resultados.length > 0 ? (
+                <ApuracaoResults resultados={resultados} />
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-muted-foreground">
+                    Nenhum processamento realizado ainda. Inicie uma apuração automática.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="configuracoes">
+          <ConfiguracaoApuracao />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
