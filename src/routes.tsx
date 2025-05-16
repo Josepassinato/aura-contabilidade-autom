@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -10,7 +11,6 @@ import GerenciarClientes from "@/pages/GerenciarClientes";
 import BusinessAnalytics from "@/pages/admin/BusinessAnalytics";
 import CustomerManagement from "@/pages/admin/CustomerManagement";
 import UsageMetrics from "@/pages/admin/UsageMetrics";
-import AccountingUpdateService from "@/pages/admin/AccountingUpdateService";
 import Settings from "@/pages/Settings";
 import RelatoriosIA from "@/pages/RelatoriosIA";
 import ClientAccess from "@/pages/ClientAccess";
@@ -97,10 +97,6 @@ const routes = createBrowserRouter([
       {
         path: "admin/openai-management",
         element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
-      },
-      {
-        path: "admin/accounting-update-service",
-        element: <AccountingUpdateService />
       },
       {
         path: "settings",
