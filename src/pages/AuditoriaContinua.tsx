@@ -8,7 +8,6 @@ const AuditoriaContinua = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <AuditoriaContinuaConfig />
         <AuditoriaDashboard />
       </div>
     </DashboardLayout>

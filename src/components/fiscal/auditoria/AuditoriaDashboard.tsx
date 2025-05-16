@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CircleCheck, CircleAlert, CircleX, BarChart3, FileText, RefreshCw, Clock } from "lucide-react";
+import { CircleCheck, CircleAlert, CircleX, BarChart3, FileText, RefreshCw, Clock, Activity } from "lucide-react";
 import { AuditoriaContinuaConfig } from "./AuditoriaContinuaConfig";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { ProblemaAuditoria, executarAuditoriaCompleta } from "@/services/fiscal/auditoria/auditoriaContinua";
 import { toast } from "@/hooks/use-toast";
+import { CrossValidationResults } from "./components/CrossValidationResults";
+import { performCrossValidation } from "@/services/fiscal/validation/crossValidationService";
+import { obterTodasFontesDados } from "@/services/apuracao/fontesDadosService";
 
 export function AuditoriaDashboard() {
   const [clienteId, setClienteId] = useState<string>("");
@@ -17,6 +20,8 @@ export function AuditoriaDashboard() {
   const [resultados, setResultados] = useState<any>(null);
   const [tabAtiva, setTabAtiva] = useState<string>("dashboard");
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState<string>("");
+  const [validationResults, setValidationResults] = useState<any[]>([]);
+  const [loadingValidation, setLoadingValidation] = useState<boolean>(false);
 
   // Função para executar a auditoria
   const executarAuditoria = async () => {
@@ -39,6 +44,11 @@ export function AuditoriaDashboard() {
         title: "Auditoria completa",
         description: `Auditoria realizada com sucesso. ${resultado.aprovados} lançamentos aprovados.`,
       });
+      
+      // Run cross-validation if we're on that tab
+      if (tabAtiva === "validacao-cruzada") {
+        executarValidacaoCruzada();
+      }
     } catch (error) {
       console.error("Erro ao executar auditoria:", error);
       toast({
@@ -48,6 +58,52 @@ export function AuditoriaDashboard() {
       });
     } finally {
       setCarregando(false);
+    }
+  };
+
+  // Executar validação cruzada
+  const executarValidacaoCruzada = async () => {
+    setLoadingValidation(true);
+    try {
+      const fontes = obterTodasFontesDados();
+      if (fontes.length < 2) {
+        toast({
+          title: "Fontes insuficientes",
+          description: "É necessário configurar pelo menos duas fontes de dados para validação cruzada.",
+          variant: "destructive",
+        });
+        setValidationResults([]);
+        return;
+      }
+      
+      const resultados = await performCrossValidation(fontes);
+      setValidationResults(resultados);
+      
+      // Contar discrepâncias de alta gravidade
+      const discrepanciasGraves = resultados.reduce((sum, result) => 
+        sum + result.discrepancies.filter(d => d.severity === 'high').length, 0);
+      
+      if (discrepanciasGraves > 0) {
+        toast({
+          title: "Validação Cruzada Concluída",
+          description: `${discrepanciasGraves} discrepâncias graves detectadas entre fontes de dados.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Validação Cruzada Concluída",
+          description: "Validação cruzada entre fontes de dados finalizada.",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao executar validação cruzada:", error);
+      toast({
+        title: "Erro na validação",
+        description: "Ocorreu um erro ao processar a validação cruzada.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingValidation(false);
     }
   };
 
@@ -174,10 +230,14 @@ export function AuditoriaDashboard() {
       </div>
 
       <Tabs value={tabAtiva} onValueChange={setTabAtiva}>
-        <TabsList className="grid grid-cols-2">
+        <TabsList className="grid grid-cols-3">
           <TabsTrigger value="dashboard" className="flex items-center gap-1.5">
             <BarChart3 className="h-4 w-4" />
             Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="validacao-cruzada" className="flex items-center gap-1.5">
+            <Activity className="h-4 w-4" />
+            Validação Cruzada
           </TabsTrigger>
           <TabsTrigger value="configuracao" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
@@ -294,6 +354,61 @@ export function AuditoriaDashboard() {
                   <RefreshCw className="h-4 w-4" />
                 )}
                 <span>{carregando ? "Processando..." : "Executar Auditoria"}</span>
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validacao-cruzada" className="pt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Validação Cruzada entre Fontes</CardTitle>
+                  <CardDescription>
+                    Verificação de consistência de dados entre diferentes fontes
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  {ultimaAtualizacao && (
+                    <>
+                      <Clock className="h-4 w-4" />
+                      <span>Última atualização: {ultimaAtualizacao}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              {!clienteId ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Activity className="h-16 w-16 mx-auto mb-4 opacity-40" />
+                  <h3 className="text-lg font-medium mb-1">Selecione um cliente</h3>
+                  <p>Escolha um cliente no seletor acima para realizar validação cruzada.</p>
+                </div>
+              ) : (
+                <CrossValidationResults 
+                  results={validationResults}
+                  isLoading={loadingValidation}
+                />
+              )}
+            </CardContent>
+
+            <CardFooter className="flex justify-end border-t pt-4">
+              <Button
+                onClick={executarValidacaoCruzada}
+                disabled={!clienteId || loadingValidation}
+                className="flex items-center space-x-2"
+              >
+                {loadingValidation ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Activity className="h-4 w-4" />
+                )}
+                <span>
+                  {loadingValidation ? "Processando..." : "Executar Validação Cruzada"}
+                </span>
               </Button>
             </CardFooter>
           </Card>
