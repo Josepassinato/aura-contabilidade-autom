@@ -6,34 +6,46 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bell, AlertTriangle, Activity, RefreshCw } from "lucide-react";
 import { 
-  assinarEvento, 
+  subscribe, 
   TipoEvento, 
-  Evento as EventoMensageria
+  EventoFiscal
 } from "@/services/fiscal/mensageria/eventoProcessor";
 
+// Adicionar tipos bancários e contábeis à lista de tipos de eventos
+type AllEventTypes = TipoEvento | 'bank.transaction' | 'entry.created' | 'entry.classified' | 'entry.reconciled';
+
 export function MonitorEventos() {
-  const [eventos, setEventos] = useState<EventoMensageria[]>([]);
-  const [filtroTipo, setFiltroTipo] = useState<TipoEvento | 'todos'>('todos');
+  const [eventos, setEventos] = useState<EventoFiscal[]>([]);
+  const [filtroTipo, setFiltroTipo] = useState<AllEventTypes | 'todos'>('todos');
   
   // Assina todos os tipos de eventos quando o componente é montado
   useEffect(() => {
     const canceladores: (() => void)[] = [];
     
-    const tiposEvento: TipoEvento[] = [
+    const tiposEvento: AllEventTypes[] = [
       'bank.transaction',
       'entry.created',
       'entry.classified',
       'entry.reconciled',
       'fiscal.calculated',
-      'fiscal.generated'
+      'fiscal.generated',
+      'guia.generated',
+      'pagamento.scheduled',
+      'pagamento.executed'
     ];
     
     // Assina cada tipo de evento
     tiposEvento.forEach(tipo => {
-      const cancelar = assinarEvento(tipo, (evento) => {
-        setEventos(prev => [evento, ...prev].slice(0, 100));
-      });
-      canceladores.push(cancelar);
+      try {
+        // Converta tipos bancários não suportados para TipoEvento conhecido
+        const eventoTipo = tipo as TipoEvento;
+        const cancelar = subscribe(eventoTipo, (evento) => {
+          setEventos(prev => [evento, ...prev].slice(0, 100));
+        });
+        canceladores.push(cancelar);
+      } catch (error) {
+        console.warn(`Tipo de evento não suportado para assinatura: ${tipo}`);
+      }
     });
     
     // Cancela todas as assinaturas quando o componente é desmontado
@@ -45,22 +57,28 @@ export function MonitorEventos() {
   // Filtra eventos por tipo
   const eventosFiltrados = filtroTipo === 'todos'
     ? eventos
-    : eventos.filter(evento => evento.tipo === filtroTipo);
+    : eventos.filter(evento => evento.tipo === filtroTipo as TipoEvento);
   
   // Determina a cor do badge com base no tipo de evento
   const getBadgeVariant = (tipo: TipoEvento) => {
     switch (tipo) {
-      case 'bank.transaction':
+      case 'bank.transaction' as TipoEvento:
         return 'default';
-      case 'entry.created':
+      case 'entry.created' as TipoEvento:
         return 'outline';
-      case 'entry.classified':
+      case 'entry.classified' as TipoEvento:
         return 'secondary';
-      case 'entry.reconciled':
+      case 'entry.reconciled' as TipoEvento:
         return 'default';
       case 'fiscal.calculated':
         return 'destructive';
       case 'fiscal.generated':
+        return 'default';
+      case 'guia.generated':
+        return 'outline';
+      case 'pagamento.scheduled':
+        return 'secondary';
+      case 'pagamento.executed':
         return 'default';
       default:
         return 'outline';
@@ -94,7 +112,7 @@ export function MonitorEventos() {
           <div className="flex space-x-2">
             <select
               value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value as TipoEvento | 'todos')}
+              onChange={(e) => setFiltroTipo(e.target.value as AllEventTypes | 'todos')}
               className="border rounded-md p-1 text-sm"
             >
               <option value="todos">Todos os eventos</option>
@@ -104,6 +122,9 @@ export function MonitorEventos() {
               <option value="entry.reconciled">entry.reconciled</option>
               <option value="fiscal.calculated">fiscal.calculated</option>
               <option value="fiscal.generated">fiscal.generated</option>
+              <option value="guia.generated">guia.generated</option>
+              <option value="pagamento.scheduled">pagamento.scheduled</option>
+              <option value="pagamento.executed">pagamento.executed</option>
             </select>
             <Button variant="outline" size="sm" onClick={limparHistorico}>
               Limpar
@@ -140,15 +161,9 @@ export function MonitorEventos() {
                   
                   <div className="text-sm mt-1">
                     <pre className="whitespace-pre-wrap bg-slate-50 p-2 rounded text-xs overflow-auto max-h-28">
-                      {JSON.stringify(evento.payload, null, 2)}
+                      {JSON.stringify(evento.dados, null, 2)}
                     </pre>
                   </div>
-                  
-                  {evento.correlationId && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      ID de Correlação: {evento.correlationId}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

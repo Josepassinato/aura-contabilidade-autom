@@ -8,7 +8,7 @@
 import { toast } from "@/hooks/use-toast";
 import { publicarEvento } from "./mensageria/eventoProcessor";
 import { gerarDocumentoArrecadacao } from "./darfService";
-import { TipoImposto, ResultadoCalculo } from "./types";
+import { TipoImposto, ResultadoCalculo, ParametrosCalculo, RegimeTributario } from "./types";
 
 /**
  * Função para calcular obrigações fiscais
@@ -36,6 +36,7 @@ export const calcularObrigacaoFiscal = async (
       tipoImposto: tipo,
       periodo: dados.periodo,
       cnpj: dados.cnpj,
+      valorBase: dados.receita || 0,
       baseCalculo: dados.baseCalculo || 0,
       aliquotaEfetiva: dados.aliquota || 0,
       aliquota: dados.aliquota || 0,
@@ -46,8 +47,6 @@ export const calcularObrigacaoFiscal = async (
     };
     
     switch (tipo) {
-      // ... código original existente para cálculo dos impostos
-      
       case 'IRPJ':
         resultado.codigoReceita = '2089';
         resultado.baseCalculo = dados.receita ? dados.receita * 0.32 : (dados.baseCalculo || 0);
@@ -156,6 +155,122 @@ export const calcularObrigacaoFiscal = async (
       variant: "destructive"
     });
     
+    throw error;
+  }
+};
+
+// Adaptar para compatibilidade com componentes existentes
+export const calcularImposto = async (tipo: TipoImposto, params: ParametrosCalculo): Promise<ResultadoCalculo> => {
+  return calcularObrigacaoFiscal(tipo, {
+    cnpj: params.cnpj,
+    periodo: params.periodo,
+    baseCalculo: params.valor,
+    receita: params.valor,
+    deducoes: params.deducoes
+  });
+};
+
+// Implementar funções adicionais para calcular por dados contábeis e notas fiscais
+export const calcularImpostoPorDadosContabeis = async (
+  cnpj: string, 
+  periodo: string, 
+  tipoImposto: TipoImposto, 
+  regimeTributario: RegimeTributario
+): Promise<ResultadoCalculo> => {
+  // Implementação simulada
+  return calcularObrigacaoFiscal(tipoImposto, {
+    cnpj,
+    periodo,
+    receita: 10000 + Math.random() * 5000,
+    despesas: 4000 + Math.random() * 2000,
+    receitaBruta12Meses: 120000 + Math.random() * 80000
+  });
+};
+
+export const calcularImpostoPorNotasFiscais = async (
+  cnpj: string, 
+  periodo: string, 
+  tipoImposto: TipoImposto, 
+  regimeTributario: RegimeTributario
+): Promise<ResultadoCalculo> => {
+  // Implementação simulada
+  const resultado = await calcularObrigacaoFiscal(tipoImposto, {
+    cnpj,
+    periodo,
+    receita: 15000 + Math.random() * 5000,
+    despesas: 6000 + Math.random() * 2000
+  });
+  
+  resultado.dadosOrigem = {
+    fonte: 'notasFiscais',
+    totalRegistros: Math.floor(5 + Math.random() * 20)
+  };
+  
+  return resultado;
+};
+
+// Implementações para cálculos baseados em lançamentos
+export const calcularImpostosPorLancamentos = async (
+  cnpj: string,
+  periodo: string,
+  tiposImposto: TipoImposto[]
+): Promise<Record<TipoImposto, ResultadoCalculo>> => {
+  const resultado: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
+  
+  for (const tipo of tiposImposto) {
+    resultado[tipo] = await calcularObrigacaoFiscal(tipo, {
+      cnpj,
+      periodo,
+      receita: 20000 + Math.random() * 8000,
+      despesas: 7000 + Math.random() * 3000
+    });
+    
+    if (resultado[tipo]) {
+      resultado[tipo]!.dadosOrigem = {
+        fonte: 'lancamentos',
+        totalRegistros: Math.floor(10 + Math.random() * 30)
+      };
+    }
+  }
+  
+  return resultado as Record<TipoImposto, ResultadoCalculo>;
+};
+
+export const calcularImpostosPorNotasFiscais = async (
+  cnpj: string,
+  periodo: string,
+  tiposImposto: TipoImposto[]
+): Promise<Record<TipoImposto, ResultadoCalculo>> => {
+  const resultado: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
+  
+  for (const tipo of tiposImposto) {
+    resultado[tipo] = await calcularImpostoPorNotasFiscais(cnpj, periodo, tipo, 'LucroPresumido');
+  }
+  
+  return resultado as Record<TipoImposto, ResultadoCalculo>;
+};
+
+/**
+ * Gera DARF para um resultado de cálculo
+ */
+export const gerarDARF = async (tipo: TipoImposto, resultado: ResultadoCalculo, cnpj: string): Promise<string> => {
+  try {
+    const doc = await gerarDocumentoArrecadacao(
+      tipo === 'DAS' ? 'DAS' : tipo === 'INSS' ? 'GPS' : 'DARF',
+      {
+        cnpj,
+        periodo: resultado.periodo,
+        codigoReceita: resultado.codigoReceita || '',
+        valorPrincipal: resultado.valorFinal,
+        valorTotal: resultado.valorFinal,
+        dataVencimento: resultado.dataVencimento,
+        referencia: `${tipo} ${resultado.periodo}`
+      }
+    );
+    
+    return doc.codigoBarras || '';
+  } catch (error) {
+    console.error('Erro ao gerar DARF:', error);
     throw error;
   }
 };

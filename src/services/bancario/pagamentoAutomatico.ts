@@ -1,4 +1,3 @@
-
 /**
  * Serviço de automação de pagamentos
  * Responsável por integrar o módulo fiscal com pagamentos automatizados
@@ -39,11 +38,11 @@ let jobsAgendados: JobPagamento[] = [];
  * Processa um evento fiscal gerado e cria um job de pagamento
  * quando necessário e apropriado
  */
-export const processarEventoFiscal = async (evento: EventoFiscal): Promise<JobPagamento | null> => {
+export const processarEventoFiscal = async (evento: EventoFiscal): Promise<void> => {
   // Verificamos se o evento é do tipo que nos interessa
   if (evento.tipo !== 'fiscal.generated' && evento.tipo !== 'guia.generated') {
     console.log(`Evento do tipo ${evento.tipo} ignorado para automação de pagamento.`);
-    return null;
+    return;
   }
   
   console.log('Processando evento fiscal para possível pagamento automático:', evento);
@@ -52,7 +51,7 @@ export const processarEventoFiscal = async (evento: EventoFiscal): Promise<JobPa
   const bancoSelecionado = localStorage.getItem("banco-selecionado");
   if (!bancoSelecionado) {
     console.warn('Banco não configurado. Pagamento automático não será realizado.');
-    return null;
+    return;
   }
   
   try {
@@ -111,11 +110,8 @@ export const processarEventoFiscal = async (evento: EventoFiscal): Promise<JobPa
       title: "Pagamento agendado automaticamente",
       description: `${tipoImposto || 'Tributo'} no valor de R$ ${valor.toFixed(2)} agendado para ${dataPagamento.toISOString().split('T')[0]}`
     });
-    
-    return job;
   } catch (error) {
     console.error('Erro ao processar evento fiscal para pagamento:', error);
-    return null;
   }
 };
 

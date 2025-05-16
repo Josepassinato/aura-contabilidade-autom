@@ -16,7 +16,7 @@ import { ExtratosESaldos } from "@/components/bancario/ExtratosESaldos";
 import { PagamentosAutomaticos } from "@/components/bancario/PagamentosAutomaticos";
 
 // Import sistema de eventos
-import { inicializarSistemaEventos } from "@/services/fiscal/mensageria/eventoProcessor";
+import { inicializarSistemaEventos, subscribe } from "@/services/fiscal/mensageria/eventoProcessor";
 import { processarEventoFiscal } from "@/services/bancario/pagamentoAutomatico";
 
 const AutomacaoBancaria = () => {
@@ -31,8 +31,13 @@ const AutomacaoBancaria = () => {
     inicializarSistemaEventos();
     
     // Registrar handlers para eventos fiscais
-    const unsubscribe = subscribe('fiscal.generated', processarEventoFiscal);
-    const unsubscribe2 = subscribe('guia.generated', processarEventoFiscal);
+    const unsubscribe = subscribe('fiscal.generated', async (evento) => {
+      await processarEventoFiscal(evento);
+    });
+    
+    const unsubscribe2 = subscribe('guia.generated', async (evento) => {
+      await processarEventoFiscal(evento);
+    });
     
     return () => {
       unsubscribe();
@@ -103,6 +108,3 @@ const AutomacaoBancaria = () => {
 };
 
 export default AutomacaoBancaria;
-
-// Adicionar a função subscribe ao escopo
-import { subscribe } from "@/services/fiscal/mensageria/eventoProcessor";
