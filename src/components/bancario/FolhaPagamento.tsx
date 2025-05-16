@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export function FolhaPagamentoCard() {
+export function FolhaPagamentoAutomacaoCard() {
   return (
     <Card>
       <CardHeader>
@@ -17,4 +17,5 @@ export function FolhaPagamentoCard() {
   );
 }
 
-export { FolhaPagamentoCard as FolhaPagamento };
+// Export with original name for backward compatibility
+export { FolhaPagamentoAutomacaoCard as FolhaPagamento };
