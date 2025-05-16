@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { formatCurrency, formatPeriod, getStatusBadge } from '../utils/payrollFormatters';
 
 interface PayrollTableProps {
@@ -29,12 +29,19 @@ export function PayrollTable({
   clientNames = {}
 }: PayrollTableProps) {
   
+  console.log("PayrollTable rendering with data:", { payrollsCount: payrolls?.length, isLoading });
+  
   const renderEmptyState = () => {
     if (isLoading) {
-      return <div className="py-8 text-center">Carregando folhas de pagamento...</div>;
+      return (
+        <div className="py-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4">Carregando folhas de pagamento...</p>
+        </div>
+      );
     }
     
-    if (payrolls.length === 0) {
+    if (!payrolls || payrolls.length === 0) {
       return (
         <div className="py-8 text-center">
           {selectedClientId 
@@ -52,7 +59,7 @@ export function PayrollTable({
     return clientNames[clientId] || `Empresa ${clientId.slice(0, 5)}...`;
   };
 
-  if (isLoading || payrolls.length === 0) {
+  if (isLoading || !payrolls || payrolls.length === 0) {
     return <div className="border rounded-md">{renderEmptyState()}</div>;
   }
 
@@ -63,7 +70,7 @@ export function PayrollTable({
           <TableRow>
             <TableHead>Período</TableHead>
             <TableHead>Cliente</TableHead>
-            <TableHead>Funcionários</TableHead>
+            <TableHead className="text-center">Funcionários</TableHead>
             <TableHead>Valor Bruto</TableHead>
             <TableHead>Descontos</TableHead>
             <TableHead>Valor Líquido</TableHead>

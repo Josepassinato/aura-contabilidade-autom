@@ -1,31 +1,40 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/contexts/auth';
 import { PayrollList } from '@/components/payroll/PayrollList';
 import { EmployeesList } from '@/components/payroll/EmployeesList';
 import { PayrollReports } from '@/components/payroll/PayrollReports';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const FolhaPagamento = () => {
-  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("folhas");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Simple loading state instead of using requireAuth
-  if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-        <p className="mt-4 text-muted-foreground">Carregando...</p>
-      </div>
-    </div>;
-  }
+  // Simple loading state with automatic timeout to prevent freezing
+  useEffect(() => {
+    console.log("FolhaPagamento component mounted");
+    
+    // Use a timeout to prevent infinite loading state
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
-  // Simple check for authentication
-  if (!isAuthenticated) {
-    // We'll be redirected by the ProtectedRoute in routes.tsx
-    return null;
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+            <p className="mt-4 text-muted-foreground">Carregando informações da folha de pagamento...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
