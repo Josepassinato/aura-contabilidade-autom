@@ -1,559 +1,433 @@
 
+/**
+ * Serviço de resolução autônoma de discrepâncias
+ * Complementa o processo de reconciliação bancária, resolvendo automaticamente casos não reconciliados
+ */
+
 import { toast } from "@/hooks/use-toast";
-import { 
-  ReconciliacaoItem, 
+import {
   ResultadoReconciliacao,
-  configurarReconciliacao
+  ReconciliacaoItem
 } from "./reconciliacaoBancaria";
-import { TransacaoBancaria } from "../../bancario/openBankingService";
 import { Lancamento } from "../classificacao/classificacaoML";
-import { processarLancamentosAvancados } from "../classificacao/processamentoAvancado";
+import { TransacaoBancaria } from "../../bancario/openBankingService";
+import { aplicarMapeamentos } from "./detecaoPadroes";
 
 // Configuração para resolução autônoma
 export interface ConfiguracaoResolucao {
+  toleranciaDivergencia: number;
   resolverLancamentosDuplicados: boolean;
   corrigirDivergenciasValor: boolean;
-  toleranciaDivergencia: number; // percentual de tolerância
-  criarLancamentosParaTransacoesNaoConciliadas: boolean;
-  minimumConfidenceToResolve: number; // confiança mínima para resolver
   ignorarTransacoesInternas: boolean;
+  criarLancamentosParaTransacoesNaoConciliadas: boolean;
+  minimumConfidenceToResolve: number;
   maxDiasRetroativos: number;
 }
 
 // Configuração padrão
 export const configPadraoResolucao: ConfiguracaoResolucao = {
+  toleranciaDivergencia: 0.02, // 2%
   resolverLancamentosDuplicados: true,
   corrigirDivergenciasValor: true,
-  toleranciaDivergencia: 0.02, // 2% de tolerância
-  criarLancamentosParaTransacoesNaoConciliadas: true,
-  minimumConfidenceToResolve: 0.75,
   ignorarTransacoesInternas: true,
+  criarLancamentosParaTransacoesNaoConciliadas: false,
+  minimumConfidenceToResolve: 0.8,
   maxDiasRetroativos: 90
 };
 
-// Interface para resultados da resolução
+// Resultado da resolução autônoma
 export interface ResultadoResolucaoAutonoma {
   reconciliacaoAtualizada: ResultadoReconciliacao;
-  lancamentosCorrigidos: Lancamento[];
-  lancamentosCriados: Lancamento[];
-  transacoesIgnoradas: TransacaoBancaria[];
   duplicacoesResolvidas: number;
   divergenciasCorrigidas: number;
-  totalResolucoes: number;
+  transacoesIgnoradas: TransacaoBancaria[];
+  lancamentosCriados: Lancamento[];
+  padroesAplicados: number;
 }
 
 /**
- * Aplica resolução autônoma em resultados de reconciliação
+ * Resolve discrepâncias automaticamente com base na configuração fornecida
  */
-export async function resolverDiscrepanciasAutomaticamente(
+export const resolverDiscrepanciasAutomaticamente = async (
   resultado: ResultadoReconciliacao,
-  config: Partial<ConfiguracaoResolucao> = {}
-): Promise<ResultadoResolucaoAutonoma> {
-  const configuracao: ConfiguracaoResolucao = { ...configPadraoResolucao, ...config };
-  console.log("Iniciando resolução autônoma com configuração:", configuracao);
+  config: ConfiguracaoResolucao
+): Promise<ResultadoResolucaoAutonoma> => {
+  console.log("Iniciando resolução autônoma de discrepâncias...");
   
-  // Resultados que vamos retornar
-  const lancamentosCorrigidos: Lancamento[] = [];
-  const lancamentosCriados: Lancamento[] = [];
-  const transacoesIgnoradas: TransacaoBancaria[] = [];
+  // Cópia do resultado original para não modificar diretamente
+  const resultadoAtualizado: ResultadoReconciliacao = {
+    ...resultado,
+    transacoesConciliadas: [...resultado.transacoesConciliadas],
+    transacoesNaoConciliadas: [...resultado.transacoesNaoConciliadas],
+    lancamentosNaoConciliados: [...resultado.lancamentosNaoConciliados]
+  };
+  
+  // Estatísticas da resolução
   let duplicacoesResolvidas = 0;
   let divergenciasCorrigidas = 0;
+  let padroesAplicados = 0;
+  const transacoesIgnoradas: TransacaoBancaria[] = [];
+  const lancamentosCriados: Lancamento[] = [];
   
-  // Cópia dos objetos para não modificar os originais
-  const transacoesNaoConciliadas = [...resultado.transacoesNaoConciliadas];
-  const lancamentosNaoConciliados = [...resultado.lancamentosNaoConciliados];
-  const transacoesConciliadas = [...resultado.transacoesConciliadas];
-  
-  // 1. Resolver lançamentos duplicados
-  if (configuracao.resolverLancamentosDuplicados) {
-    const { 
-      lancamentosRestantes,
-      transacoesRestantes,
-      conciliacoes,
-      duplicacoesResolvidas: duplicacoes
-    } = resolverLancamentosDuplicados(
-      lancamentosNaoConciliados,
-      transacoesNaoConciliadas,
-      configuracao
+  // Etapa 1: Resolver lançamentos duplicados
+  if (config.resolverLancamentosDuplicados) {
+    const resultadoDuplicacoes = resolverLancamentosDuplicados(
+      resultadoAtualizado.lancamentosNaoConciliados,
+      resultadoAtualizado.transacoesNaoConciliadas,
+      config
     );
     
-    // Atualizar listas e métricas
-    transacoesConciliadas.push(...conciliacoes);
-    duplicacoesResolvidas = duplicacoes;
+    // Adicionar novas reconciliações de duplicados
+    resultadoAtualizado.transacoesConciliadas.push(...resultadoDuplicacoes.reconciliacoes);
     
-    // Substituir arrays originais com os resultados processados
-    transacoesNaoConciliadas.length = 0;
-    lancamentosNaoConciliados.length = 0;
-    transacoesNaoConciliadas.push(...transacoesRestantes);
-    lancamentosNaoConciliados.push(...lancamentosRestantes);
+    // Remover itens conciliados das listas não conciliadas
+    resultadoAtualizado.lancamentosNaoConciliados = resultadoDuplicacoes.lancamentosRestantes;
+    resultadoAtualizado.transacoesNaoConciliadas = resultadoDuplicacoes.transacoesRestantes;
+    
+    duplicacoesResolvidas = resultadoDuplicacoes.reconciliacoes.length;
+    console.log(`${duplicacoesResolvidas} lançamentos duplicados resolvidos`);
   }
   
-  // 2. Corrigir divergências de valores
-  if (configuracao.corrigirDivergenciasValor) {
-    const { 
-      lancamentosRestantes,
-      lancamentosCorrigidos: corrigidos,
-      transacoesRestantes,
-      conciliacoes,
-      divergenciasCorrigidas: divergencias
-    } = corrigirDivergenciasDeValor(
-      lancamentosNaoConciliados,
-      transacoesNaoConciliadas,
-      configuracao
+  // Etapa 2: Corrigir divergências de valor dentro da tolerância
+  if (config.corrigirDivergenciasValor) {
+    const resultadoDivergencias = corrigirDivergenciasDeValor(
+      resultadoAtualizado.lancamentosNaoConciliados,
+      resultadoAtualizado.transacoesNaoConciliadas,
+      config
     );
     
-    // Atualizar listas e métricas
-    transacoesConciliadas.push(...conciliacoes);
-    lancamentosCorrigidos.push(...corrigidos);
-    divergenciasCorrigidas = divergencias;
+    // Adicionar novas reconciliações com divergências ajustadas
+    resultadoAtualizado.transacoesConciliadas.push(...resultadoDivergencias.reconciliacoes);
     
-    // Substituir arrays originais com os resultados processados
-    transacoesNaoConciliadas.length = 0;
-    lancamentosNaoConciliados.length = 0;
-    transacoesNaoConciliadas.push(...transacoesRestantes);
-    lancamentosNaoConciliados.push(...lancamentosRestantes);
+    // Remover itens conciliados das listas não conciliadas
+    resultadoAtualizado.lancamentosNaoConciliados = resultadoDivergencias.lancamentosRestantes;
+    resultadoAtualizado.transacoesNaoConciliadas = resultadoDivergencias.transacoesRestantes;
+    
+    divergenciasCorrigidas = resultadoDivergencias.reconciliacoes.length;
+    console.log(`${divergenciasCorrigidas} divergências de valor corrigidas`);
   }
-  
-  // 3. Ignorar transações internas se configurado
-  if (configuracao.ignorarTransacoesInternas) {
-    const { transacoesRestantes, transacoesIgnoradas: ignoradas } = filtrarTransacoesInternas(
-      transacoesNaoConciliadas,
-      configuracao
+
+  // Etapa 3: Aplicar padrões detectados para resolução avançada
+  // Esta funcionalidade usa o novo serviço de detecção de padrões
+  try {
+    const sugestoesReconciliacao = aplicarMapeamentos(
+      resultadoAtualizado.transacoesNaoConciliadas,
+      resultadoAtualizado.lancamentosNaoConciliados
     );
     
-    transacoesIgnoradas.push(...ignoradas);
-    transacoesNaoConciliadas.length = 0;
-    transacoesNaoConciliadas.push(...transacoesRestantes);
-  }
-  
-  // 4. Criar lançamentos para transações não conciliadas
-  if (configuracao.criarLancamentosParaTransacoesNaoConciliadas && transacoesNaoConciliadas.length > 0) {
-    const { lancamentosCriados: criados, transacoesProcessadas } = await criarLancamentosAutomaticamente(
-      transacoesNaoConciliadas,
-      configuracao
-    );
-    
-    lancamentosCriados.push(...criados);
-    
-    // Conciliar os novos lançamentos com as transações correspondentes
-    const novasConciliacoes = criarConciliacoesPara(criados, transacoesProcessadas);
-    transacoesConciliadas.push(...novasConciliacoes);
-    
-    // Remover transações processadas da lista não conciliada
-    const idsProcessados = new Set(transacoesProcessadas.map(t => t.id));
-    const transacoesRestantes = transacoesNaoConciliadas.filter(t => !idsProcessados.has(t.id));
-    
-    transacoesNaoConciliadas.length = 0;
-    transacoesNaoConciliadas.push(...transacoesRestantes);
-  }
-  
-  // Montar resultado atualizado da reconciliação
-  const reconciliacaoAtualizada: ResultadoReconciliacao = {
-    transacoesConciliadas,
-    transacoesNaoConciliadas,
-    lancamentosNaoConciliados,
-    totalConciliado: transacoesConciliadas.length,
-    totalNaoConciliado: {
-      transacoes: transacoesNaoConciliadas.length,
-      lancamentos: lancamentosNaoConciliados.length
+    if (sugestoesReconciliacao.length > 0) {
+      // Filtrar apenas sugestões com confiança acima do limiar configurado
+      const sugestoesValidas = sugestoesReconciliacao.filter(
+        sugestao => sugestao.score >= config.minimumConfidenceToResolve
+      );
+      
+      // Adicionar à lista de reconciliações
+      resultadoAtualizado.transacoesConciliadas.push(...sugestoesValidas);
+      
+      // Remover itens conciliados das listas não conciliadas
+      const idsSugeridos = new Set();
+      sugestoesValidas.forEach(sugestao => {
+        idsSugeridos.add(sugestao.transacao.id);
+      });
+      
+      resultadoAtualizado.transacoesNaoConciliadas = resultadoAtualizado.transacoesNaoConciliadas.filter(
+        transacao => !idsSugeridos.has(transacao.id)
+      );
+      
+      const idsLancamentosSugeridos = new Set();
+      sugestoesValidas.forEach(sugestao => {
+        idsLancamentosSugeridos.add(sugestao.lancamento.id);
+      });
+      
+      resultadoAtualizado.lancamentosNaoConciliados = resultadoAtualizado.lancamentosNaoConciliados.filter(
+        lancamento => !idsLancamentosSugeridos.has(lancamento.id)
+      );
+      
+      padroesAplicados = sugestoesValidas.length;
+      console.log(`${padroesAplicados} reconciliações realizadas com base em padrões detectados`);
     }
+  } catch (error) {
+    console.error("Erro ao aplicar padrões detectados:", error);
+  }
+  
+  // Etapa 4: Ignorar transações internas
+  if (config.ignorarTransacoesInternas) {
+    const { ignoradas, restantes } = identificarTransacoesInternas(
+      resultadoAtualizado.transacoesNaoConciliadas
+    );
+    
+    resultadoAtualizado.transacoesNaoConciliadas = restantes;
+    transacoesIgnoradas.push(...ignoradas);
+    
+    console.log(`${ignoradas.length} transações internas ignoradas`);
+  }
+  
+  // Etapa 5: Criar lançamentos para transações não conciliadas
+  if (config.criarLancamentosParaTransacoesNaoConciliadas) {
+    const resultado = criarLancamentosParaTransacoes(
+      resultadoAtualizado.transacoesNaoConciliadas
+    );
+    
+    // Adicionar à lista de reconciliações
+    resultadoAtualizado.transacoesConciliadas.push(...resultado.reconciliacoes);
+    resultadoAtualizado.transacoesNaoConciliadas = resultado.transacoesRestantes;
+    lancamentosCriados.push(...resultado.lancamentosCriados);
+    
+    console.log(`${resultado.lancamentosCriados.length} lançamentos criados automaticamente`);
+  }
+  
+  // Atualizar contadores
+  resultadoAtualizado.totalConciliado = resultadoAtualizado.transacoesConciliadas.length;
+  resultadoAtualizado.totalNaoConciliado = {
+    transacoes: resultadoAtualizado.transacoesNaoConciliadas.length,
+    lancamentos: resultadoAtualizado.lancamentosNaoConciliados.length
   };
   
-  const totalResolucoes = duplicacoesResolvidas + divergenciasCorrigidas + lancamentosCriados.length;
+  // Resultado final
+  const resultadoFinal: ResultadoResolucaoAutonoma = {
+    reconciliacaoAtualizada: resultadoAtualizado,
+    duplicacoesResolvidas,
+    divergenciasCorrigidas,
+    transacoesIgnoradas,
+    lancamentosCriados,
+    padroesAplicados
+  };
   
-  // Notificar resultado
-  const mensagem = `Resolução autônoma concluída: ${totalResolucoes} problemas resolvidos (${duplicacoesResolvidas} duplicações, ${divergenciasCorrigidas} divergências, ${lancamentosCriados.length} lançamentos criados)`;
-  
+  // Notificação de conclusão
+  const totalResolvidos = duplicacoesResolvidas + divergenciasCorrigidas + 
+      lancamentosCriados.length + transacoesIgnoradas.length + padroesAplicados;
+      
   toast({
-    title: "Resolução autônoma concluída",
-    description: mensagem,
+    title: "Resolução automática concluída",
+    description: `${totalResolvidos} discrepâncias resolvidas com sucesso de forma autônoma`
   });
   
-  console.log("Resultado da resolução autônoma:", {
-    reconciliacaoAtualizada,
-    lancamentosCorrigidos,
-    lancamentosCriados,
-    transacoesIgnoradas,
-    duplicacoesResolvidas,
-    divergenciasCorrigidas,
-    totalResolucoes
-  });
+  console.log("Resolução autônoma concluída", resultadoFinal);
   
-  return {
-    reconciliacaoAtualizada,
-    lancamentosCorrigidos,
-    lancamentosCriados,
-    transacoesIgnoradas,
-    duplicacoesResolvidas,
-    divergenciasCorrigidas,
-    totalResolucoes
-  };
-}
+  return resultadoFinal;
+};
 
 /**
- * Resolve lançamentos duplicados encontrando melhores matches
+ * Resolve lançamentos duplicados
  */
 function resolverLancamentosDuplicados(
   lancamentosNaoConciliados: Lancamento[],
   transacoesNaoConciliadas: TransacaoBancaria[],
   config: ConfiguracaoResolucao
-): {
-  lancamentosRestantes: Lancamento[];
-  transacoesRestantes: TransacaoBancaria[];
-  conciliacoes: ReconciliacaoItem[];
-  duplicacoesResolvidas: number;
-} {
+) {
+  const reconciliacoes: ReconciliacaoItem[] = [];
   const lancamentosRestantes = [...lancamentosNaoConciliados];
   const transacoesRestantes = [...transacoesNaoConciliadas];
-  const conciliacoes: ReconciliacaoItem[] = [];
-  let duplicacoesResolvidas = 0;
   
-  // Agrupar lançamentos por características similares (data, valor, descrição parcial)
-  const lancamentosAgrupados = agruparLancamentosSimilares(lancamentosNaoConciliados);
+  // Agrupar lançamentos potencialmente duplicados
+  const grupos = agruparLancamentosPotencialmenteDuplicados(lancamentosNaoConciliados);
   
-  // Para cada grupo de lançamentos similares, tentar encontrar transações correspondentes
-  Object.values(lancamentosAgrupados).forEach(grupo => {
-    if (grupo.length <= 1) return; // Ignorar grupos sem duplicatas
-    
-    // Ordenar por confiança e relevância
-    grupo.sort((a, b) => (b.confianca || 0) - (a.confianca || 0));
-    
-    // Manter apenas o primeiro (mais confiável) e marcar os outros como duplicatas
-    const lancamentoPrincipal = grupo[0];
-    const duplicatas = grupo.slice(1);
-    
-    // Tentar encontrar uma transação correspondente para o lançamento principal
-    const transacaoIndex = transacoesRestantes.findIndex(transacao => 
-      verificarCorrespondencia(transacao, lancamentoPrincipal, config)
-    );
-    
-    if (transacaoIndex >= 0) {
-      const transacao = transacoesRestantes[transacaoIndex];
-      
-      // Criar reconciliação
-      conciliacoes.push({
-        transacao,
-        lancamento: lancamentoPrincipal,
-        score: calcularScoreCorrespondencia(transacao, lancamentoPrincipal),
-        conciliacaoAutomatica: true,
-        dataReconciliacao: new Date().toISOString()
-      });
-      
-      // Remover a transação e lançamentos processados
-      transacoesRestantes.splice(transacaoIndex, 1);
-      removerLancamentos(lancamentosRestantes, [lancamentoPrincipal, ...duplicatas]);
-      
-      duplicacoesResolvidas += duplicatas.length;
+  // Para cada grupo de duplicados, tentar encontrar transações correspondentes
+  for (const grupo of Object.values(grupos)) {
+    if (grupo.length > 1) { // Temos duplicados
+      for (let i = 0; i < transacoesRestantes.length; i++) {
+        const transacao = transacoesRestantes[i];
+        
+        // Verificar se algum lançamento no grupo corresponde à transação
+        const matches = grupo.map(lancamento => ({
+          lancamento,
+          score: calcularScoreCorrespondencia(transacao, lancamento, config)
+        }));
+        
+        // Encontrar o melhor match
+        matches.sort((a, b) => b.score - a.score);
+        
+        if (matches[0].score > config.minimumConfidenceToResolve) {
+          // Criar reconciliação com o melhor match
+          const melhorMatch = matches[0].lancamento;
+          
+          reconciliacoes.push({
+            transacao,
+            lancamento: melhorMatch,
+            score: matches[0].score,
+            conciliacaoAutomatica: true,
+            dataReconciliacao: new Date().toISOString()
+          });
+          
+          // Remover a transação e o lançamento das listas
+          transacoesRestantes.splice(i, 1);
+          const idxLancamento = lancamentosRestantes.findIndex(l => l.id === melhorMatch.id);
+          if (idxLancamento !== -1) {
+            lancamentosRestantes.splice(idxLancamento, 1);
+          }
+          
+          // Retroceder índice para compensar remoção
+          i--;
+          break;
+        }
+      }
     }
-  });
+  }
   
   return {
+    reconciliacoes,
     lancamentosRestantes,
-    transacoesRestantes,
-    conciliacoes,
-    duplicacoesResolvidas
+    transacoesRestantes
   };
 }
 
 /**
- * Corrige divergências de valores entre lançamentos e transações
+ * Agrupa lançamentos potencialmente duplicados
+ */
+function agruparLancamentosPotencialmenteDuplicados(
+  lancamentos: Lancamento[]
+): Record<string, Lancamento[]> {
+  const grupos: Record<string, Lancamento[]> = {};
+  
+  // Agrupar por características semelhantes
+  lancamentos.forEach(lancamento => {
+    // Criar chave de agrupamento (data aproximada + valor + tipo)
+    const data = new Date(lancamento.data);
+    const mesAno = `${data.getMonth() + 1}-${data.getFullYear()}`;
+    const valorArredondado = Math.round(lancamento.valor * 100) / 100;
+    const chave = `${mesAno}_${valorArredondado}_${lancamento.tipo}`;
+    
+    if (!grupos[chave]) {
+      grupos[chave] = [];
+    }
+    
+    grupos[chave].push(lancamento);
+  });
+  
+  // Filtrar apenas grupos com potenciais duplicações
+  return Object.fromEntries(
+    Object.entries(grupos).filter(([_, lancamentos]) => lancamentos.length > 1)
+  );
+}
+
+/**
+ * Corrige divergências de valor dentro da tolerância configurada
  */
 function corrigirDivergenciasDeValor(
   lancamentosNaoConciliados: Lancamento[],
   transacoesNaoConciliadas: TransacaoBancaria[],
   config: ConfiguracaoResolucao
-): {
-  lancamentosRestantes: Lancamento[];
-  lancamentosCorrigidos: Lancamento[];
-  transacoesRestantes: TransacaoBancaria[];
-  conciliacoes: ReconciliacaoItem[];
-  divergenciasCorrigidas: number;
-} {
+) {
+  const reconciliacoes: ReconciliacaoItem[] = [];
   const lancamentosRestantes = [...lancamentosNaoConciliados];
   const transacoesRestantes = [...transacoesNaoConciliadas];
-  const conciliacoes: ReconciliacaoItem[] = [];
-  const lancamentosCorrigidos: Lancamento[] = [];
-  let divergenciasCorrigidas = 0;
   
-  // Para cada transação, procurar por lançamentos com divergência tolerável
-  for (let i = transacoesRestantes.length - 1; i >= 0; i--) {
+  // Para cada transação, procurar um lançamento com valor aproximado
+  for (let i = 0; i < transacoesRestantes.length; i++) {
     const transacao = transacoesRestantes[i];
     
-    // Encontrar lançamento com data e descrição similar, mas valor divergente
-    const lancamentoIndex = lancamentosRestantes.findIndex(lancamento => {
-      // Verificar correspondência em data e descrição
-      const dataCorresponde = Math.abs(
-        new Date(transacao.data).getTime() - new Date(lancamento.data).getTime()
-      ) <= config.maxDiasRetroativos * 24 * 60 * 60 * 1000;
-      
-      const descricaoCorresponde = verificarCorrespondenciaDescricao(
-        transacao.descricao,
-        lancamento.descricao
-      );
-      
-      // Verificar diferença de valor dentro da tolerância
-      const diferencaValor = Math.abs(transacao.valor - lancamento.valor) / Math.max(transacao.valor, lancamento.valor);
-      const valorDentroTolerancia = diferencaValor <= config.toleranciaDivergencia;
-      
-      // Tipos compatíveis
+    // Verificar restrição de data
+    const dataTransacao = new Date(transacao.data);
+    const minDate = new Date(dataTransacao);
+    minDate.setDate(minDate.getDate() - config.maxDiasRetroativos);
+    
+    // Procurar lançamentos compatíveis
+    const lancamentosCompativeis = lancamentosRestantes.filter(lancamento => {
+      // Verificar compatibilidade de tipo
       const tipoCompativel = 
         (transacao.tipo === 'credito' && lancamento.tipo === 'receita') || 
         (transacao.tipo === 'debito' && lancamento.tipo === 'despesa');
       
-      return dataCorresponde && descricaoCorresponde && valorDentroTolerancia && tipoCompativel;
+      if (!tipoCompativel) return false;
+      
+      // Verificar data dentro do limite
+      const dataLancamento = new Date(lancamento.data);
+      if (dataLancamento < minDate) return false;
+      
+      // Verificar divergência de valor dentro da tolerância
+      const divergenciaRelativa = Math.abs(transacao.valor - lancamento.valor) / Math.max(transacao.valor, lancamento.valor);
+      return divergenciaRelativa <= config.toleranciaDivergencia;
     });
     
-    if (lancamentoIndex >= 0) {
-      const lancamento = lancamentosRestantes[lancamentoIndex];
+    if (lancamentosCompativeis.length > 0) {
+      // Encontrar o lançamento com maior score
+      let melhorLancamento: Lancamento | null = null;
+      let melhorScore = -1;
       
-      // Corrigir o valor do lançamento para corresponder à transação
-      const lancamentoCorrigido: Lancamento = {
-        ...lancamento,
-        valor: transacao.valor,
-        // Adicionar marcação de que foi corrigido automaticamente
-        observacoes: `${lancamento.observacoes || ''} [Valor corrigido automaticamente de ${lancamento.valor} para ${transacao.valor}]`.trim()
-      };
+      for (const lancamento of lancamentosCompativeis) {
+        const score = calcularScoreCorrespondencia(transacao, lancamento, config);
+        if (score > melhorScore) {
+          melhorScore = score;
+          melhorLancamento = lancamento;
+        }
+      }
       
-      // Adicionar aos resultados
-      lancamentosCorrigidos.push(lancamentoCorrigido);
-      
-      conciliacoes.push({
-        transacao,
-        lancamento: lancamentoCorrigido,
-        score: 0.9, // Score alto pois foi reconciliado após correção
-        conciliacaoAutomatica: true,
-        dataReconciliacao: new Date().toISOString()
-      });
-      
-      // Remover itens processados
-      transacoesRestantes.splice(i, 1);
-      lancamentosRestantes.splice(lancamentoIndex, 1);
-      divergenciasCorrigidas++;
+      // Se o score for suficiente, criar reconciliação
+      if (melhorLancamento && melhorScore >= config.minimumConfidenceToResolve) {
+        reconciliacoes.push({
+          transacao,
+          lancamento: melhorLancamento,
+          score: melhorScore,
+          conciliacaoAutomatica: true,
+          dataReconciliacao: new Date().toISOString()
+        });
+        
+        // Remover a transação e o lançamento das listas
+        transacoesRestantes.splice(i, 1);
+        const idxLancamento = lancamentosRestantes.findIndex(l => l.id === melhorLancamento!.id);
+        if (idxLancamento !== -1) {
+          lancamentosRestantes.splice(idxLancamento, 1);
+        }
+        
+        // Retroceder índice para compensar remoção
+        i--;
+      }
     }
   }
   
   return {
+    reconciliacoes,
     lancamentosRestantes,
-    lancamentosCorrigidos,
-    transacoesRestantes,
-    conciliacoes,
-    divergenciasCorrigidas
+    transacoesRestantes
   };
 }
 
 /**
- * Filtra transações internas que não devem ser reconciliadas
+ * Calcula o score de correspondência entre uma transação e um lançamento
  */
-function filtrarTransacoesInternas(
-  transacoes: TransacaoBancaria[],
-  config: ConfiguracaoResolucao
-): {
-  transacoesRestantes: TransacaoBancaria[];
-  transacoesIgnoradas: TransacaoBancaria[];
-} {
-  const transacoesIgnoradas: TransacaoBancaria[] = [];
-  const transacoesRestantes: TransacaoBancaria[] = [];
-  
-  // Expressões regulares para identificar transações internas
-  const expressoesTipoInterno = [
-    /transf(.|erencia|erir) entre contas/i,
-    /transferencia\s+propria/i,
-    /transferencia\s+mesma\s+titularidade/i,
-    /tarifa\s+bancaria/i,
-    /tarifa\s+pacote/i,
-    /taxa\s+manutencao/i,
-    /rendimento/i,
-    /saque\s+proprio/i,
-  ];
-  
-  transacoes.forEach(transacao => {
-    const descricao = transacao.descricao.toLowerCase();
-    
-    // Verificar se a descrição corresponde a alguma das expressões de transações internas
-    const ehTransacaoInterna = expressoesTipoInterno.some(regex => regex.test(descricao));
-    
-    if (ehTransacaoInterna) {
-      transacoesIgnoradas.push(transacao);
-    } else {
-      transacoesRestantes.push(transacao);
-    }
-  });
-  
-  return { transacoesRestantes, transacoesIgnoradas };
-}
-
-/**
- * Cria lançamentos automaticamente para transações não conciliadas
- */
-async function criarLancamentosAutomaticamente(
-  transacoes: TransacaoBancaria[],
-  config: ConfiguracaoResolucao
-): Promise<{
-  lancamentosCriados: Lancamento[];
-  transacoesProcessadas: TransacaoBancaria[];
-}> {
-  const lancamentosCriados: Lancamento[] = [];
-  const transacoesProcessadas: TransacaoBancaria[] = [];
-  
-  // Criar lançamentos com base nas transações
-  for (const transacao of transacoes) {
-    // Criar um lançamento básico
-    const novoLancamento: Lancamento = {
-      id: `auto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      data: transacao.data,
-      valor: transacao.valor,
-      descricao: transacao.descricao,
-      tipo: transacao.tipo === 'credito' ? 'receita' : 'despesa',
-      categoria: transacao.categoria || (transacao.tipo === 'credito' ? 'Receitas Diversas' : 'Despesas Diversas'),
-      contraparte: transacao.contraparte || "",
-      status: 'classificado',
-      confianca: 0.7,
-      observacoes: 'Lançamento criado automaticamente pela reconciliação bancária'
-    };
-    
-    // Tentar classificar melhor o lançamento usando o processamento avançado
-    try {
-      const resultado = await processarLancamentosAvancados([novoLancamento]);
-      
-      if (resultado.lancamentosProcessados.length > 0) {
-        // Usar o lançamento processado com categoria e classificação melhoradas
-        const lancamentoProcessado = resultado.lancamentosProcessados[0];
-        
-        // Verificar se a confiança é suficiente para usar a classificação automática
-        if (lancamentoProcessado.confianca && 
-            lancamentoProcessado.confianca >= config.minimumConfidenceToResolve) {
-          lancamentosCriados.push(lancamentoProcessado);
-          transacoesProcessadas.push(transacao);
-        } else {
-          // Usar o lançamento original se a confiança for baixa
-          lancamentosCriados.push(novoLancamento);
-          transacoesProcessadas.push(transacao);
-        }
-      } else {
-        // Fallback para o lançamento original
-        lancamentosCriados.push(novoLancamento);
-        transacoesProcessadas.push(transacao);
-      }
-    } catch (error) {
-      console.error("Erro ao processar lançamento automático:", error);
-      
-      // Em caso de erro, usar o lançamento básico
-      lancamentosCriados.push(novoLancamento);
-      transacoesProcessadas.push(transacao);
-    }
-  }
-  
-  return { lancamentosCriados, transacoesProcessadas };
-}
-
-/**
- * Funções auxiliares
- */
-
-// Verifica correspondência entre transação e lançamento
-function verificarCorrespondencia(
+function calcularScoreCorrespondencia(
   transacao: TransacaoBancaria,
   lancamento: Lancamento,
   config: ConfiguracaoResolucao
-): boolean {
-  // Verificar tipo (débito/crédito vs despesa/receita)
-  const tipoCompativel = 
-    (transacao.tipo === 'credito' && lancamento.tipo === 'receita') || 
-    (transacao.tipo === 'debito' && lancamento.tipo === 'despesa');
-  
-  if (!tipoCompativel) return false;
-  
-  // Verificar data dentro do período retroativo configurado
-  const diferencaDias = Math.abs(
-    new Date(transacao.data).getTime() - new Date(lancamento.data).getTime()
-  ) / (24 * 60 * 60 * 1000);
-  
-  if (diferencaDias > config.maxDiasRetroativos) return false;
-  
-  // Verificar valores iguais ou dentro da tolerância
-  const diferencaValor = Math.abs(transacao.valor - lancamento.valor) / Math.max(transacao.valor, lancamento.valor);
-  if (diferencaValor > config.toleranciaDivergencia) return false;
-  
-  // Verificar correspondência na descrição
-  return verificarCorrespondenciaDescricao(transacao.descricao, lancamento.descricao);
-}
-
-// Verifica correspondência entre descrições
-function verificarCorrespondenciaDescricao(descricao1: string, descricao2: string): boolean {
-  const desc1 = descricao1.toLowerCase();
-  const desc2 = descricao2.toLowerCase();
-  
-  // Verificar correspondência exata
-  if (desc1 === desc2) return true;
-  
-  // Verificar se uma contém a outra
-  if (desc1.includes(desc2) || desc2.includes(desc1)) return true;
-  
-  // Extrair palavras significativas (mais de 3 caracteres)
-  const palavras1 = desc1.split(/\s+/).filter(p => p.length > 3);
-  const palavras2 = desc2.split(/\s+/).filter(p => p.length > 3);
-  
-  // Verificar se há pelo menos 2 palavras em comum
-  let palavrasComuns = 0;
-  palavras1.forEach(p1 => {
-    if (palavras2.some(p2 => p2.includes(p1) || p1.includes(p2))) {
-      palavrasComuns++;
-    }
-  });
-  
-  return palavrasComuns >= 2;
-}
-
-// Calcula score de correspondência entre transação e lançamento
-function calcularScoreCorrespondencia(
-  transacao: TransacaoBancaria, 
-  lancamento: Lancamento
 ): number {
   let score = 0;
   
-  // Pontuação por correspondência de valor
-  if (transacao.valor === lancamento.valor) {
-    score += 0.4;
-  } else {
-    const diferencaPercent = Math.abs(transacao.valor - lancamento.valor) / Math.max(transacao.valor, lancamento.valor);
-    if (diferencaPercent <= 0.01) { // 1% de diferença
-      score += 0.35;
-    } else if (diferencaPercent <= 0.05) { // 5% de diferença
-      score += 0.25;
-    }
+  // Score por valor (50%)
+  const divergenciaRelativa = Math.abs(transacao.valor - lancamento.valor) / Math.max(transacao.valor, lancamento.valor);
+  if (divergenciaRelativa === 0) {
+    score += 0.5; // Match perfeito
+  } else if (divergenciaRelativa <= config.toleranciaDivergencia) {
+    // Score proporcional à divergência dentro da tolerância
+    score += 0.5 * (1 - divergenciaRelativa / config.toleranciaDivergencia);
   }
   
-  // Pontuação por correspondência de data
-  const diferencaDias = Math.abs(
-    new Date(transacao.data).getTime() - new Date(lancamento.data).getTime()
-  ) / (24 * 60 * 60 * 1000);
+  // Score por data (30%)
+  const dataTransacao = new Date(transacao.data);
+  const dataLancamento = new Date(lancamento.data);
+  const diferencaDias = Math.abs(dataTransacao.getTime() - dataLancamento.getTime()) / (1000 * 60 * 60 * 24);
   
   if (diferencaDias === 0) {
-    score += 0.3;
-  } else if (diferencaDias <= 1) {
-    score += 0.25;
-  } else if (diferencaDias <= 3) {
-    score += 0.15;
-  } else if (diferencaDias <= 7) {
-    score += 0.05;
+    score += 0.3; // Match perfeito
+  } else if (diferencaDias <= 5) {
+    score += 0.3 * (1 - diferencaDias / 5);
   }
   
-  // Pontuação por correspondência de descrição
-  const desc1 = transacao.descricao.toLowerCase();
-  const desc2 = lancamento.descricao.toLowerCase();
+  // Score por descrição (20%)
+  const descricaoTransacao = transacao.descricao.toLowerCase();
+  const descricaoLancamento = lancamento.descricao.toLowerCase();
   
-  if (desc1 === desc2) {
-    score += 0.3;
-  } else if (desc1.includes(desc2) || desc2.includes(desc1)) {
+  if (descricaoTransacao === descricaoLancamento) {
     score += 0.2;
+  } else if (descricaoTransacao.includes(descricaoLancamento) || descricaoLancamento.includes(descricaoTransacao)) {
+    score += 0.15;
   } else {
     // Verificar palavras em comum
-    const palavras1 = desc1.split(/\s+/).filter(p => p.length > 3);
-    const palavras2 = desc2.split(/\s+/).filter(p => p.length > 3);
+    const palavrasTransacao = descricaoTransacao.split(/\s+/).filter(p => p.length > 3);
+    const palavrasLancamento = descricaoLancamento.split(/\s+/).filter(p => p.length > 3);
     
     let palavrasComuns = 0;
-    palavras1.forEach(p1 => {
-      if (palavras2.some(p2 => p2.includes(p1) || p1.includes(p2))) {
+    palavrasTransacao.forEach(p1 => {
+      if (palavrasLancamento.some(p2 => p2.includes(p1) || p1.includes(p2))) {
         palavrasComuns++;
       }
     });
@@ -568,60 +442,147 @@ function calcularScoreCorrespondencia(
   return Math.min(1, score);
 }
 
-// Agrupa lançamentos por características similares
-function agruparLancamentosSimilares(lancamentos: Lancamento[]): Record<string, Lancamento[]> {
-  const grupos: Record<string, Lancamento[]> = {};
+/**
+ * Identifica transações internas que podem ser ignoradas
+ */
+function identificarTransacoesInternas(
+  transacoes: TransacaoBancaria[]
+): { ignoradas: TransacaoBancaria[], restantes: TransacaoBancaria[] } {
+  const ignoradas: TransacaoBancaria[] = [];
+  const restantes: TransacaoBancaria[] = [];
   
-  lancamentos.forEach(lancamento => {
-    // Criar uma chave baseada nas características do lançamento
-    // Formato: tipo_data_valorArredondado
-    const data = lancamento.data;
-    const valorArredondado = Math.round(lancamento.valor * 100) / 100;
-    const chave = `${lancamento.tipo}_${data}_${valorArredondado}`;
+  // Palavras-chave que indicam transações internas
+  const palavrasChaveInternas = [
+    "transferência entre contas", "transferência entre conta", 
+    "transf. entre contas", "transf entre", "transferência própria",
+    "ted própria", "doc próprio", "saldo anterior", "saldo inicial"
+  ];
+  
+  transacoes.forEach(transacao => {
+    const descricao = transacao.descricao.toLowerCase();
     
-    if (!grupos[chave]) {
-      grupos[chave] = [];
+    // Verificar se a descrição contém alguma palavra-chave
+    const ehInterna = palavrasChaveInternas.some(palavra => 
+      descricao.includes(palavra.toLowerCase())
+    );
+    
+    if (ehInterna) {
+      ignoradas.push(transacao);
+    } else {
+      restantes.push(transacao);
     }
-    
-    grupos[chave].push(lancamento);
   });
   
-  // Filtrar apenas grupos com mais de um lançamento (possíveis duplicatas)
-  return Object.fromEntries(
-    Object.entries(grupos).filter(([_, grupo]) => grupo.length > 1)
-  );
+  return { ignoradas, restantes };
 }
 
-// Remove lançamentos da lista
-function removerLancamentos(lista: Lancamento[], lancamentosRemover: Lancamento[]): void {
-  const idsRemover = new Set(lancamentosRemover.map(l => l.id));
-  
-  for (let i = lista.length - 1; i >= 0; i--) {
-    if (idsRemover.has(lista[i].id)) {
-      lista.splice(i, 1);
-    }
-  }
-}
-
-// Cria conciliações para lançamentos e transações correspondentes
-function criarConciliacoesPara(
-  lancamentos: Lancamento[], 
+/**
+ * Cria lançamentos automaticamente para transações não conciliadas
+ */
+function criarLancamentosParaTransacoes(
   transacoes: TransacaoBancaria[]
-): ReconciliacaoItem[] {
-  const conciliacoes: ReconciliacaoItem[] = [];
+) {
+  const lancamentosCriados: Lancamento[] = [];
+  const reconciliacoes: ReconciliacaoItem[] = [];
+  const transacoesRestantes: TransacaoBancaria[] = [];
   
-  // Assumindo que os arrays têm o mesmo tamanho e ordem correspondente
-  const tamanho = Math.min(lancamentos.length, transacoes.length);
+  // Criar um lançamento para cada transação, se possível
+  transacoes.forEach(transacao => {
+    // Verificar se podemos classificar esta transação
+    const classificacaoAutomatica = classificarTransacaoAutomaticamente(transacao);
+    
+    if (classificacaoAutomatica.confianca >= 0.7) {
+      // Criar o lançamento
+      const novoLancamento: Lancamento = {
+        id: `lancamento_auto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        data: transacao.data,
+        valor: transacao.valor,
+        descricao: transacao.descricao,
+        tipo: transacao.tipo === 'credito' ? 'receita' : 'despesa',
+        categoria: classificacaoAutomatica.categoria,
+        contraparte: transacao.contraparte,
+        status: 'classificado',
+        confianca: classificacaoAutomatica.confianca,
+        observacoes: 'Criado automaticamente pelo sistema de reconciliação autônoma'
+      };
+      
+      lancamentosCriados.push(novoLancamento);
+      
+      // Criar a reconciliação
+      reconciliacoes.push({
+        transacao,
+        lancamento: novoLancamento,
+        score: 0.9, // Alta confiança para lançamentos criados automaticamente
+        conciliacaoAutomatica: true,
+        dataReconciliacao: new Date().toISOString()
+      });
+    } else {
+      // Não foi possível classificar automaticamente
+      transacoesRestantes.push(transacao);
+    }
+  });
   
-  for (let i = 0; i < tamanho; i++) {
-    conciliacoes.push({
-      lancamento: lancamentos[i],
-      transacao: transacoes[i],
-      score: calcularScoreCorrespondencia(transacoes[i], lancamentos[i]),
-      conciliacaoAutomatica: true,
-      dataReconciliacao: new Date().toISOString()
-    });
+  return {
+    lancamentosCriados,
+    reconciliacoes,
+    transacoesRestantes
+  };
+}
+
+/**
+ * Classifica uma transação automaticamente para criação de lançamento
+ */
+function classificarTransacaoAutomaticamente(
+  transacao: TransacaoBancaria
+): { categoria: string; confianca: number } {
+  // Regras simplificadas para classificação
+  const descricao = transacao.descricao.toLowerCase();
+  
+  // Regras para receitas (créditos)
+  if (transacao.tipo === 'credito') {
+    if (descricao.includes("cliente") || descricao.includes("pagamento") || descricao.includes("venda")) {
+      return { categoria: "Vendas", confianca: 0.8 };
+    }
+    
+    if (descricao.includes("juros") || descricao.includes("rendimento")) {
+      return { categoria: "Rendimentos", confianca: 0.85 };
+    }
+    
+    if (descricao.includes("serviço") || descricao.includes("servico") || descricao.includes("consultoria")) {
+      return { categoria: "Prestação de Serviços", confianca: 0.8 };
+    }
+    
+    // Categoria genérica para receitas
+    return { categoria: "Outras Receitas", confianca: 0.7 };
   }
   
-  return conciliacoes;
+  // Regras para despesas (débitos)
+  else {
+    if (descricao.includes("energia") || descricao.includes("água") || descricao.includes("luz") || descricao.includes("telefone")) {
+      return { categoria: "Utilidades", confianca: 0.85 };
+    }
+    
+    if (descricao.includes("imposto") || descricao.includes("tributo") || descricao.includes("inss") || descricao.includes("fgts")) {
+      return { categoria: "Impostos e Tributos", confianca: 0.85 };
+    }
+    
+    if (descricao.includes("salário") || descricao.includes("folha") || descricao.includes("funcionário")) {
+      return { categoria: "Folha de Pagamento", confianca: 0.85 };
+    }
+    
+    if (descricao.includes("fornecedor") || descricao.includes("compra") || descricao.includes("material")) {
+      return { categoria: "Fornecedores", confianca: 0.8 };
+    }
+    
+    if (descricao.includes("aluguel") || descricao.includes("locação")) {
+      return { categoria: "Aluguel", confianca: 0.85 };
+    }
+    
+    if (descricao.includes("tarifa") || descricao.includes("taxa") || descricao.includes("banco")) {
+      return { categoria: "Despesas Financeiras", confianca: 0.85 };
+    }
+    
+    // Categoria genérica para despesas
+    return { categoria: "Outras Despesas", confianca: 0.6 };
+  }
 }

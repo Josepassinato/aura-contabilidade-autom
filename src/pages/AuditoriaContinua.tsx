@@ -5,6 +5,7 @@ import { AuditoriaContinuaConfig } from "@/components/fiscal/auditoria/Auditoria
 import { AuditoriaDashboard } from "@/components/fiscal/auditoria/AuditoriaDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReconciliacaoBancaria } from "@/components/fiscal/reconciliacao/ReconciliacaoBancaria";
+import { DeteccaoPadroes } from "@/components/fiscal/reconciliacao/DeteccaoPadroes";
 import { 
   Card, 
   CardContent, 
@@ -12,7 +13,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Sparkles, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const AuditoriaContinua = () => {
@@ -46,6 +47,10 @@ const AuditoriaContinua = () => {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="configuracao">Configuração</TabsTrigger>
             <TabsTrigger value="reconciliacao">Reconciliação Autônoma</TabsTrigger>
+            <TabsTrigger value="deteccaopadroes">
+              <Search className="h-3.5 w-3.5 mr-1" />
+              Detecção de Padrões
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="dashboard">
@@ -101,6 +106,53 @@ const AuditoriaContinua = () => {
             </Card>
             
             <ReconciliacaoBancaria />
+          </TabsContent>
+          
+          <TabsContent value="deteccaopadroes">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Identificação Avançada de Padrões</CardTitle>
+                <CardDescription>
+                  Analisa seu histórico de transações e lançamentos para identificar padrões recorrentes, 
+                  sazonais e relevantes, aumentando a precisão das reconciliações automáticas.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="border rounded-lg p-4">
+                    <div className="font-medium mb-2 flex items-center">
+                      <Search className="h-4 w-4 mr-2 text-blue-500" />
+                      Detecção de Padrões
+                    </div>
+                    <p className="text-muted-foreground">
+                      Identifica automaticamente padrões recorrentes em transações e lançamentos,
+                      como pagamentos mensais, sazonais ou periódicos.
+                    </p>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4">
+                    <div className="font-medium mb-2 flex items-center">
+                      <Brain className="h-4 w-4 mr-2 text-purple-500" />
+                      Análise Inteligente
+                    </div>
+                    <p className="text-muted-foreground">
+                      Utiliza algoritmos avançados para encontrar correspondências entre descrições de 
+                      transações e lançamentos, mesmo com variações de texto.
+                    </p>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4">
+                    <div className="font-medium mb-2">Automação Progressiva</div>
+                    <p className="text-muted-foreground">
+                      Melhora constantemente a precisão da reconciliação automatizada à medida que 
+                      novos padrões são identificados e validados.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <DeteccaoPadroes />
           </TabsContent>
         </Tabs>
       </div>
