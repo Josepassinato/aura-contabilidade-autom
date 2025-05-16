@@ -61,7 +61,7 @@ const gerarLancamentosExemplo = (): Lancamento[] => {
       descricao,
       tipo,
       contraparte: tipo === 'receita' ? 'Cliente' : tipo === 'despesa' ? 'Fornecedor' : 'Conta própria',
-      status: 'nao_classificado'
+      status: 'pendente'
     });
   }
   

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Card, 
@@ -14,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { MagicWand, Settings, Sparkles, AlertCircle, Check } from "lucide-react";
+import { Settings, Sparkles, AlertCircle, Check, Wand2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -287,7 +286,7 @@ export function ResolucaoAutonoma({
                   onClick={handleResolverAutomaticamente}
                   disabled={isLoading || processando || totalPendentes === 0}
                 >
-                  <MagicWand className="mr-2 h-4 w-4" />
+                  <Wand2 className="mr-2 h-4 w-4" />
                   {processando ? "Processando..." : "Resolver Automaticamente"}
                 </Button>
                 

@@ -1,4 +1,3 @@
-
 /**
  * Sistema de auditoria contínua utilizando IA para validação de lançamentos
  * Realiza verificações automáticas em tempo real e em segundo plano
@@ -638,6 +637,7 @@ const gerarLancamentosSimulados = (quantidade: number): Lancamento[] => {
       descricao,
       tipo,
       categoria,
+      status: 'pendente', // Add the required status field
       confianca: Math.random() * 0.5 + 0.5 // Confiança entre 50% e 100%
     });
   }
