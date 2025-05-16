@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -40,6 +40,14 @@ export function AccountantSection() {
               <Link to="/calculos-fiscais">
                 <Calculator className="h-4 w-4 mr-2" />
                 <span>Cálculos Fiscais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/classificacao-reconciliacao')}>
+              <Link to="/classificacao-reconciliacao">
+                <Layers className="h-4 w-4 mr-2" />
+                <span>Classificação e Reconciliação</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
