@@ -6,7 +6,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryProvider } from "./hooks/useSupabaseQuery";
 import AppRoutes from "./routes";
 
-// Criar o router usando o createBrowserRouter
+// Create the router using createBrowserRouter
 const router = createBrowserRouter([
   {
     path: "*",
