@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { UserProfile, UserRole, SupabaseUser, SupabaseSession } from '@/lib/supabase';
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { toast } = useToast();
 
   // Initialize and configure auth state change listener
   useEffect(() => {
@@ -192,7 +194,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Create mock user and session
         setupMockSession(role);
         
-        useToast().toast({
+        toast({
           title: "Login bem-sucedido",
           description: `Bem-vindo, ${name}!`,
         });
@@ -202,7 +204,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { success: false, error: 'Credenciais inválidas' };
     } catch (error) {
       console.error('Error in login:', error);
-      useToast().toast({
+      toast({
         title: "Falha no login",
         description: "Não foi possível efetuar o login",
         variant: "destructive"
@@ -227,13 +229,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       
-      useToast().toast({
+      toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso",
       });
     } catch (error) {
       console.error('Error in logout:', error);
-      useToast().toast({
+      toast({
         title: "Erro no logout",
         description: "Ocorreu um erro ao tentar desconectar",
         variant: "destructive"
@@ -254,7 +256,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: result.success ? null : new Error(result.error) };
     } catch (error) {
       console.error('Error in SignIn:', error);
-      useToast().toast({
+      toast({
         title: "Falha no login",
         description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive"
@@ -267,7 +269,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // Mock signup for tests
       if (email && password) {
-        useToast().toast({
+        toast({
           title: "Conta criada",
           description: "Sua conta foi criada com sucesso",
         });
@@ -275,7 +277,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await login(email, password);
         return { error: null };
       }
-      useToast().toast({
+      toast({
         title: "Erro no cadastro",
         description: "Credenciais inválidas",
         variant: "destructive"
@@ -283,7 +285,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: new Error('Credenciais inválidas') };
     } catch (error) {
       console.error('Error in SignUp:', error);
-      useToast().toast({
+      toast({
         title: "Erro no cadastro",
         description: error instanceof Error ? error.message : "Não foi possível criar sua conta",
         variant: "destructive"
@@ -297,7 +299,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await logout();
     } catch (error) {
       console.error('Error in SignOut:', error);
-      useToast().toast({
+      toast({
         title: "Erro ao sair",
         description: error instanceof Error ? error.message : "Falha ao fazer logout",
         variant: "destructive"

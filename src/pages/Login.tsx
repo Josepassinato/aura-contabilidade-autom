@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -21,6 +20,8 @@ import { useAuth } from '@/contexts/auth';
 import { UserRole } from '@/lib/supabase';
 import { LogIn, User, Building } from 'lucide-react';
 import { formatCNPJ } from '@/components/client-access/formatCNPJ';
+import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
+import { useToast } from '@/hooks/use-toast';
 
 // Schema para validação do formulário de login
 const loginFormSchema = z.object({
@@ -96,9 +97,10 @@ type SignupFormValues = z.infer<typeof signupFormSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, isAuthenticated, isAccountant, isAdmin, isClient, enhancedLogin } = useAuth();
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState("login");
+  const { signIn, signUp, isAuthenticated, isAccountant, isAdmin, isClient } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
+  const { toast } = useToast();
 
   React.useEffect(() => {
     // If already authenticated, redirect based on role
@@ -137,13 +139,31 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Use the enhanced login function that handles redirections
-      const result = await enhancedLogin(data.email, data.password);
+      // Clean up any existing auth state first
+      cleanupAuthState();
       
-      // No need for manual redirects as enhancedLogin handles it
-      if (!result.success && result.error) {
-        console.error("Login error:", result.error);
+      const { error } = await signIn(data.email, data.password);
+      
+      if (!error) {
+        toast({
+          title: "Login bem-sucedido",
+          description: "Bem-vindo de volta!",
+        });
+        
+        // Redirection will be handled by the useEffect above
+      } else {
+        toast({
+          title: "Falha no login",
+          description: error.message || "Credenciais inválidas",
+          variant: "destructive",
+        });
       }
+    } catch (error: any) {
+      toast({
+        title: "Erro no sistema",
+        description: error.message || "Ocorreu um erro inesperado",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -163,44 +183,115 @@ const Login = () => {
       const { error } = await signUp(data.email, data.password, userData);
       
       if (!error) {
+        toast({
+          title: "Cadastro realizado",
+          description: "Sua conta foi criada com sucesso!",
+        });
         setActiveTab("login");
       } else {
-        // Mostrar mensagem de erro para o usuário
-        console.error("Signup error:", error);
+        toast({
+          title: "Erro no cadastro",
+          description: error.message || "Não foi possível criar sua conta",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error("Unexpected error during signup:", error);
+    } catch (error: any) {
+      toast({
+        title: "Erro no sistema",
+        description: error.message || "Ocorreu um erro inesperado",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
   
   // Função para login rápido como contador para teste
-  const loginAsAccountant = async () => {
+  const loginAsAccountant = () => {
     setIsLoading(true);
+    // Clean up any existing auth state first
+    cleanupAuthState();
+    
     try {
-      await enhancedLogin("contador@contaflix.com.br", "senha123");
-    } finally {
+      // Set up mock session for accountant
+      localStorage.setItem('mock_session', 'true');
+      localStorage.setItem('user_role', 'accountant');
+      
+      // Create a toast notification
+      toast({
+        title: "Login como contador",
+        description: "Acessando como Contador Teste",
+      });
+      
+      // Force page reload to ensure clean state
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Erro no login como contador:", error);
+      toast({
+        title: "Falha no acesso",
+        description: "Não foi possível acessar como contador",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
   
   // Função para login rápido como cliente para teste
-  const loginAsClient = async () => {
+  const loginAsClient = () => {
     setIsLoading(true);
+    // Clean up any existing auth state first
+    cleanupAuthState();
+    
     try {
-      await enhancedLogin("cliente@empresa.com.br", "senha123");
-    } finally {
+      // Set up mock session for client
+      localStorage.setItem('mock_session', 'true');
+      localStorage.setItem('user_role', 'client');
+      
+      // Create a toast notification
+      toast({
+        title: "Login como cliente",
+        description: "Acessando como Empresa Cliente",
+      });
+      
+      // Force page reload to ensure clean state
+      window.location.href = "/client-portal";
+    } catch (error) {
+      console.error("Erro no login como cliente:", error);
+      toast({
+        title: "Falha no acesso",
+        description: "Não foi possível acessar como cliente",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
   
   // Função para login rápido como admin para teste
-  const loginAsAdmin = async () => {
+  const loginAsAdmin = () => {
     setIsLoading(true);
+    // Clean up any existing auth state first
+    cleanupAuthState();
+    
     try {
-      await enhancedLogin("admin@contaflix.com.br", "senha123");
-    } finally {
+      // Set up mock session for admin
+      localStorage.setItem('mock_session', 'true');
+      localStorage.setItem('user_role', 'admin');
+      
+      // Create a toast notification
+      toast({
+        title: "Login como admin",
+        description: "Acessando como Admin Contaflix",
+      });
+      
+      // Force page reload to ensure clean state
+      window.location.href = "/admin/business-analytics";
+    } catch (error) {
+      console.error("Erro no login como admin:", error);
+      toast({
+        title: "Falha no acesso",
+        description: "Não foi possível acessar como admin",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };

@@ -60,7 +60,7 @@ export const useAuth = () => {
     }
   };
 
-  // Login aprimorado com feedback
+  // Login aprimorado com feedback e navegação inteligente
   const enhancedLogin = async (email: string, password: string) => {
     try {
       // Limpar possíveis estados de autenticação anteriores
@@ -75,15 +75,20 @@ export const useAuth = () => {
         });
         
         // Navegação apropriada com base no perfil
-        if (context.isAdmin) {
-          navigate('/admin/business-analytics', { replace: true });
-        } else if (context.isClient) {
-          navigate('/client-portal', { replace: true });
-        } else if (context.isAccountant) {
-          navigate('/dashboard', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
+        setTimeout(() => {
+          const role = localStorage.getItem('user_role');
+          
+          if (role === 'admin') {
+            navigate('/admin/business-analytics', { replace: true });
+          } else if (role === 'client') {
+            navigate('/client-portal', { replace: true });
+          } else if (role === 'accountant') {
+            navigate('/dashboard', { replace: true });
+          } else {
+            // Fallback
+            navigate('/dashboard', { replace: true });
+          }
+        }, 100);
         
         return { success: true, error: null };
       } else {
