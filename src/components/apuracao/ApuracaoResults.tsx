@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   FileText, 
   Download, 
@@ -17,10 +18,15 @@ import {
   AlertCircle, 
   BarChart2,
   Share2,
-  Printer
+  Printer,
+  Database,
+  CreditCard,
+  Receipt,
+  Info
 } from "lucide-react";
 import { ResultadoApuracao } from "@/services/apuracao/apuracaoService";
 import { toast } from "@/hooks/use-toast";
+import { obterTodasFontesDados } from "@/services/apuracao/fontesDadosService";
 
 interface ApuracaoResultsProps {
   resultados: ResultadoApuracao[];
@@ -48,8 +54,33 @@ export function ApuracaoResults({ resultados }: ApuracaoResultsProps) {
     });
   };
 
+  // Verificar se há fontes de dados configuradas
+  const fontesDadosConfiguradas = obterTodasFontesDados();
+  const temFontesConfiguradas = fontesDadosConfiguradas.length > 0;
+
+  // Obter ícone para origem de dados
+  const getOrigemIcon = (resultado: ResultadoApuracao) => {
+    if (resultado.origemDados?.includes('ocr')) {
+      return <Receipt className="h-3 w-3" />;
+    } else if (resultado.origemDados?.includes('openbanking')) {
+      return <CreditCard className="h-3 w-3" />;
+    } else if (resultado.origemDados?.includes('api')) {
+      return <Database className="h-3 w-3" />;
+    }
+    return null;
+  };
+
   return (
     <div className="overflow-x-auto">
+      {temFontesConfiguradas && (
+        <div className="p-2 mb-4 bg-green-50 border border-green-200 rounded-md flex items-center text-sm text-green-700">
+          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+          <span>
+            Dados sendo processados automaticamente de {fontesDadosConfiguradas.length} fonte{fontesDadosConfiguradas.length > 1 ? 's' : ''} configurada{fontesDadosConfiguradas.length > 1 ? 's' : ''}.
+          </span>
+        </div>
+      )}
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -69,6 +100,23 @@ export function ApuracaoResults({ resultados }: ApuracaoResultsProps) {
                 <div>
                   <div>{resultado.cliente.nome}</div>
                   <div className="text-xs text-muted-foreground">{resultado.cliente.cnpj}</div>
+                  {resultado.origemDados && (
+                    <div className="mt-1 flex items-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="text-[10px] flex items-center gap-1 px-1">
+                              {getOrigemIcon(resultado)}
+                              <span>Auto</span>
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Processado automaticamente via {resultado.origemDados}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
                 </div>
               </TableCell>
               <TableCell>{resultado.periodo}</TableCell>
@@ -101,6 +149,23 @@ export function ApuracaoResults({ resultados }: ApuracaoResultsProps) {
                     </Badge>
                   </div>
                 )}
+                {resultado.processamento_automatico && (
+                  <div className="mt-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary" className="text-[10px]">
+                            <Database className="h-2 w-2 mr-1" />
+                            Auto
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Processado automaticamente</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex justify-center space-x-1 opacity-70 group-hover:opacity-100">
@@ -119,6 +184,24 @@ export function ApuracaoResults({ resultados }: ApuracaoResultsProps) {
                   <Button size="icon" variant="ghost" title="Imprimir" onClick={() => gerarPDF(resultado)}>
                     <Printer className="h-4 w-4" />
                   </Button>
+                  {resultado.detalhesProcessamento && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="text-xs space-y-1">
+                            <p><strong>Processado por:</strong> {resultado.detalhesProcessamento.processador}</p>
+                            <p><strong>Data:</strong> {resultado.detalhesProcessamento.data}</p>
+                            <p><strong>Tempo:</strong> {resultado.detalhesProcessamento.tempoProcessamento}s</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

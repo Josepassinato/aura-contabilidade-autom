@@ -1,179 +1,105 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Database, Clock, BrainCircuit, Sliders } from "lucide-react";
+import { ConfiguracaoIngestaoDados } from "./ConfiguracaoIngestaoDados";
 
 export function ConfiguracaoApuracao() {
-  const salvarConfiguracoes = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Configurações salvas",
-      description: "Suas configurações de apuração foram atualizadas com sucesso."
-    });
-  };
+  const [activeTab, setActiveTab] = useState("fontes");
 
   return (
-    <form onSubmit={salvarConfiguracoes}>
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Configurações do Processamento</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-medium">Fontes de Dados</h3>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="notas-fiscais">Importação Automática de NFe</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Importar notas fiscais eletrônicas automaticamente da Receita Federal
-                  </p>
-                </div>
-                <Switch id="notas-fiscais" defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="extrato-bancario">Importação de Extrato Bancário</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Conectar com APIs bancárias para importação de extratos
-                  </p>
-                </div>
-                <Switch id="extrato-bancario" defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="importacao-manual">Permitir Importação Manual</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Permitir que o cliente importe documentos manualmente
-                  </p>
-                </div>
-                <Switch id="importacao-manual" defaultChecked />
-              </div>
-              
-              <Separator />
-              
-              <h3 className="font-medium">Frequência de Processamento</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Execução Automática</Label>
-                  <select className="w-full p-2 border rounded">
-                    <option value="diario">Diariamente</option>
-                    <option value="semanal" selected>Semanalmente</option>
-                    <option value="mensal">Mensalmente</option>
-                    <option value="manual">Apenas Manual</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Dia da Semana (se semanal)</Label>
-                  <select className="w-full p-2 border rounded">
-                    <option value="1">Segunda-feira</option>
-                    <option value="2">Terça-feira</option>
-                    <option value="3">Quarta-feira</option>
-                    <option value="4">Quinta-feira</option>
-                    <option value="5">Sexta-feira</option>
-                    <option value="6">Sábado</option>
-                    <option value="0">Domingo</option>
-                  </select>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <h3 className="font-medium">Notificações</h3>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="notificacao-email">Notificações por Email</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enviar resultados da apuração por email
-                  </p>
-                </div>
-                <Switch id="notificacao-email" defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="notificacao-sistema">Notificações no Sistema</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Mostrar notificações no painel do contador
-                  </p>
-                </div>
-                <Switch id="notificacao-sistema" defaultChecked />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuração de Apuração Automática</CardTitle>
+          <CardDescription>
+            Defina parâmetros para o processamento automático de dados contábeis e fiscais
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid grid-cols-4 gap-4">
+              <TabsTrigger value="fontes" className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Fontes de Dados
+              </TabsTrigger>
+              <TabsTrigger value="parametros" className="flex items-center gap-2">
+                <Sliders className="h-4 w-4" />
+                Parâmetros Fiscais
+              </TabsTrigger>
+              <TabsTrigger value="agendamento" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Agendamento
+              </TabsTrigger>
+              <TabsTrigger value="ia" className="flex items-center gap-2">
+                <BrainCircuit className="h-4 w-4" />
+                Configuração IA
+              </TabsTrigger>
+            </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Integrações e Conexões</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Receita Federal</h3>
-                <p className="text-sm text-muted-foreground">
-                  Conexão com o sistema da Receita Federal
-                </p>
-              </div>
-              <Badge className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                Conectado
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Sistema de Nota Fiscal Eletrônica</h3>
-                <p className="text-sm text-muted-foreground">
-                  Integração com NFe
-                </p>
-              </div>
-              <Badge className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                Conectado
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">SPED</h3>
-                <p className="text-sm text-muted-foreground">
-                  Integração com Sistema Público de Escrituração Digital
-                </p>
-              </div>
-              <Badge className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                Pendente
-              </Badge>
-            </div>
-            
-            <Button variant="outline" className="w-full">
-              Gerenciar Integrações
-            </Button>
-          </CardContent>
-        </Card>
+            <TabsContent value="fontes">
+              <ConfiguracaoIngestaoDados onComplete={() => setActiveTab("parametros")} />
+            </TabsContent>
 
-        <Button type="submit">Salvar Configurações</Button>
-      </div>
-    </form>
+            <TabsContent value="parametros">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Parâmetros Fiscais</CardTitle>
+                  <CardDescription>
+                    Configure os parâmetros fiscais para processamento automático
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Settings className="mx-auto h-12 w-12 opacity-30 mb-2" />
+                    <p>Configuração de parâmetros fiscais</p>
+                    <p className="text-sm">Aqui serão configurados os parâmetros para cálculos fiscais</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="agendamento">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Agendamento de Processos</CardTitle>
+                  <CardDescription>
+                    Configure a programação para execução automática da apuração
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="py-8 text-center text-muted-foreground">
+                    <Clock className="mx-auto h-12 w-12 opacity-30 mb-2" />
+                    <p>Configuração de agendamento automático</p>
+                    <p className="text-sm">Aqui serão configurados os horários e frequências de processamento</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="ia">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configuração da Inteligência Artificial</CardTitle>
+                  <CardDescription>
+                    Configure o comportamento da IA para classificação e processamento automático
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="py-8 text-center text-muted-foreground">
+                    <BrainCircuit className="mx-auto h-12 w-12 opacity-30 mb-2" />
+                    <p>Configuração de inteligência artificial</p>
+                    <p className="text-sm">Aqui serão configurados os parâmetros de IA para processamento</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
-interface BadgeProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-function Badge({ children, className = "" }: BadgeProps) {
-  return (
-    <span className={`inline-flex items-center ${className}`}>
-      {children}
-    </span>
-  );
-}
