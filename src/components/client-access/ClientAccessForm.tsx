@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -60,26 +59,32 @@ export const ClientAccessForm = () => {
       const normalizedCNPJ = data.cnpj.replace(/\D/g, "");
       
       // Buscar o cliente pelo CNPJ
-      const { data: clientData, error: clientError } = await supabase
+      const clientResult = await supabase
         .from('accounting_clients')
-        .select('*')
-        .eq('cnpj', normalizedCNPJ);
+        .select('*');
+        
+      const clientData = clientResult.data?.filter(client => client.cnpj === normalizedCNPJ) || [];
+      const clientError = clientResult.error;
       
-      if (clientError || !clientData || clientData.length === 0) {
+      if (clientError || clientData.length === 0) {
         throw new Error("Cliente não encontrado");
       }
 
       const client = clientData[0];
       
       // Verificar o token de acesso
-      const { data: accessData, error: accessError } = await supabase
+      const accessResult = await supabase
         .from('client_access_tokens')
-        .select('*')
-        .eq('client_id', client.id)
-        .eq('token', data.accessToken)
-        .eq('is_active', true);
+        .select('*');
+        
+      const accessData = accessResult.data?.filter(token => 
+        token.client_id === client.id && 
+        token.token === data.accessToken && 
+        token.is_active === true
+      ) || [];
+      const accessError = accessResult.error;
       
-      if (accessError || !accessData || accessData.length === 0) {
+      if (accessError || accessData.length === 0) {
         throw new Error("Token de acesso inválido ou expirado");
       }
 

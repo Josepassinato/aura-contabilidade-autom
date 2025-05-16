@@ -106,26 +106,31 @@ export const useSupabaseClient = () => {
   // Enhanced mock implementation with improved method chaining
   const supabase = {
     from: (table: string) => ({
-      select: (columns: string = '*') => ({
-        eq: (column: string, value: any) => ({
-          single: () => Promise.resolve({ data: null, error: null }),
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      select: (columns: string = '*') => {
+        const query = {
+          eq: (column: string, value: any) => {
+            return {
+              single: () => Promise.resolve({ data: null, error: null }),
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
+              order: (column: string, { ascending = true } = {}) => ({
+                limit: (limit: number = 10) => Promise.resolve({ data: [], error: null })
+              }),
+              limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
+              data: null,
+              error: null
+            };
+          },
           order: (column: string, { ascending = true } = {}) => ({
-            limit: (limit: number = 10) => Promise.resolve({ data: [], error: null })
+            limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
+            data: null,
+            error: null
           }),
           limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
           data: null,
           error: null
-        }),
-        order: (column: string, { ascending = true } = {}) => ({
-          limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
-          data: null,
-          error: null
-        }),
-        limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
-        data: null,
-        error: null
-      }),
+        };
+        return query;
+      },
       insert: (values: any) => ({
         select: (columns: string = '*') => Promise.resolve({ data: null, error: null }),
         single: () => Promise.resolve({ data: null, error: null }),
