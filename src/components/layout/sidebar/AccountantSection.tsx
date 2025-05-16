@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -52,6 +52,14 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/regime-fiscal')}>
+              <Link to="/regime-fiscal">
+                <CoinsIcon className="h-4 w-4 mr-2" />
+                <span>Regime Tributário</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/obrigacoes-fiscais')}>
               <Link to="/obrigacoes-fiscais">
                 <CalendarDays className="h-4 w-4 mr-2" />
@@ -64,6 +72,22 @@ export function AccountantSection() {
               <Link to="/folha-pagamento">
                 <CircleDollarSign className="h-4 w-4 mr-2" />
                 <span>Folha de Pagamento</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/guias-fiscais')}>
+              <Link to="/guias-fiscais">
+                <FileBarChart2 className="h-4 w-4 mr-2" />
+                <span>Guias Fiscais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/apuracao-automatica')}>
+              <Link to="/apuracao-automatica">
+                <BriefcaseIcon className="h-4 w-4 mr-2" />
+                <span>Apuração Automática</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
