@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth';
 
+interface RouteProps {
+  children: ReactNode;
+}
+
 // Protected Route component that wraps routes requiring authentication
-export const ProtectedRoute = ({ children }) => {
+export const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
@@ -15,11 +19,11 @@ export const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 // Admin Route component that wraps routes requiring admin authentication
-export const AdminRoute = ({ children }) => {
+export const AdminRoute: React.FC<RouteProps> = ({ children }) => {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   
   if (isLoading) {
@@ -30,11 +34,11 @@ export const AdminRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 // Accountant Route component that wraps routes requiring accountant authentication
-export const AccountantRoute = ({ children }) => {
+export const AccountantRoute: React.FC<RouteProps> = ({ children }) => {
   const { isAuthenticated, isAccountant, isLoading } = useAuth();
   
   if (isLoading) {
@@ -45,5 +49,5 @@ export const AccountantRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
