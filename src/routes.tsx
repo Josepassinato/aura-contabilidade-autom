@@ -44,6 +44,8 @@ import ClassificacaoReconciliacao from './pages/ClassificacaoReconciliacao';
 
 // Observe que este arquivo agora exporta um componente funcional React
 const AppRoutes = () => {
+  console.log("AppRoutes - Rendering routes");
+  
   return (
     <Routes>
       {/* Rotas públicas */}
@@ -85,9 +87,9 @@ const AppRoutes = () => {
       {/* Rotas de administração */}
       <Route path="/admin/analytics" element={<BusinessAnalytics />} />
       <Route path="/admin/business-analytics" element={<BusinessAnalytics />} />
-      <Route path="/admin/customers" element={<CustomerManagement />} />
-      <Route path="/admin/usage" element={<UsageMetrics />} />
-      <Route path="/admin/openai" element={<OpenAIManagement />} />
+      <Route path="/admin/customer-management" element={<CustomerManagement />} />
+      <Route path="/admin/usage-metrics" element={<UsageMetrics />} />
+      <Route path="/admin/openai-management" element={<OpenAIManagement />} />
       
       {/* Rota 404 */}
       <Route path="*" element={<NotFound />} />

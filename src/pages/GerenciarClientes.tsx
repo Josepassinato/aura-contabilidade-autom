@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -20,6 +20,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { ClientList } from "@/components/clients/ClientList";
 import { ClientForm } from "@/components/clients/ClientForm";
+import { useAuth } from '@/contexts/auth';
+import { Navigate } from 'react-router-dom';
+import { checkForAuthLimboState, cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
 const formSchema = z.object({
   searchTerm: z.string().optional(),
@@ -30,6 +33,7 @@ type FormValues = z.infer<typeof formSchema>;
 const GerenciarClientes = () => {
   const [activeTab, setActiveTab] = useState("listar");
   const [refreshKey, setRefreshKey] = useState(0); // Para forçar a atualização do componente ClientList
+  const { isAuthenticated, isAccountant, isLoading, navigateToLogin } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -37,6 +41,22 @@ const GerenciarClientes = () => {
       searchTerm: "",
     },
   });
+
+  // Check for auth limbo state on page load
+  useEffect(() => {
+    console.log("GerenciarClientes - Checking auth state");
+    
+    if (checkForAuthLimboState()) {
+      console.warn("Auth limbo state detected in GerenciarClientes, cleaning up");
+      cleanupAuthState();
+      toast({
+        title: "Estado de autenticação inconsistente",
+        description: "Por favor, faça login novamente para continuar.",
+        variant: "destructive",
+      });
+      navigateToLogin();
+    }
+  }, [navigateToLogin]);
 
   const onSubmitSearch = (data: FormValues) => {
     console.log("Pesquisando:", data.searchTerm);
@@ -55,6 +75,30 @@ const GerenciarClientes = () => {
       description: "O cliente foi adicionado com sucesso e a lista foi atualizada.",
     });
   };
+
+  // Show loading indicator while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    console.log("User not authenticated in GerenciarClientes, redirecting to login");
+    return <Navigate to="/login" replace />;
+  }
+
+  // Only accountants should access this page
+  if (!isAccountant) {
+    console.log("User is not an accountant, redirecting to dashboard");
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <DashboardLayout>

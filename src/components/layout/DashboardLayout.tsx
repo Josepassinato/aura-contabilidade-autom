@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
+import { checkForAuthLimboState, cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -24,23 +24,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   
   // Verificar possíveis problemas de estado de autenticação inconsistente
   useEffect(() => {
+    // Clean up any auth limbo state and force a fresh login if detected
     if (checkForAuthLimboState()) {
+      console.log("Auth limbo state detected, cleaning up");
+      cleanupAuthState();
       toast({
         title: "Estado de autenticação inconsistente detectado",
         description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
         variant: "destructive",
       });
       navigateToLogin();
+      return;
     }
-  }, [navigateToLogin]);
-  
-  // Verificar autenticação e redirecionar quando necessário
-  useEffect(() => {
+
+    // Log current path to help with debugging
+    console.log("Current location path:", location.pathname);
+    
     if (!isLoading && !isAuthenticated) {
-      console.log("Usuário não autenticado, redirecionando para login");
+      console.log("User not authenticated in DashboardLayout, redirecting to login");
       navigateToLogin();
     }
-  }, [isAuthenticated, isLoading, navigateToLogin]);
+  }, [location, navigateToLogin, isAuthenticated, isLoading]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
