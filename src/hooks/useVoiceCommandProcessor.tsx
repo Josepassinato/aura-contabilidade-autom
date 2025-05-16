@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { toast } from "@/hooks/use-toast";
-import { useNaturalLanguage } from '@/hooks/useNaturalLanguage';
+import { useToast } from "@/hooks/use-toast";
+import { useNaturalLanguage, NLPResult } from '@/hooks/useNaturalLanguage';
 import { 
   isOpenAIConfigured, 
   registerTokenUsage 
@@ -19,6 +19,7 @@ type Conversation = Array<{type: MessageType, text: string}>;
 export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
   
   // Use the hook of natural language processing
   const { processCommand, generateResponse, isProcessing: isNlpProcessing } = useNaturalLanguage();
@@ -28,7 +29,7 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
     setConversations(prev => [...prev, { type: 'bot', text }]);
   };
 
-  // Process voice or text command using NLP
+  // Process voice or text command using NLP with access to client-specific data
   const handleProcessCommand = async (
     command: string, 
     setConversations: React.Dispatch<React.SetStateAction<Conversation>>,
@@ -59,7 +60,13 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
       registerTokenUsage(estimatedTokens);
       
       // Generate contextual response based on identified intent and client
-      const responseText = generateResponse(nlpResult, clientInfo?.name);
+      const clientContext = clientInfo ? {
+        clientId: clientInfo.id,
+        clientName: clientInfo.name,
+        clientCNPJ: clientInfo.cnpj
+      } : undefined;
+      
+      const responseText = await generateResponse(nlpResult, clientContext);
       
       // Add bot response to conversation history
       setConversations(prev => [...prev, {type: 'bot', text: responseText}]);

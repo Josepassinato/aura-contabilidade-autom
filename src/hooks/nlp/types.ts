@@ -1,7 +1,14 @@
 
-// Types related to Natural Language Processing
-
-export type NLPIntent = 'fiscal_query' | 'financial_report' | 'anomaly_detection' | 'tax_calculation' | 'payment' | 'unknown';
+export type NLPIntent = 
+  | 'fiscal_query' 
+  | 'financial_report' 
+  | 'anomaly_detection'
+  | 'tax_calculation'
+  | 'payment'
+  | 'document_request'
+  | 'greeting'
+  | 'help'
+  | 'unknown';
 
 export interface NLPResult {
   intent: NLPIntent;
@@ -10,6 +17,9 @@ export interface NLPResult {
   originalText: string;
 }
 
-export interface NLPProcessorOptions {
-  apiKey?: string;
+export interface ClientSpecificContext {
+  clientId: string;
+  clientName: string;
+  clientCNPJ?: string;
+  clientData?: any;
 }

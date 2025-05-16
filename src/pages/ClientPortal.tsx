@@ -5,7 +5,9 @@ import { ClientHeader } from "@/components/client-portal/ClientHeader";
 import { ClientPortalTabs } from "@/components/client-portal/ClientPortalTabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut } from "lucide-react";
+import { LogOut, Mic } from "lucide-react";
+import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
+import { VoiceAssistantButton } from "@/components/layout/VoiceAssistantButton";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -14,6 +16,7 @@ const ClientPortal = () => {
   const [clientName, setClientName] = useState<string>("");
   const [clientCNPJ, setClientCNPJ] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [isAssistantActive, setIsAssistantActive] = useState<boolean>(false);
 
   useEffect(() => {
     const checkClientAccess = () => {
@@ -79,6 +82,10 @@ const ClientPortal = () => {
     // Redirecionar para a página de acesso
     navigate('/client-access');
   };
+
+  const toggleAssistant = () => {
+    setIsAssistantActive(!isAssistantActive);
+  };
   
   if (loading) {
     return (
@@ -91,25 +98,57 @@ const ClientPortal = () => {
     );
   }
   
+  // Cliente info para o assistente de voz com acesso restrito aos dados deste cliente
+  const clientInfo = {
+    id: clientId || sessionStorage.getItem('client_id') || '',
+    name: clientName,
+    cnpj: clientCNPJ,
+  };
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="border-b sticky top-0 z-10 bg-background">
         <div className="container flex items-center justify-between py-3">
           <ClientHeader clientName={clientName} clientCNPJ={clientCNPJ} />
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
+          <div className="flex items-center gap-2">
+            <VoiceAssistantButton 
+              isActive={isAssistantActive}
+              onClick={toggleAssistant}
+              className="md:flex hidden"
+            />
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
+      
       <main className="flex-1 container py-6">
-        <ClientPortalTabs />
+        <ClientPortalTabs toggleAssistant={toggleAssistant} />
       </main>
+      
       <footer className="border-t py-4">
         <div className="container text-center text-sm text-muted-foreground">
           <p>Portal do Cliente © {new Date().getFullYear()} - ContaFlix</p>
         </div>
       </footer>
+
+      {/* Botão para ativar o assistente de IA (visível apenas em mobile) */}
+      <div className="fixed bottom-6 right-6 md:hidden">
+        <VoiceAssistantButton 
+          isActive={isAssistantActive}
+          onClick={toggleAssistant}
+          className="shadow-lg"
+        />
+      </div>
+
+      {/* Componente do assistente de IA para clientes */}
+      <VoiceAssistant 
+        isActive={isAssistantActive}
+        onToggle={toggleAssistant}
+        clientInfo={clientInfo}
+      />
     </div>
   );
 };
