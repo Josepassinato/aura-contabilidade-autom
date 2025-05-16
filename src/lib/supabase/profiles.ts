@@ -1,6 +1,6 @@
 
 import { supabase } from './client';
-import { UserProfile } from '../supabase';
+import { UserProfile, UserRole } from '../supabase';
 
 interface DbUserProfile {
   id: string;
@@ -36,7 +36,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
         email: data.email,
         name: data.full_name, // Map full_name to name
         full_name: data.full_name,
-        role: data.role,
+        role: data.role as UserRole, // Cast to UserRole type
         company_id: data.company_id
       };
       return profile;

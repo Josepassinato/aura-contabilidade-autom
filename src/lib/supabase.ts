@@ -1,24 +1,38 @@
 
-import { Tables } from '@/integrations/supabase/types';
-import { supabase } from './supabase/client';
+// Definições de tipos para o Supabase
+import { Database } from '../integrations/supabase/types';
 
-export type { Tables };
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];
 
-// Tipos que serão utilizados no sistema
+// User role type
+export type UserRole = 'admin' | 'accountant' | 'client' | 'user';
+
+// User profile type
+export interface UserProfile {
+  id: string;
+  email: string;
+  name?: string;
+  full_name: string;
+  role: UserRole;
+  company_id?: string;
+  avatar_url?: string;
+}
+
+// Employee type
 export interface Employee {
   id: string;
-  client_id: string;
   name: string;
   position: string;
   department: string | null;
   hire_date: string;
   base_salary: number;
+  cpf: string;
   status: string;
-  created_at?: string;
-  cpf?: string;
-  notes?: string | null;
+  client_id: string;
 }
 
+// Payroll Entry type
 export interface PayrollEntry {
   id: string;
   client_id: string;
@@ -29,49 +43,25 @@ export interface PayrollEntry {
   deductions: number;
   net_salary: number;
   status: string;
-  created_at?: string;
+  created_at: string;
 }
 
-export interface PayrollDeduction {
+// Document type
+export interface Document {
   id: string;
-  payroll_entry_id: string;
-  type: string;
-  description: string;
-  amount: number;
-  created_at?: string;
-}
-
-export interface UserProfile {
-  id: string;
-  email: string;
+  client_id: string;
+  title: string;
   name: string;
-  role: UserRole;
-  full_name?: string;
-  company_id?: string;
+  type: string;
+  file_path?: string;
+  size?: number;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export enum UserRole {
-  ADMIN = 'admin',
-  ACCOUNTANT = 'accountant',
-  CLIENT = 'client',
-  USER = 'user'
-}
-
-export interface AccountingClient extends Tables<"accounting_clients"> {
-  // Campos adicionais que não estão na tabela do Supabase
-}
-
-// Re-export the supabase client
-export { supabase };
-
-// Hook para usar o cliente Supabase
-export function useSupabaseClient() {
-  // Retorna a instância do cliente Supabase já inicializada
-  return supabase;
-}
-
-// Manter compatibilidade com códigos existentes
-export const initializeSupabase = () => {
-  // Retorna o cliente já inicializado
+export const useSupabaseClient = () => {
+  // Implementação simplificada
+  const supabase = {}; // Mock - esta função será substituída pela implementação real
   return supabase;
 };

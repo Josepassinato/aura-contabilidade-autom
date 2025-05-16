@@ -64,7 +64,12 @@ export function useSupabaseQuery<
   queryFn: FetchFunction<TData>,
   options?: Omit<UseQueryOptions<{ data: TData | null; error: PostgrestError | null }, TError, { data: TData | null; error: PostgrestError | null }, TQueryKey>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery<{ data: TData | null; error: PostgrestError | null }, TError>({
+  return useQuery<
+    { data: TData | null; error: PostgrestError | null },
+    TError,
+    { data: TData | null; error: PostgrestError | null },
+    TQueryKey
+  >({
     queryKey,
     queryFn,
     ...options

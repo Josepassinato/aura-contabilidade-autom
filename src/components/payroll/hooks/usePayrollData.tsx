@@ -18,7 +18,7 @@ export function usePayrollData(selectedClientId: string | null, period: string) 
       
       try {
         // Using RPC to fetch payrolls with filters
-        const { data, error } = await supabase.rpc<PayrollEntry[]>(
+        const { data, error } = await supabase.rpc<PayrollEntry[], any>(
           'get_filtered_payrolls',
           { 
             p_client_id: selectedClientId,
@@ -48,7 +48,7 @@ export function usePayrollData(selectedClientId: string | null, period: string) 
     if (!supabase) return;
     
     try {
-      const { data, error } = await supabase.rpc<PayrollEntry[]>(
+      const { data, error } = await supabase.rpc<PayrollEntry[], any>(
         'get_filtered_payrolls',
         { 
           p_client_id: selectedClientId,
