@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClientSelector } from "@/components/layout/ClientSelector";
@@ -13,6 +13,11 @@ import { PagamentosTributos } from "@/components/bancario/PagamentosTributos";
 import { AgendarPagamentosTributos } from "@/components/bancario/AgendarPagamentosTributos";
 import { FolhaPagamento } from "@/components/bancario/FolhaPagamento";
 import { ExtratosESaldos } from "@/components/bancario/ExtratosESaldos";
+import { PagamentosAutomaticos } from "@/components/bancario/PagamentosAutomaticos";
+
+// Import sistema de eventos
+import { inicializarSistemaEventos } from "@/services/fiscal/mensageria/eventoProcessor";
+import { processarEventoFiscal } from "@/services/bancario/pagamentoAutomatico";
 
 const AutomacaoBancaria = () => {
   const { isAuthenticated, isAccountant } = useAuth();
@@ -20,6 +25,20 @@ const AutomacaoBancaria = () => {
   const [bancoSelecionado, setBancoSelecionado] = useState(
     localStorage.getItem("banco-selecionado") || ""
   );
+
+  // Inicializar sistema de eventos quando o componente é montado
+  useEffect(() => {
+    inicializarSistemaEventos();
+    
+    // Registrar handlers para eventos fiscais
+    const unsubscribe = subscribe('fiscal.generated', processarEventoFiscal);
+    const unsubscribe2 = subscribe('guia.generated', processarEventoFiscal);
+    
+    return () => {
+      unsubscribe();
+      unsubscribe2();
+    };
+  }, []);
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -50,6 +69,7 @@ const AutomacaoBancaria = () => {
           <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
           <TabsTrigger value="tributos">Pagamento de Tributos</TabsTrigger>
           <TabsTrigger value="lote">Pagamentos em Lote</TabsTrigger>
+          <TabsTrigger value="automaticos">Pagamentos Automáticos</TabsTrigger>
           <TabsTrigger value="folha">Folha de Pagamento</TabsTrigger>
           <TabsTrigger value="extratos">Extratos e Saldos</TabsTrigger>
         </TabsList>
@@ -66,6 +86,10 @@ const AutomacaoBancaria = () => {
           <AgendarPagamentosTributos bancoSelecionado={bancoSelecionado} />
         </TabsContent>
 
+        <TabsContent value="automaticos">
+          <PagamentosAutomaticos />
+        </TabsContent>
+
         <TabsContent value="folha">
           <FolhaPagamento />
         </TabsContent>
@@ -79,3 +103,6 @@ const AutomacaoBancaria = () => {
 };
 
 export default AutomacaoBancaria;
+
+// Adicionar a função subscribe ao escopo
+import { subscribe } from "@/services/fiscal/mensageria/eventoProcessor";

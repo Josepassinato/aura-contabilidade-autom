@@ -1,217 +1,200 @@
 
 /**
- * Processador de eventos de mensageria
- * Simula um sistema Kafka/RabbitMQ para processamento de eventos relacionados a lançamentos
+ * Serviço de processamento de eventos fiscais
+ * Sistema de mensagens que conecta diferentes partes do sistema fiscal
  */
 
 import { toast } from "@/hooks/use-toast";
-import { Lancamento } from "../classificacao/classificacaoML";
-import { classificarLancamento } from "../classificacao/classificacaoML";
-import { TransacaoBancaria } from "../../bancario/openBankingService";
-import { reconciliarTransacoes } from "../reconciliacao/reconciliacaoBancaria";
 
-// Tipos de eventos
+// Tipos de eventos fiscais
 export type TipoEvento = 
-  | 'bank.transaction'
-  | 'entry.created'
-  | 'entry.classified'
-  | 'entry.reconciled'
-  | 'fiscal.calculated'
-  | 'fiscal.generated';
+  | 'fiscal.calculated' 
+  | 'fiscal.generated' 
+  | 'guia.generated'
+  | 'pagamento.scheduled'
+  | 'pagamento.executed'
+  | 'classificacao.completed';
 
-// Interface de evento
-export interface Evento<T = any> {
+// Interface de evento fiscal
+export interface EventoFiscal {
   id: string;
   tipo: TipoEvento;
   timestamp: string;
-  payload: T;
   origem: string;
-  correlationId?: string;
+  dados: {
+    [key: string]: any;
+  };
 }
 
-// Callbacks de assinatura de eventos
-type EventCallback<T = any> = (evento: Evento<T>) => void | Promise<void>;
+// Tipo para funções de subscriber
+export type EventoSubscriber = (evento: EventoFiscal) => Promise<void> | void;
 
-// Assinantes de eventos
-const assinantes: Record<TipoEvento, EventCallback[]> = {
-  'bank.transaction': [],
-  'entry.created': [],
-  'entry.classified': [],
-  'entry.reconciled': [],
-  'fiscal.calculated': [],
-  'fiscal.generated': []
-};
+// Repositório de listeners
+const eventListeners: Record<string, EventoSubscriber[]> = {};
+const historicoEventos: EventoFiscal[] = [];
+const MAX_HISTORICO = 100;
 
 /**
- * Assina um tipo de evento
- * @param tipoEvento Tipo de evento a ser assinado
- * @param callback Função a ser chamada quando o evento ocorrer
- * @returns Função para cancelar a assinatura
+ * Registra um subscriber para um tipo de evento
  */
-export const assinarEvento = <T = any>(
-  tipoEvento: TipoEvento, 
-  callback: EventCallback<T>
-): () => void => {
-  assinantes[tipoEvento].push(callback as EventCallback);
+export const subscribe = (tipo: TipoEvento, callback: EventoSubscriber): () => void => {
+  if (!eventListeners[tipo]) {
+    eventListeners[tipo] = [];
+  }
   
-  console.log(`Novo assinante para eventos do tipo ${tipoEvento}`);
+  eventListeners[tipo].push(callback);
+  console.log(`Novo subscriber registrado para eventos do tipo: ${tipo}`);
   
-  // Retorna função para cancelar a assinatura
+  // Retorna função para cancelar a inscrição
   return () => {
-    const index = assinantes[tipoEvento].indexOf(callback as EventCallback);
-    if (index !== -1) {
-      assinantes[tipoEvento].splice(index, 1);
-      console.log(`Assinatura para ${tipoEvento} cancelada`);
-    }
+    eventListeners[tipo] = eventListeners[tipo].filter(cb => cb !== callback);
+    console.log(`Subscriber removido para eventos do tipo: ${tipo}`);
   };
 };
 
 /**
- * Publica um evento
- * @param tipoEvento Tipo do evento
- * @param payload Dados do evento
- * @param origem Origem do evento
- * @param correlationId ID de correlação (opcional)
+ * Publica um novo evento fiscal
  */
-export const publicarEvento = <T = any>(
-  tipoEvento: TipoEvento,
-  payload: T,
-  origem: string,
-  correlationId?: string
-): Evento<T> => {
-  const evento: Evento<T> = {
+export const publicarEvento = async (tipo: TipoEvento, dados: any, origem: string = 'sistema'): Promise<EventoFiscal> => {
+  const evento: EventoFiscal = {
     id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-    tipo: tipoEvento,
+    tipo,
     timestamp: new Date().toISOString(),
-    payload,
     origem,
-    correlationId
+    dados
   };
   
-  console.log(`Evento publicado: ${tipoEvento}`, evento);
+  console.log(`Evento publicado: ${tipo}`, evento);
   
-  // Notifica todos os assinantes
-  setTimeout(() => {
-    assinantes[tipoEvento].forEach(callback => {
-      try {
-        callback(evento);
-      } catch (error) {
-        console.error(`Erro ao processar evento ${tipoEvento}:`, error);
-      }
-    });
-  }, 0);
+  // Adicionar ao histórico
+  historicoEventos.unshift(evento);
+  
+  // Limitar tamanho do histórico
+  if (historicoEventos.length > MAX_HISTORICO) {
+    historicoEventos.length = MAX_HISTORICO;
+  }
+  
+  // Processar subscribers
+  if (eventListeners[tipo]) {
+    await Promise.all(
+      eventListeners[tipo].map(async (callback) => {
+        try {
+          await callback(evento);
+        } catch (error) {
+          console.error(`Erro ao processar evento ${tipo} em um subscriber:`, error);
+        }
+      })
+    );
+  }
   
   return evento;
 };
 
 /**
- * Inicializa os processadores padrão
+ * Obtém o histórico de eventos
  */
-export const inicializarProcessadores = () => {
-  // Processador que classifica lançamentos automaticamente
-  assinarEvento('entry.created', (evento: Evento<Lancamento>) => {
-    try {
-      const lancamento = evento.payload;
-      
-      console.log(`Processando lançamento criado: ${lancamento.descricao}`);
-      
-      // Classifica o lançamento
-      const lancamentoClassificado = classificarLancamento(lancamento);
-      
-      // Publica evento de lançamento classificado
-      if (lancamentoClassificado.status === 'classificado') {
-        publicarEvento(
-          'entry.classified',
-          lancamentoClassificado,
-          'classificador-automatico',
-          evento.id
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao classificar lançamento:", error);
-    }
-  });
-  
-  // Processador que tenta reconciliar transações bancárias com lançamentos classificados
-  assinarEvento('bank.transaction', (evento: Evento<TransacaoBancaria[]>) => {
-    try {
-      const transacoes = evento.payload;
-      
-      console.log(`Processando ${transacoes.length} transações bancárias para reconciliação`);
-      
-      // Seria necessário buscar lançamentos classificados para reconciliar
-      // Em uma implementação real, buscaríamos do banco de dados
-      // Para simplificar, não faremos a reconciliação automática aqui
-      
-      toast({
-        title: "Transações importadas",
-        description: `${transacoes.length} transações bancárias recebidas para processamento.`
-      });
-      
-    } catch (error) {
-      console.error("Erro ao processar transações bancárias:", error);
-    }
-  });
-  
-  console.log("Processadores de eventos inicializados");
+export const obterHistoricoEventos = (): EventoFiscal[] => {
+  return [...historicoEventos];
 };
 
 /**
- * Função de conveniência para simular o fluxo completo de processamento
+ * Limpa o histórico de eventos
  */
-export const simularFluxoProcessamento = async (
-  transacoes: TransacaoBancaria[], 
-  lancamentos: Lancamento[]
-) => {
-  try {
-    // Passo 1: Publica evento de transações bancárias
-    publicarEvento(
-      'bank.transaction',
-      transacoes,
-      'simulacao',
-    );
-    
-    // Atraso simulado para processamento assíncrono
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Passo 2: Para cada lançamento, publica um evento de criação
-    for (const lancamento of lancamentos) {
-      publicarEvento(
-        'entry.created',
-        lancamento,
-        'simulacao'
-      );
-    }
-    
-    // Atraso simulado para processamento assíncrono
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Passo 3: Tenta reconciliar lançamentos classificados e transações
-    // Em uma implementação real, isso seria feito por um microserviço que assinaria os eventos classificados
-    const lancamentosClassificados = lancamentos.map(l => classificarLancamento(l));
-    const resultado = reconciliarTransacoes(transacoes, lancamentosClassificados);
-    
-    // Passo 4: Publica resultados da reconciliação
-    resultado.transacoesConciliadas.forEach(item => {
-      publicarEvento(
-        'entry.reconciled',
-        item,
-        'reconciliador-automatico'
-      );
-    });
-    
-    return resultado;
-    
-  } catch (error) {
-    console.error("Erro ao simular fluxo de processamento:", error);
-    toast({
-      title: "Erro no processamento",
-      description: "Ocorreu um erro ao simular o fluxo de processamento",
-      variant: "destructive"
-    });
-    throw error;
-  }
+export const limparHistoricoEventos = (): void => {
+  historicoEventos.length = 0;
 };
 
-// Inicializa os processadores padrão
-inicializarProcessadores();
+/**
+ * Simulador de eventos para teste
+ */
+export const simularEvento = async (tipo: TipoEvento): Promise<EventoFiscal> => {
+  let dadosSimulados: any = {};
+  
+  switch (tipo) {
+    case 'fiscal.calculated':
+      dadosSimulados = {
+        cnpj: '12345678000190',
+        periodo: '2023-05',
+        impostos: {
+          irpj: 1200.50,
+          csll: 720.30,
+          pis: 195.45,
+          cofins: 900.20
+        }
+      };
+      break;
+    case 'fiscal.generated':
+      dadosSimulados = {
+        cnpj: '12345678000190',
+        tipoImposto: 'IRPJ',
+        valor: 1250.75,
+        dataVencimento: new Date(new Date().getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        periodo: '2023-05',
+        contribuinte: 'Empresa Teste LTDA'
+      };
+      break;
+    case 'guia.generated':
+      dadosSimulados = {
+        cnpj: '12345678000190',
+        tipoImposto: 'DAS',
+        valor: 580.32,
+        dataVencimento: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        periodo: '2023-05',
+        codigoBarras: '85800000008-6 58032073801-4 24062023030-6 67890123456-7',
+        contribuinte: 'Empresa Teste LTDA'
+      };
+      break;
+    case 'pagamento.scheduled':
+      dadosSimulados = {
+        jobId: `PAG-${Date.now()}`,
+        tipoImposto: 'DARF',
+        valor: 1250.75,
+        dataAgendamento: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      };
+      break;
+    case 'pagamento.executed':
+      dadosSimulados = {
+        jobId: `PAG-${Date.now() - 10000}`,
+        tipoImposto: 'DAS',
+        valor: 580.32,
+        sucesso: Math.random() > 0.2,
+        mensagem: Math.random() > 0.2 ? 'Pagamento realizado com sucesso' : 'Falha ao processar pagamento'
+      };
+      break;
+    case 'classificacao.completed':
+      dadosSimulados = {
+        totalLancamentos: 45,
+        lancamentosClassificados: 38,
+        precisao: 0.84
+      };
+      break;
+    default:
+      dadosSimulados = { mensagem: 'Evento simulado genérico' };
+  }
+  
+  const evento = await publicarEvento(tipo, dadosSimulados, 'simulador');
+  
+  toast({
+    title: `Evento ${tipo} simulado`,
+    description: `Um evento do tipo ${tipo} foi simulado para fins de teste.`
+  });
+  
+  return evento;
+};
+
+/**
+ * Inicializa o sistema de eventos, registrando os manipuladores padrão
+ */
+export const inicializarSistemaEventos = (): void => {
+  console.log('Inicializando sistema de eventos fiscais...');
+  
+  // Registrar manipulador de log para todos os eventos
+  for (const tipo of [
+    'fiscal.calculated', 'fiscal.generated', 'guia.generated',
+    'pagamento.scheduled', 'pagamento.executed', 'classificacao.completed'
+  ] as TipoEvento[]) {
+    subscribe(tipo, (evento) => {
+      console.log(`[EventLog] Evento ${tipo} processado:`, evento);
+    });
+  }
+};

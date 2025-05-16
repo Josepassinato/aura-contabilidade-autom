@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { realizarPagamentoAvancado, PagamentoResponse } from "@/services/bancario/openBankingService";
 import { TipoImposto, ResultadoCalculo } from "@/services/fiscal/types";
+import { publicarEvento } from "@/services/fiscal/mensageria/eventoProcessor";
 
 export const usePagamentoImposto = (cnpj: string, periodo: string) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +61,16 @@ export const usePagamentoImposto = (cnpj: string, periodo: string) => {
         toast({
           title: "Pagamento realizado",
           description: `${tipo} no valor de R$ ${resultado.valorFinal.toFixed(2)} pago com sucesso.`
+        });
+        
+        // Publicar evento de pagamento
+        publicarEvento('pagamento.executed', {
+          tipoImposto: tipo,
+          valor: resultado.valorFinal,
+          sucesso: true,
+          dataVencimento: resultado.dataVencimento,
+          dataPagamento: new Date().toISOString().split('T')[0],
+          cnpj: cnpj
         });
       } else {
         toast({
