@@ -42,6 +42,7 @@ const routes = createBrowserRouter([
   {
     path: "/",
     element: <DashboardLayout />,
+    errorElement: <Navigate to="/login" />,
     children: [
       {
         index: true,
@@ -122,13 +123,13 @@ const routes = createBrowserRouter([
       {
         path: "email-service",
         element: <EmailService />
-      },
-      // Rota para capturar qualquer caminho inválido
-      {
-        path: "*",
-        element: <NotFound />
       }
     ]
+  },
+  // Rota para capturar qualquer caminho inválido
+  {
+    path: "*",
+    element: <NotFound />
   }
 ]);
 

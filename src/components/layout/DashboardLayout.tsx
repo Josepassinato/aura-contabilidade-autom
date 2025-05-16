@@ -18,7 +18,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, navigateToLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -30,17 +30,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
         variant: "destructive",
       });
-      navigate("/login", { replace: true });
+      navigateToLogin();
     }
-  }, [navigate]);
+  }, [navigateToLogin]);
   
   // Verificar autenticação e redirecionar quando necessário
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       console.log("Usuário não autenticado, redirecionando para login");
-      navigate("/login", { replace: true });
+      navigateToLogin();
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigateToLogin]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
@@ -66,7 +66,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6 text-muted-foreground">Você precisa fazer login para acessar esta página</p>
           <Button 
-            onClick={() => navigate("/login")}
+            onClick={() => navigateToLogin()}
             size="lg"
           >
             Ir para o Login

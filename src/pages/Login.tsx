@@ -104,11 +104,11 @@ const Login = () => {
     // If already authenticated, redirect based on role
     if (isAuthenticated) {
       if (isAdmin) {
-        navigate('/admin/business-analytics');
+        navigate('/admin/business-analytics', { replace: true });
       } else if (isAccountant) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else if (isClient) {
-        navigate('/client-portal');
+        navigate('/client-portal', { replace: true });
       }
     }
   }, [isAuthenticated, isAccountant, isAdmin, isClient, navigate]);
