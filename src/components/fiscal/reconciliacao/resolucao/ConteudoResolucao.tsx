@@ -1,9 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Check, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Check, Wand2 } from "lucide-react";
 import { ResultadoResolucao } from "./ResultadoResolucao";
 import { ResultadoReconciliacao } from "@/services/fiscal/reconciliacao/reconciliacaoBancaria";
 import { ResultadoResolucaoAutonoma } from "@/services/fiscal/reconciliacao/resolucaoAutonoma";
