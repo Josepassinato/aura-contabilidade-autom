@@ -102,7 +102,7 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
         toast({
           title: "Revisão manual necessária",
           description: `Confiança insuficiente (${Math.round(analise.automationConfidence * 100)}%) para processamento automático.`,
-          variant: "warning",
+          variant: "default" // Alterado de "warning" para "default"
         });
       } else {
         toast({
