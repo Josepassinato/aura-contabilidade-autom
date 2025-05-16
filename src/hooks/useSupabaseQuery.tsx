@@ -11,7 +11,7 @@ interface RetryResult<T = any> {
 }
 
 export function useRetry() {
-  const retry = async <T>(
+  const retry = async <T,>(
     fn: () => Promise<T>,
     maxRetries = 3,
     delayMs = 1000
