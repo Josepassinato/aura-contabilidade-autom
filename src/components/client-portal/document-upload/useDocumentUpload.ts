@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
@@ -74,7 +73,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
         }
         
         // Register the document in the database after successful upload
-        const { error: insertError } = await supabase
+        const result = await supabase
           .from('client_documents')
           .insert({
             client_id: clientId,
@@ -87,8 +86,8 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
             uploaded_at: new Date().toISOString()
           });
           
-        if (insertError) {
-          throw new Error(`Erro ao registrar documento: ${insertError.message}`);
+        if (result.error) {
+          throw new Error(`Erro ao registrar documento: ${result.error.message}`);
         }
         
         return { success: true, fileName: fileItem.name };

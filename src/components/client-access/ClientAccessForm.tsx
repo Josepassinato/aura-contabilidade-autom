@@ -60,28 +60,30 @@ export const ClientAccessForm = () => {
       const normalizedCNPJ = data.cnpj.replace(/\D/g, "");
       
       // Buscar o cliente pelo CNPJ
-      const { data: clientData, error: clientError } = await supabase
+      const clientResult = await supabase
         .from('accounting_clients')
         .select('*')
-        .eq('cnpj', normalizedCNPJ)
-        .single();
+        .eq('cnpj', normalizedCNPJ);
       
-      if (clientError || !clientData) {
+      if (clientResult.error || !clientResult.data || clientResult.data.length === 0) {
         throw new Error("Cliente não encontrado");
       }
+
+      const clientData = clientResult.data[0];
       
       // Verificar o token de acesso
-      const { data: accessData, error: accessError } = await supabase
+      const accessResult = await supabase
         .from('client_access_tokens')
         .select('*')
         .eq('client_id', clientData.id)
         .eq('token', data.accessToken)
-        .eq('is_active', true)
-        .single();
+        .eq('is_active', true);
       
-      if (accessError || !accessData) {
+      if (accessResult.error || !accessResult.data || accessResult.data.length === 0) {
         throw new Error("Token de acesso inválido ou expirado");
       }
+
+      const accessData = accessResult.data[0];
       
       // Salvar informações do cliente na sessão
       sessionStorage.setItem('client_id', clientData.id);

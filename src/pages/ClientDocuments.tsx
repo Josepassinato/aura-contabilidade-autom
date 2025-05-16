@@ -6,6 +6,7 @@ import { DocumentList } from '@/components/client-portal/documents/DocumentList'
 import { DocumentSearch } from '@/components/client-portal/documents/DocumentSearch';
 import { DocumentTabs } from '@/components/client-portal/documents/DocumentTabs';
 import { useClientDocuments } from '@/components/client-portal/useClientDocuments';
+import { Document } from '@/lib/supabase';
 
 const ClientDocuments = () => {
   // Get client ID from session storage or use a default
@@ -45,13 +46,17 @@ const ClientDocuments = () => {
           onSearchChange={setSearchTerm}
         />
         
-        <DocumentTabs />
+        <DocumentTabs 
+          documents={documents}
+          onViewDocument={handleViewDocument}
+        />
 
         <DocumentList
           documents={documents}
-          onView={handleViewDocument}
-          onDelete={handleDeleteDocument}
-          onRefresh={refreshDocuments}
+          onViewDocument={handleViewDocument}
+          onDeleteDocument={handleDeleteDocument}
+          onRefreshDocuments={refreshDocuments}
+          isLoading={isLoading}
         />
       </div>
     </DashboardLayout>

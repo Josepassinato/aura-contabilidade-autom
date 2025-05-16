@@ -27,18 +27,18 @@ export const useClientDocuments = (clientId: string | null) => {
     try {
       if (supabase) {
         // Fetch client documents from Supabase
-        const { data, error } = await supabase
+        const result = await supabase
           .from('client_documents')
           .select('*')
           .eq('client_id', clientId)
           .order('created_at', { ascending: false });
           
-        if (error) {
-          throw error;
+        if (result.error) {
+          throw result.error;
         }
         
-        if (data) {
-          const formattedDocs = data.map(doc => ({
+        if (result.data) {
+          const formattedDocs = result.data.map(doc => ({
             id: doc.id,
             name: doc.name,
             type: doc.type,

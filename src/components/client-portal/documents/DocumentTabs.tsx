@@ -1,68 +1,34 @@
 
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentList } from "./DocumentList";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Receipt, FileArchive, FileCheck } from "lucide-react";
+import { Document } from "@/lib/supabase";
 
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  date: string;
-  status: 'pendente' | 'processado' | 'rejeitado';
-  file_path?: string;
-}
-
-interface DocumentTabsProps {
+export interface DocumentTabsProps {
   documents: Document[];
-  onViewDocument: (document: Document) => void;
+  onViewDocument: (document: Document) => Promise<void>;
 }
 
-export const DocumentTabs: React.FC<DocumentTabsProps> = ({ 
-  documents,
-  onViewDocument
-}) => {
+export const DocumentTabs = ({ documents, onViewDocument }: DocumentTabsProps) => {
   return (
-    <Tabs defaultValue="todos">
-      <TabsList>
-        <TabsTrigger value="todos">Todos</TabsTrigger>
-        <TabsTrigger value="nota-fiscal">Notas Fiscais</TabsTrigger>
-        <TabsTrigger value="recibo">Recibos</TabsTrigger>
-        <TabsTrigger value="contrato">Contratos</TabsTrigger>
-        <TabsTrigger value="outro">Outros</TabsTrigger>
+    <Tabs defaultValue="todos" className="w-full">
+      <TabsList className="grid grid-cols-4 md:w-fit">
+        <TabsTrigger value="todos" className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline">Todos</span>
+        </TabsTrigger>
+        <TabsTrigger value="notas" className="flex items-center gap-2">
+          <Receipt className="h-4 w-4" />
+          <span className="hidden sm:inline">Notas Fiscais</span>
+        </TabsTrigger>
+        <TabsTrigger value="contratos" className="flex items-center gap-2">
+          <FileArchive className="h-4 w-4" />
+          <span className="hidden sm:inline">Contratos</span>
+        </TabsTrigger>
+        <TabsTrigger value="outros" className="flex items-center gap-2">
+          <FileCheck className="h-4 w-4" />
+          <span className="hidden sm:inline">Outros</span>
+        </TabsTrigger>
       </TabsList>
-      <div className="mt-4">
-        <TabsContent value="todos">
-          <DocumentList 
-            documents={documents} 
-            onViewDocument={onViewDocument} 
-          />
-        </TabsContent>
-        <TabsContent value="nota-fiscal">
-          <DocumentList 
-            documents={documents.filter(doc => doc.type === 'nota-fiscal')}
-            onViewDocument={onViewDocument} 
-          />
-        </TabsContent>
-        <TabsContent value="recibo">
-          <DocumentList 
-            documents={documents.filter(doc => doc.type === 'recibo')}
-            onViewDocument={onViewDocument} 
-          />
-        </TabsContent>
-        <TabsContent value="contrato">
-          <DocumentList 
-            documents={documents.filter(doc => doc.type === 'contrato')}
-            onViewDocument={onViewDocument} 
-          />
-        </TabsContent>
-        <TabsContent value="outro">
-          <DocumentList 
-            documents={documents.filter(doc => doc.type === 'outro' || doc.type === 'extrato')}
-            onViewDocument={onViewDocument} 
-          />
-        </TabsContent>
-      </div>
     </Tabs>
   );
 };

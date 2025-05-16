@@ -29,16 +29,18 @@ const ApuracaoAutomatica = () => {
       setClientesProcessados(0);
       
       // Buscar clientes do Supabase
-      const { data: clientes, error } = await supabaseClient
+      const clientesResult = await supabaseClient
         .from('accounting_clients')
         .select('*')
         .order('name');
         
-      if (error) {
-        throw error;
+      if (clientesResult.error) {
+        throw clientesResult.error;
       }
       
-      if (!clientes || clientes.length === 0) {
+      const clientes = clientesResult.data || [];
+      
+      if (clientes.length === 0) {
         toast({
           title: "Nenhum cliente encontrado",
           description: "Não há clientes cadastrados para processamento.",

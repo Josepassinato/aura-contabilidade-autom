@@ -1,22 +1,27 @@
 
 import React from "react";
+import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
-interface DocumentSearchProps {
+export interface DocumentSearchProps {
   searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  onSearchChange: (value: string) => void;
 }
 
-export const DocumentSearch: React.FC<DocumentSearchProps> = ({ searchTerm, setSearchTerm }) => {
+export const DocumentSearch = ({ searchTerm, onSearchChange }: DocumentSearchProps) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value);
+  };
+
   return (
     <div className="relative">
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-      <input
-        type="text"
+      <Input
+        type="search"
         placeholder="Buscar documentos..."
-        className="pl-8 h-9 w-[250px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+        className="pl-8"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={handleInputChange}
       />
     </div>
   );

@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
-import { UserProfile, UserRole } from '@/lib/supabase';
+import { UserProfile, UserRole, SupabaseUser, SupabaseSession } from '@/lib/supabase';
 import { supabase, supabaseAuth, getUserProfile } from '@/lib/supabaseService';
 import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
 import { cleanupAuthState, checkForAuthLimboState } from './cleanupUtils';
 
 // Custom interface for mock user that has all required User properties
-interface MockUser {
-  id: string;
-  email: string;
-  user_metadata: { name: string };
-  app_metadata: any;
-  created_at: string;
+interface MockUser extends SupabaseUser {
+  // Extended with all required User properties
 }
 
 // Mock session interface with correct properties
-interface MockSession {
-  user: MockUser;
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  token_type: string;
+interface MockSession extends SupabaseSession {
+  // Extended with all required Session properties
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -135,19 +127,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const setupMockSession = (role: string) => {
     const mockUser: MockUser = {
       id: '123',
+      aud: 'authenticated',
       email: role === 'client' ? 'cliente@empresa.com.br' : 
               role === 'admin' ? 'admin@contaflix.com.br' : 'contador@contaflix.com.br',
       user_metadata: {
         name: role === 'client' ? 'Empresa Cliente' : 
               role === 'admin' ? 'Admin Contaflix' : 'Contador Teste',
       },
-      app_metadata: {}, // Required property
+      app_metadata: {}, 
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
     
     const mockProfile: UserProfile = {
       id: '123',
-      email: mockUser.email,
+      email: mockUser.email || '',
       name: mockUser.user_metadata.name,
       role: role as UserRole,
       full_name: mockUser.user_metadata.name,
@@ -163,8 +157,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       token_type: 'bearer'
     };
     
-    setUser(mockUser as User);
-    setSession(mockSession as Session);
+    setUser(mockUser as unknown as User);
+    setSession(mockSession as unknown as Session);
     setUserProfile(mockProfile);
     setIsAuthenticated(true);
     setIsLoading(false);

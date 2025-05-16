@@ -30,7 +30,7 @@ export interface Employee {
   cpf: string;
   status: string;
   client_id: string;
-  notes?: string; // Added notes field to fix EmployeeFormDialog error
+  notes?: string;
 }
 
 // Payroll Entry type
@@ -75,18 +75,65 @@ export interface AccountingClient {
   updated_at?: string;
 }
 
+// Type definition for Supabase User
+export interface SupabaseUser {
+  id: string;
+  aud: string;
+  role?: string;
+  email?: string;
+  email_confirmed_at?: string;
+  phone?: string;
+  confirmed_at?: string;
+  last_sign_in_at?: string;
+  app_metadata: any;
+  user_metadata: any;
+  identities?: any[];
+  created_at: string;
+  updated_at: string;
+}
+
+// Type definition for Supabase Session
+export interface SupabaseSession {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+  user: SupabaseUser;
+}
+
 export const useSupabaseClient = () => {
-  // Mock implementation with required methods to fix TypeScript errors
+  // Expanded mock implementation with required methods to fix TypeScript errors
   const supabase = {
     from: (table: string) => ({
-      select: (columns: string) => ({ 
+      select: (columns: string = '*') => ({ 
         eq: (column: string, value: any) => ({
           single: () => Promise.resolve({ data: null, error: null }),
           maybeSingle: () => Promise.resolve({ data: null, error: null }),
-          order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) })
+          order: (column: string, { ascending = true } = {}) => ({ 
+            limit: (limit: number = 10) => Promise.resolve({ data: [], error: null })
+          }),
+          data: null,
+          error: null
         }),
-        order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) })
-      })
+        order: (column: string, { ascending = true } = {}) => ({ 
+          limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
+          data: null,
+          error: null
+        }),
+        limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
+        data: null,
+        error: null
+      }),
+      insert: (values: any) => Promise.resolve({ data: null, error: null }),
+      update: (values: any) => ({
+        eq: (column: string, value: any) => Promise.resolve({ data: null, error: null }),
+        match: (criteria: any) => Promise.resolve({ data: null, error: null })
+      }),
+      delete: () => ({
+        eq: (column: string, value: any) => Promise.resolve({ data: null, error: null }),
+        match: (criteria: any) => Promise.resolve({ data: null, error: null })
+      }),
+      upsert: (values: any) => Promise.resolve({ data: null, error: null })
     }),
     rpc: <T = any, P = any>(
       fn: string, 
@@ -96,4 +143,3 @@ export const useSupabaseClient = () => {
   
   return supabase;
 };
-
