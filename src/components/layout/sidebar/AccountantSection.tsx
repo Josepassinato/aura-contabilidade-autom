@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { 
   LayoutDashboard, FileCog, FileCheck, FileText, 
   CalendarClock, Receipt, Network, Building2, Mail, 
   Database, Users, FileBarChart2, BarChart4, UserCog,
-  Brain, FileStack, CreditCard, Bank, Bell
+  Brain, FileStack, CreditCard, Building, Bell
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -114,7 +113,7 @@ export function AccountantSection() {
         <div className="space-y-1">
           <Link to="/automacao-bancaria">
             <Button variant="ghost" className="w-full justify-start">
-              <Bank className="mr-2 h-4 w-4" />
+              <Building className="mr-2 h-4 w-4" />
               Automação Bancária
             </Button>
           </Link>

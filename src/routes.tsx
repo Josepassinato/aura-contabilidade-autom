@@ -42,6 +42,7 @@ import OpenAIManagement from './pages/admin/OpenAIManagement';
 // Nova página de Classificação e Reconciliação
 import ClassificacaoReconciliacao from './pages/ClassificacaoReconciliacao';
 
+// Observe que este arquivo agora exporta um componente funcional React
 const AppRoutes = () => {
   return (
     <Routes>

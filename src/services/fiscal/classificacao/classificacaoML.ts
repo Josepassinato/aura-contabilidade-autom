@@ -216,7 +216,9 @@ export const classificarLancamento = (lancamento: Lancamento): Lancamento => {
   // Atualiza o lançamento com a classificação
   lancamentoClassificado.categoria = categoria;
   lancamentoClassificado.confianca = confianca;
-  lancamentoClassificado.status = confianca > modeloConfig.limiarConfianca ? 'classificado' : 'pendente';
+  lancamentoClassificado.status = confianca > modeloConfig.limiarConfianca 
+    ? 'classificado' as const 
+    : 'pendente' as const;
   
   return lancamentoClassificado;
 };
@@ -242,7 +244,7 @@ export const reclassificarLancamento = (
     ...lancamento, 
     categoria: novaCategoria,
     confianca: 1, // Confiança máxima para classificação manual
-    status: 'classificado'
+    status: 'classificado' as const
   };
   
   if (adicionarAoHistorico) {
