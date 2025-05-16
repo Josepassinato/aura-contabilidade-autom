@@ -15,7 +15,12 @@ const FolhaPagamento = () => {
   const { authenticated, loading } = requireAuth();
   
   if (loading) {
-    return <div>Carregando...</div>;
+    return <div className="flex h-screen items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Carregando...</p>
+      </div>
+    </div>;
   }
   
   if (!authenticated) {
@@ -40,15 +45,15 @@ const FolhaPagamento = () => {
           </TabsList>
           
           <div className="mt-6">
-            <TabsContent value="folhas" className="mt-0">
+            <TabsContent value="folhas" className="mt-0 space-y-4">
               <PayrollList />
             </TabsContent>
             
-            <TabsContent value="funcionarios" className="mt-0">
+            <TabsContent value="funcionarios" className="mt-0 space-y-4">
               <EmployeesList />
             </TabsContent>
             
-            <TabsContent value="relatorios" className="mt-0">
+            <TabsContent value="relatorios" className="mt-0 space-y-4">
               <PayrollReports />
             </TabsContent>
           </div>
