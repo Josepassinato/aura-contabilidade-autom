@@ -22,6 +22,7 @@ interface VoiceAssistantContainerProps {
     title: string;
     url: string;
     type: string;
+    id: string;
   } | null;
   manualInput: string;
   setManualInput: (value: string) => void;

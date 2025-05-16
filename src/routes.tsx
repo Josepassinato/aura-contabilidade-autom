@@ -21,6 +21,7 @@ import FolhaPagamento from "@/pages/FolhaPagamento";
 import ObrigacoesFiscais from "@/pages/ObrigacoesFiscais";
 import RelatoriosFinanceiros from "@/pages/RelatoriosFinanceiros";
 import NotFound from "@/pages/NotFound";
+import EmailService from "@/pages/EmailService";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -108,6 +109,10 @@ const routes = createBrowserRouter([
   {
     path: "/relatoriosfinanceiros",
     element: <RelatoriosFinanceiros />
+  },
+  {
+    path: "/email-service",
+    element: <EmailService />
   },
   // Rota de fallback para página não encontrada
   {
