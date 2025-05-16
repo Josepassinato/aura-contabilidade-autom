@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSupabaseClient, Employee } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,66 +11,65 @@ export function useEmployeesList() {
   const supabase = useSupabaseClient();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!supabase || !selectedClientId) return;
+  const fetchEmployees = useCallback(async () => {
+    if (!supabase || !selectedClientId) {
+      setIsLoading(false);
+      return;
+    }
     
-    const fetchEmployees = async () => {
-      setIsLoading(true);
-      
-      try {
-        let query = supabase
-          .from('employees')
-          .select('*')
-          .eq('client_id', selectedClientId);
-        
-        if (activeTab === "ativos") {
-          query = query.eq('status', 'active');
-        } else if (activeTab === "inativos") {
-          query = query.eq('status', 'inactive');
+    setIsLoading(true);
+    
+    try {
+      // Usar função RPC para buscar funcionários com filtros
+      const { data, error } = await supabase.rpc(
+        'get_filtered_employees',
+        { 
+          p_client_id: selectedClientId,
+          p_status: activeTab === "todos" ? null : (activeTab === "ativos" ? 'active' : 'inactive')
         }
-        
-        const { data, error } = await query
-          .order('name');
-        
-        if (error) throw error;
-        
-        setEmployees(data || []);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-        toast({
-          title: "Erro ao buscar funcionários",
-          description: "Não foi possível carregar a lista de funcionários.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchEmployees();
+      );
+      
+      if (error) throw error;
+      
+      setEmployees(data || []);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast({
+        title: "Erro ao buscar funcionários",
+        description: "Não foi possível carregar a lista de funcionários.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, [supabase, selectedClientId, activeTab, toast]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
   
-  const handleClientSelect = (client: { id: string, name: string }) => {
+  const handleClientSelect = useCallback((client: { id: string, name: string }) => {
     setSelectedClientId(client.id);
-  };
+  }, []);
   
   const handleFormSubmit = async (data: any) => {
-    if (!supabase || !selectedClientId) return;
+    if (!supabase || !selectedClientId) return false;
     
     try {
       if (data.id) {
-        // Update existing employee
-        const { error } = await supabase
-          .from('employees')
-          .update({
-            name: data.name,
-            position: data.position,
-            department: data.department,
-            hire_date: data.hire_date,
-            base_salary: parseFloat(data.base_salary),
-            status: data.status
-          })
-          .eq('id', data.id);
+        // Atualizar funcionário existente
+        const { error } = await supabase.rpc(
+          'update_employee',
+          { 
+            p_employee_id: data.id,
+            p_name: data.name,
+            p_position: data.position,
+            p_department: data.department,
+            p_hire_date: data.hire_date,
+            p_base_salary: parseFloat(data.base_salary),
+            p_status: data.status
+          }
+        );
         
         if (error) throw error;
         
@@ -79,18 +78,20 @@ export function useEmployeesList() {
           description: `${data.name} foi atualizado com sucesso.`,
         });
       } else {
-        // Create new employee
-        const { error } = await supabase
-          .from('employees')
-          .insert([{
-            client_id: selectedClientId,
-            name: data.name,
-            position: data.position,
-            department: data.department,
-            hire_date: data.hire_date,
-            base_salary: parseFloat(data.base_salary),
-            status: data.status || 'active'
-          }]);
+        // Criar novo funcionário
+        const { error } = await supabase.rpc(
+          'create_employee',
+          {
+            p_client_id: selectedClientId,
+            p_name: data.name,
+            p_position: data.position,
+            p_department: data.department,
+            p_hire_date: data.hire_date,
+            p_base_salary: parseFloat(data.base_salary),
+            p_status: data.status || 'active',
+            p_cpf: data.cpf || '00000000000' // Valor padrão temporário
+          }
+        );
         
         if (error) throw error;
         
@@ -100,15 +101,8 @@ export function useEmployeesList() {
         });
       }
       
-      // Refresh the employee list
-      const { data: updatedData } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('client_id', selectedClientId)
-        .eq('status', activeTab === "ativos" ? 'active' : 'inactive')
-        .order('name');
-      
-      setEmployees(updatedData || []);
+      // Atualizar a lista de funcionários
+      await fetchEmployees();
       return true;
     } catch (error) {
       console.error('Error saving employee:', error);
@@ -129,6 +123,7 @@ export function useEmployeesList() {
     setSelectedClientId,
     setActiveTab,
     handleClientSelect,
-    handleFormSubmit
+    handleFormSubmit,
+    refreshEmployees: fetchEmployees
   };
 }

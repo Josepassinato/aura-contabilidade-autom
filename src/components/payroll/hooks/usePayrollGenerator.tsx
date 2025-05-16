@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSupabaseClient, Employee } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,38 +17,41 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   }
   
-  useEffect(() => {
-    if (!supabase || !clientId) return;
+  const fetchEmployees = useCallback(async () => {
+    if (!supabase || !clientId) {
+      setIsLoading(false);
+      return;
+    }
     
-    const fetchEmployees = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
+    
+    try {
+      // Usar RPC para buscar funcionários ativos
+      const { data, error } = await supabase.rpc(
+        'get_active_employees',
+        { p_client_id: clientId }
+      );
       
-      try {
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('client_id', clientId)
-          .eq('status', 'active');
-        
-        if (error) throw error;
-        
-        setEmployees(data || []);
-        // Auto-select all active employees
-        setSelectedEmployees(data?.map(emp => emp.id) || []);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-        toast({
-          title: "Erro ao buscar funcionários",
-          description: "Não foi possível carregar a lista de funcionários.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchEmployees();
+      if (error) throw error;
+      
+      setEmployees(data || []);
+      // Auto-select todos os funcionários ativos
+      setSelectedEmployees(data?.map(emp => emp.id) || []);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast({
+        title: "Erro ao buscar funcionários",
+        description: "Não foi possível carregar a lista de funcionários.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, [supabase, clientId, toast]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   const toggleEmployeeSelection = (employeeId: string) => {
     setSelectedEmployees(prev => 
@@ -72,89 +75,25 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     setIsGenerating(true);
     
     try {
-      for (const employeeId of selectedEmployees) {
-        const employee = employees.find(emp => emp.id === employeeId);
-        
-        if (!employee) continue;
-        
-        // Simple calculation for this example (in a real app, this would be more complex)
-        const baseSalary = employee.base_salary;
-        const grossSalary = baseSalary;
-        
-        // Calculate INSS (simplified example)
-        let inssRate = 0;
-        if (grossSalary <= 1412) inssRate = 0.075;
-        else if (grossSalary <= 2666.68) inssRate = 0.09;
-        else if (grossSalary <= 4000) inssRate = 0.12;
-        else inssRate = 0.14;
-        
-        const inssDeduction = Math.min(grossSalary * inssRate, 828.39); // Max INSS in 2024
-        
-        // Calculate IRRF (simplified example)
-        let irrfBase = grossSalary - inssDeduction;
-        let irrfRate = 0;
-        let irrfDeduction = 0;
-        
-        if (irrfBase <= 2112) {
-          irrfRate = 0;
-          irrfDeduction = 0;
-        } else if (irrfBase <= 2826.65) {
-          irrfRate = 0.075;
-          irrfDeduction = 158.40;
-        } else if (irrfBase <= 3751.05) {
-          irrfRate = 0.15;
-          irrfDeduction = 370.40;
-        } else if (irrfBase <= 4664.68) {
-          irrfRate = 0.225;
-          irrfDeduction = 651.73;
-        } else {
-          irrfRate = 0.275;
-          irrfDeduction = 884.96;
-        }
-        
-        const irrfValue = Math.max(0, (irrfBase * irrfRate) - irrfDeduction);
-        const totalDeductions = inssDeduction + irrfValue;
-        const netSalary = grossSalary - totalDeductions;
-        
-        // Insert payroll entry
-        const { data: payrollData, error: payrollError } = await supabase
-          .from('payroll_entries')
-          .insert([{
-            client_id: clientId,
-            employee_id: employeeId,
-            period: period,
-            base_salary: baseSalary,
-            gross_salary: grossSalary,
-            deductions: totalDeductions,
-            net_salary: netSalary,
-            status: 'draft'
-          }])
-          .select();
-        
-        if (payrollError) throw payrollError;
-        
-        if (payrollData && payrollData[0]) {
-          const payrollEntryId = payrollData[0].id;
+      // Processar múltiplos funcionários em paralelo usando Promise.all
+      await Promise.all(
+        selectedEmployees.map(async (employeeId) => {
+          const employee = employees.find(emp => emp.id === employeeId);
+          if (!employee) return;
+
+          // Chamar RPC para gerar folha de pagamento por funcionário
+          const { error } = await supabase.rpc(
+            'generate_payroll',
+            {
+              p_client_id: clientId,
+              p_employee_id: employeeId,
+              p_period: period
+            }
+          );
           
-          // Insert deductions
-          await supabase
-            .from('payroll_deductions')
-            .insert([
-              {
-                payroll_entry_id: payrollEntryId,
-                type: 'inss',
-                description: 'INSS',
-                amount: inssDeduction
-              },
-              {
-                payroll_entry_id: payrollEntryId,
-                type: 'irrf',
-                description: 'IRRF',
-                amount: irrfValue
-              }
-            ]);
-        }
-      }
+          if (error) throw error;
+        })
+      );
       
       toast({
         title: "Folha de pagamento gerada",

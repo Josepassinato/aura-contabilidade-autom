@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { ClientSummaryCard } from "@/components/dashboard/ClientSummaryCard";
 import { FiscalCalendar } from "@/components/dashboard/FiscalCalendar";
@@ -11,6 +10,21 @@ import { BarChart, FileText, DollarSign, Calendar, Building, Inbox, CheckCircle 
 import { supabase } from '@/integrations/supabase/client';
 import { fetchObrigacoesFiscais } from '@/services/supabase/obrigacoesService';
 import { fetchClientDocuments } from '@/services/supabase/documentosService';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Componentes de loading para melhor UX
+const LoadingSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-12 w-64" />
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+    <Skeleton className="h-64 w-full" />
+  </div>
+);
 
 export function DashboardView() {
   const { isAdmin, isAccountant } = useAuth();
@@ -20,36 +34,41 @@ export function DashboardView() {
   const [loading, setLoading] = useState(true);
   const [clienteAtivo, setClienteAtivo] = useState<string | null>(null);
   
-  // Carregar dados reais do Supabase
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Carregar clientes
-        const { data: clientesData, error: clientesError } = await supabase
-          .from('accounting_clients')
-          .select('*');
+        // Carregar dados em paralelo usando Promise.all
+        const [clientesResult, obrigacoesResult] = await Promise.all([
+          // Carregar clientes
+          supabase.from('accounting_clients').select('*'),
           
-        if (!clientesError && clientesData) {
-          setClientes(clientesData.map(cliente => ({
-            name: cliente.name,
-            status: 'regular' as 'regular' | 'pendente' | 'atrasado',
-            documentsPending: 0,
-            upcomingDeadlines: 0,
-            id: cliente.id
-          })));
-          
-          // Se tiver clientes, define o primeiro como ativo
-          if (clientesData.length > 0) {
-            setClienteAtivo(clientesData[0].id);
-          }
-        } else {
-          setClientes([]);
+          // Carregar obrigações fiscais
+          fetchObrigacoesFiscais()
+        ]);
+        
+        if (clientesResult.error) {
+          throw clientesResult.error;
         }
         
-        // Carregar obrigações fiscais
-        const obrigacoesFiscais = await fetchObrigacoesFiscais();
-        setFiscalEvents(obrigacoesFiscais.map(obr => ({
+        const clientesData = clientesResult.data || [];
+        
+        // Processar dados dos clientes
+        setClientes(clientesData.map(cliente => ({
+          name: cliente.name,
+          status: 'regular' as 'regular' | 'pendente' | 'atrasado',
+          documentsPending: 0,
+          upcomingDeadlines: 0,
+          id: cliente.id
+        })));
+        
+        // Define o primeiro cliente como ativo se houver algum
+        if (clientesData.length > 0 && !clienteAtivo) {
+          setClienteAtivo(clientesData[0].id);
+        }
+        
+        // Processar dados das obrigações fiscais
+        setFiscalEvents(obrigacoesResult.map(obr => ({
           id: obr.id?.toString() || '',
           title: obr.nome || '',
           client: obr.empresa || '',
@@ -58,21 +77,6 @@ export function DashboardView() {
           priority: obr.prioridade || 'media'
         })));
         
-        // Carregar documentos recentes
-        if (clienteAtivo) {
-          const documentos = await fetchClientDocuments(clienteAtivo, 4);
-          setRecentDocuments(documentos.map(doc => ({
-            id: doc.id || '',
-            name: doc.title || '',
-            client: clientesData?.find(c => c.id === clienteAtivo)?.name || '',
-            type: doc.type || '',
-            date: doc.date || '',
-            // Garante que o status seja explicitamente "processado" ou definido como "pendente" por padrão
-            status: doc.status === 'processado' ? 'processado' : 'pendente'
-          })));
-        } else {
-          setRecentDocuments([]);
-        }
       } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
       } finally {
@@ -81,13 +85,40 @@ export function DashboardView() {
     };
     
     loadData();
-  }, [clienteAtivo]);
+  }, []);
+  
+  // Efeito separado para buscar documentos quando o cliente ativo mudar
+  useEffect(() => {
+    const loadClientDocuments = async () => {
+      if (!clienteAtivo) return;
+      
+      try {
+        const documentos = await fetchClientDocuments(clienteAtivo, 4);
+        setRecentDocuments(documentos.map(doc => ({
+          id: doc.id || '',
+          name: doc.title || '',
+          client: clientes.find(c => c.id === clienteAtivo)?.name || '',
+          type: doc.type || '',
+          date: doc.date || '',
+          status: doc.status === 'processado' ? 'processado' : 'pendente'
+        })));
+      } catch (error) {
+        console.error('Erro ao carregar documentos do cliente:', error);
+      }
+    };
+    
+    loadClientDocuments();
+  }, [clienteAtivo, clientes]);
   
   // Dashboard para contador (visualização mais completa)
   const renderAccountantDashboard = () => (
     <div className="space-y-6">
-      <ContabilAlerts />
-      <FiscalDeadlineAlerts />
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <ContabilAlerts />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <FiscalDeadlineAlerts />
+      </Suspense>
       
       {/* Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -121,7 +152,9 @@ export function DashboardView() {
       <div>
         <h2 className="text-lg font-semibold mb-4">Clientes</h2>
         {loading ? (
-          <p>Carregando clientes...</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+          </div>
         ) : clientes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {clientes.map((client, index) => (
@@ -141,16 +174,22 @@ export function DashboardView() {
       
       {/* Calendário fiscal e documentos recentes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FiscalCalendar events={fiscalEvents} />
-        <DocumentsTable documents={recentDocuments} />
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <FiscalCalendar events={fiscalEvents} />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <DocumentsTable documents={recentDocuments} />
+        </Suspense>
       </div>
     </div>
   );
   
-  // Dashboard para cliente (visualização simplificada)
+  // Dashboard para cliente e admin simplificados
   const renderClientDashboard = () => (
     <div className="space-y-6">
-      <FiscalDeadlineAlerts />
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <FiscalDeadlineAlerts />
+      </Suspense>
       
       {/* Métricas do cliente */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -182,8 +221,12 @@ export function DashboardView() {
       
       {/* Calendário fiscal e documentos recentes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FiscalCalendar events={[]} />
-        <DocumentsTable documents={[]} />
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <FiscalCalendar events={[]} />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <DocumentsTable documents={[]} />
+        </Suspense>
       </div>
     </div>
   );
@@ -191,8 +234,10 @@ export function DashboardView() {
   // Dashboard para administrador
   const renderAdminDashboard = () => (
     <div className="space-y-6">
-      {/* Removido ContabilAlerts do dashboard do administrador */}
-      <FiscalDeadlineAlerts />
+      {/* ... keep existing code (Admin dashboard) */}
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <FiscalDeadlineAlerts />
+      </Suspense>
       
       {/* Métricas do administrador */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -227,7 +272,9 @@ export function DashboardView() {
         <div>
           <h2 className="text-lg font-semibold mb-4">Clientes</h2>
           {loading ? (
-            <p>Carregando clientes...</p>
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+            </div>
           ) : clientes.length > 0 ? (
             <div className="space-y-4">
               {clientes.map((client, index) => (
@@ -244,13 +291,15 @@ export function DashboardView() {
             <p>Nenhum cliente cadastrado</p>
           )}
         </div>
-        <FiscalCalendar events={fiscalEvents} />
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <FiscalCalendar events={fiscalEvents} />
+        </Suspense>
       </div>
     </div>
   );
   
   if (loading) {
-    return <div>Carregando dados...</div>;
+    return <LoadingSkeleton />;
   }
   
   // Renderizar o dashboard adequado baseado no perfil do usuário
@@ -263,4 +312,3 @@ export function DashboardView() {
     return renderClientDashboard();
   }
 }
-

@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { useSupabaseClient, PayrollEntry } from '@/lib/supabase';
+import { useSupabaseClient } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
+import { PayrollEntry } from '@/lib/supabase';
 
 export function usePayrollData(selectedClientId: string | null, period: string) {
   const [payrolls, setPayrolls] = useState<PayrollEntry[]>([]);
@@ -16,22 +17,18 @@ export function usePayrollData(selectedClientId: string | null, period: string) 
       setIsLoading(true);
       
       try {
-        let query = supabase.from('payroll_entries').select('*');
-        
-        if (selectedClientId) {
-          query = query.eq('client_id', selectedClientId);
-        }
-
-        // Filter by period if selected
-        if (period) {
-          query = query.eq('period', period);
-        }
-        
-        const { data, error } = await query.order('created_at', { ascending: false });
+        // Usar a RPC para buscar as folhas de pagamento com filtros
+        const { data, error } = await supabase.rpc(
+          'get_filtered_payrolls',
+          { 
+            p_client_id: selectedClientId,
+            p_period: period
+          }
+        );
         
         if (error) throw error;
         
-        setPayrolls(data);
+        setPayrolls(data || []);
       } catch (error) {
         console.error('Error fetching payrolls:', error);
         toast({
@@ -51,21 +48,17 @@ export function usePayrollData(selectedClientId: string | null, period: string) 
     if (!supabase) return;
     
     try {
-      let query = supabase.from('payroll_entries').select('*');
-      
-      if (selectedClientId) {
-        query = query.eq('client_id', selectedClientId);
-      }
-      
-      if (period) {
-        query = query.eq('period', period);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc(
+        'get_filtered_payrolls',
+        { 
+          p_client_id: selectedClientId,
+          p_period: period
+        }
+      );
       
       if (error) throw error;
       
-      setPayrolls(data);
+      setPayrolls(data || []);
     } catch (error) {
       console.error('Error refreshing payrolls:', error);
     }

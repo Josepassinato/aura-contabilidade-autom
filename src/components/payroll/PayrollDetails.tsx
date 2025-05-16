@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSupabaseClient } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Download, FileCog, CheckCircle, AlertCircle } from 'lucide-react';
+import { Download, FileCog, CheckCircle } from 'lucide-react';
+import { formatCurrency, formatPeriod } from './hooks/usePayrollGenerator';
 
 interface PayrollDetailsProps {
   payrollId: string;
@@ -37,44 +37,38 @@ export function PayrollDetails({ payrollId }: PayrollDetailsProps) {
       setIsLoading(true);
       
       try {
-        // Fetch the payroll entry
-        const { data: payrollData, error: payrollError } = await supabase
-          .from('payroll_entries')
-          .select('*')
-          .eq('id', payrollId)
-          .single();
+        // Usar Promise.all para fazer todas as requisições em paralelo
+        const [payrollResponse, deductionsResponse, benefitsResponse] = await Promise.all([
+          // Fetch da folha de pagamento
+          supabase.rpc('get_payroll_entry', { payroll_id: payrollId }),
           
-        if (payrollError) throw payrollError;
-        setPayrollData(payrollData);
+          // Fetch das deduções
+          supabase.rpc('get_payroll_deductions', { payroll_id: payrollId }),
+          
+          // Fetch dos benefícios
+          supabase.rpc('get_payroll_benefits', { payroll_id: payrollId })
+        ]);
         
-        if (payrollData) {
-          // Fetch the employee data
-          const { data: employeeData, error: employeeError } = await supabase
-            .from('employees')
-            .select('*')
-            .eq('id', payrollData.employee_id)
-            .single();
-            
+        // Verificar erros nas respostas
+        if (payrollResponse.error) throw payrollResponse.error;
+        if (deductionsResponse.error) throw deductionsResponse.error;
+        if (benefitsResponse.error) throw benefitsResponse.error;
+        
+        // Dados da folha de pagamento
+        const payrollData = payrollResponse.data;
+        setPayrollData(payrollData);
+        setDeductions(deductionsResponse.data || []);
+        setBenefits(benefitsResponse.data || []);
+        
+        // Fetch dos dados do funcionário somente se tiver o employee_id
+        if (payrollData && payrollData.employee_id) {
+          const { data: employeeData, error: employeeError } = await supabase.rpc(
+            'get_employee_details',
+            { employee_id: payrollData.employee_id }
+          );
+          
           if (employeeError) throw employeeError;
           setEmployeeData(employeeData);
-          
-          // Fetch deductions
-          const { data: deductionsData, error: deductionsError } = await supabase
-            .from('payroll_deductions')
-            .select('*')
-            .eq('payroll_entry_id', payrollId);
-            
-          if (deductionsError) throw deductionsError;
-          setDeductions(deductionsData || []);
-          
-          // Fetch benefits
-          const { data: benefitsData, error: benefitsError } = await supabase
-            .from('payroll_benefits')
-            .select('*')
-            .eq('payroll_entry_id', payrollId);
-            
-          if (benefitsError) throw benefitsError;
-          setBenefits(benefitsData || []);
         }
       } catch (error: any) {
         console.error('Error fetching payroll details:', error);
@@ -91,33 +85,16 @@ export function PayrollDetails({ payrollId }: PayrollDetailsProps) {
     fetchPayrollDetails();
   }, [supabase, payrollId, toast]);
   
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-  
-  const formatPeriod = (period: string) => {
-    const [year, month] = period.split('-');
-    const monthNames = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    
-    return `${monthNames[parseInt(month) - 1]} ${year}`;
-  };
-  
   const handleUpdateStatus = async (newStatus: string) => {
     if (!supabase || !payrollId) return;
     
     setIsUpdating(true);
     
     try {
-      const { error } = await supabase
-        .from('payroll_entries')
-        .update({ status: newStatus })
-        .eq('id', payrollId);
+      const { error } = await supabase.rpc(
+        'update_payroll_status',
+        { payroll_id: payrollId, new_status: newStatus }
+      );
         
       if (error) throw error;
       
@@ -171,7 +148,7 @@ export function PayrollDetails({ payrollId }: PayrollDetailsProps) {
     return <div className="py-8 text-center">Carregando detalhes da folha de pagamento...</div>;
   }
   
-  if (!payrollData || !employeeData) {
+  if (!payrollData) {
     return <div className="py-8 text-center">Dados não encontrados.</div>;
   }
   
@@ -202,23 +179,23 @@ export function PayrollDetails({ payrollId }: PayrollDetailsProps) {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Nome:</span>
-                <span className="font-medium">{employeeData.name}</span>
+                <span className="font-medium">{employeeData?.name || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">CPF:</span>
-                <span>{employeeData.cpf}</span>
+                <span>{employeeData?.cpf || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Cargo:</span>
-                <span>{employeeData.position}</span>
+                <span>{employeeData?.position || '-'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Departamento:</span>
-                <span>{employeeData.department || "-"}</span>
+                <span>{employeeData?.department || "-"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Data de Admissão:</span>
-                <span>{new Date(employeeData.hire_date).toLocaleDateString('pt-BR')}</span>
+                <span>{employeeData?.hire_date ? new Date(employeeData.hire_date).toLocaleDateString('pt-BR') : '-'}</span>
               </div>
             </div>
           </CardContent>
