@@ -1,0 +1,11 @@
+
+import React from 'react';
+
+export const AuthHeader = () => {
+  return (
+    <div className="text-center mb-8">
+      <h1 className="text-3xl font-bold tracking-tight">ContaFácil</h1>
+      <p className="text-muted-foreground mt-2">Sistema de gestão contábil</p>
+    </div>
+  );
+};
