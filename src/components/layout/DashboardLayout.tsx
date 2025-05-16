@@ -5,7 +5,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -18,13 +18,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Redirecionar para login se não estiver autenticado
+  // Verificar se o usuário está em uma rota de autenticação
+  const isAuthRoute = location.pathname === '/login' || 
+                      location.pathname === '/signup' || 
+                      location.pathname === '/client-access';
+  
+  // Redirecionar para login se não estiver autenticado e não estiver em uma rota de autenticação
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/login");
+    // Somente redirecionar se não estiver em uma rota de autenticação
+    if (!isLoading && !isAuthenticated && !isAuthRoute) {
+      console.log("Usuário não autenticado, redirecionando para login");
+      navigate("/login", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, isAuthRoute]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
@@ -42,8 +50,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
   
-  // Se não estiver autenticado, mostrar botão para ir para o login
-  if (!isAuthenticated) {
+  // Se não estiver autenticado e não estiver em uma rota de autenticação, mostrar botão para ir para o login
+  if (!isAuthenticated && !isAuthRoute) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center p-8 border rounded-lg shadow-sm">
@@ -58,6 +66,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
     );
+  }
+
+  // Se estiver em uma rota de autenticação, não mostrar o layout do dashboard
+  if (isAuthRoute) {
+    return children || <Outlet />;
   }
 
   return (

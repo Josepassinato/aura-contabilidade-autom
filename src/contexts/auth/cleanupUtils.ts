@@ -1,85 +1,34 @@
 
 /**
- * Utilitário para limpeza e gerenciamento de estados de autenticação
- * Previne estados de "limbo" na autenticação
- */
-
-/**
- * Limpa todos os tokens e estados de autenticação do Supabase
- * armazenados no localStorage e sessionStorage
+ * Clean up auth state completely
  */
 export const cleanupAuthState = () => {
-  try {
-    // Remover tokens de autenticação padrão
-    localStorage.removeItem('supabase.auth.token');
-    
-    // Remover todas as chaves relacionadas ao Supabase auth do localStorage
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Remover do sessionStorage se estiver em uso
-    if (typeof sessionStorage !== 'undefined') {
-      Object.keys(sessionStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    }
-    
-    // Remover dados de cliente mock
-    localStorage.removeItem('mock_session');
-    localStorage.removeItem('user_role');
-    sessionStorage.removeItem('client_id');
-    sessionStorage.removeItem('client_name');
-    sessionStorage.removeItem('client_cnpj');
-    
-    console.log('Estado de autenticação limpo com sucesso');
-  } catch (error) {
-    console.error('Erro ao limpar estado de autenticação:', error);
-  }
+  localStorage.removeItem('mock_session');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('supabase.auth.token');
+  localStorage.removeItem('client_id');
+  localStorage.removeItem('client_name');
+  localStorage.removeItem('client_cnpj');
+  sessionStorage.removeItem('client_id');
+  sessionStorage.removeItem('client_name');
+  sessionStorage.removeItem('client_cnpj');
 };
 
 /**
- * Verifica e relata quaisquer chaves de autenticação residuais
- * que possam causar problemas de "limbo" na autenticação
+ * Check for potential limbo state
  */
 export const checkForAuthLimboState = () => {
-  const authKeys = [];
+  const hasLocalStorageAuth = localStorage.getItem('mock_session') === 'true' || 
+                           localStorage.getItem('user_role') !== null;
+  const hasSupabaseAuth = localStorage.getItem('supabase.auth.token') !== null;
+  const hasClientSession = sessionStorage.getItem('client_id') !== null;
   
-  // Verificar localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      authKeys.push({ storage: 'localStorage', key });
-    }
-  });
-  
-  // Verificar sessionStorage
-  if (typeof sessionStorage !== 'undefined') {
-    Object.keys(sessionStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        authKeys.push({ storage: 'sessionStorage', key });
-      }
-    });
+  // If we have conflicting auth states, clean up
+  if ((hasLocalStorageAuth || hasSupabaseAuth) && hasClientSession) {
+    console.warn('Detected conflicting auth states, cleaning up');
+    cleanupAuthState();
+    return true;
   }
   
-  // Verificar dados de cliente mock
-  if (localStorage.getItem('mock_session') || localStorage.getItem('user_role')) {
-    authKeys.push({ storage: 'localStorage', key: 'mock_session/user_role' });
-  }
-  
-  if (sessionStorage.getItem('client_id') || 
-      sessionStorage.getItem('client_name') || 
-      sessionStorage.getItem('client_cnpj')) {
-    authKeys.push({ storage: 'sessionStorage', key: 'client_data' });
-  }
-  
-  if (authKeys.length > 0) {
-    console.warn('Possível estado de limbo de autenticação detectado:', authKeys);
-    return authKeys;
-  }
-  
-  return null;
+  return false;
 };

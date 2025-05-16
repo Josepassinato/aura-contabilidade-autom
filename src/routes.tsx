@@ -1,6 +1,7 @@
 
 import React, { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -26,98 +27,107 @@ import EmailService from "@/pages/EmailService";
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
 const routes = createBrowserRouter([
-  {
-    path: "/",
-    element: <Navigate to="/dashboard" replace />
-  },
-  {
-    path: "/dashboard",
-    element: <Index />
-  },
+  // Rotas públicas (não precisam de autenticação)
   {
     path: "/login",
     element: <Login />
   },
   {
-    path: "/onboarding",
-    element: <Onboarding />
-  },
-  {
-    path: "/onboarding/welcome",
-    element: <OnboardingWelcome />
-  },
-  {
-    path: "/gerenciar-clientes",
-    element: <GerenciarClientes />
-  },
-  {
-    path: "/admin/business-analytics",
-    element: <BusinessAnalytics />
-  },
-  {
-    path: "/admin/customer-management",
-    element: <CustomerManagement />
-  },
-  {
-    path: "/admin/usage-metrics",
-    element: <UsageMetrics />
-  },
-  {
-    path: "/admin/openai-management",
-    element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
-  },
-  {
-    path: "/settings",
-    element: <Settings />
-  },
-  {
-    path: "/relatorios-ia",
-    element: <RelatoriosIA />
-  },
-  {
     path: "/client-access",
     element: <ClientAccess />
   },
+  
+  // Rotas protegidas (precisam de autenticação)
   {
-    path: "/client-portal",
-    element: <ClientPortal />
-  },
-  {
-    path: "/client-portal/:clientId",
-    element: <ClientPortal />
-  },
-  {
-    path: "/parametros-fiscais",
-    element: <GerenciarParametrosFiscais />
-  },
-  {
-    path: "/calculosfiscais",
-    element: <CalculosFiscais />
-  },
-  {
-    path: "/automacao-bancaria",
-    element: <AutomacaoBancaria />
-  },
-  {
-    path: "/folha-pagamento",
-    element: <FolhaPagamento />
-  },
-  {
-    path: "/obrigacoesfiscais",
-    element: <ObrigacoesFiscais />
-  },
-  {
-    path: "/relatoriosfinanceiros",
-    element: <RelatoriosFinanceiros />
-  },
-  {
-    path: "/email-service",
-    element: <EmailService />
-  },
-  // Rota de fallback para página não encontrada
-  {
-    path: "*",
-    element: <NotFound />
+    path: "/",
+    element: <DashboardLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/dashboard" replace />
+      },
+      {
+        path: "/dashboard",
+        element: <Index />
+      },
+      {
+        path: "/onboarding",
+        element: <Onboarding />
+      },
+      {
+        path: "/onboarding/welcome",
+        element: <OnboardingWelcome />
+      },
+      {
+        path: "/gerenciar-clientes",
+        element: <GerenciarClientes />
+      },
+      {
+        path: "/admin/business-analytics",
+        element: <BusinessAnalytics />
+      },
+      {
+        path: "/admin/customer-management",
+        element: <CustomerManagement />
+      },
+      {
+        path: "/admin/usage-metrics",
+        element: <UsageMetrics />
+      },
+      {
+        path: "/admin/openai-management",
+        element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
+      },
+      {
+        path: "/settings",
+        element: <Settings />
+      },
+      {
+        path: "/relatorios-ia",
+        element: <RelatoriosIA />
+      },
+      {
+        path: "/client-portal",
+        element: <ClientPortal />
+      },
+      {
+        path: "/client-portal/:clientId",
+        element: <ClientPortal />
+      },
+      {
+        path: "/parametros-fiscais",
+        element: <GerenciarParametrosFiscais />
+      },
+      {
+        path: "/calculosfiscais",
+        element: <CalculosFiscais />
+      },
+      {
+        path: "/automacao-bancaria",
+        element: <AutomacaoBancaria />
+      },
+      {
+        path: "/folha-pagamento",
+        element: <FolhaPagamento />
+      },
+      {
+        path: "/obrigacoesfiscais",
+        element: <ObrigacoesFiscais />
+      },
+      {
+        path: "/relatoriosfinanceiros",
+        element: <RelatoriosFinanceiros />
+      },
+      {
+        path: "/email-service",
+        element: <EmailService />
+      },
+      // Rota de fallback para página não encontrada
+      {
+        path: "*",
+        element: <NotFound />
+      }
+    ]
   }
 ]);
 
