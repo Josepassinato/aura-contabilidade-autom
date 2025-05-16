@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -18,6 +18,7 @@ interface Report {
   created_at: string;
   file_format: string;
   file_url: string | null;
+  file_path: string | null;  // Added missing property
   file_size: number | null;
   tags: string[] | null;
 }
@@ -53,7 +54,7 @@ export function ReportsList() {
       setReports(data || []);
     } catch (error) {
       console.error("Error fetching reports:", error);
-      toast({
+      useToast().toast({
         title: "Erro ao carregar relatórios",
         description: "Não foi possível carregar a lista de relatórios.",
         variant: "destructive"
@@ -84,13 +85,13 @@ export function ReportsList() {
         }
       }
 
-      toast({
+      useToast().toast({
         title: "Download iniciado",
         description: `O relatório "${report.title}" está sendo baixado.`
       });
     } catch (error) {
       console.error("Error downloading report:", error);
-      toast({
+      useToast().toast({
         title: "Erro no download",
         description: "Não foi possível baixar o relatório.",
         variant: "destructive"

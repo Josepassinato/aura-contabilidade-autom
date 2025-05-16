@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button";
 import { FileCog, CheckCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
+interface PayrollData {
+  id: string;
+  status: string;
+  [key: string]: any; // Allow additional properties
+}
+
 interface PayrollActionsProps {
-  payrollData: any;
+  payrollData: PayrollData;
   onUpdateStatus: (newStatus: string) => void;
   isUpdating: boolean;
 }
@@ -17,14 +23,14 @@ export function PayrollActions({ payrollData, onUpdateStatus, isUpdating }: Payr
     onUpdateStatus(newStatus);
     
     // Show toast notification
-    const statusMessages = {
+    const statusMessages: Record<string, string> = {
       'processing': 'Folha de pagamento enviada para processamento',
       'approved': 'Folha de pagamento aprovada com sucesso',
       'paid': 'Pagamento registrado com sucesso'
     };
     
     toast({
-      title: statusMessages[newStatus as keyof typeof statusMessages] || 'Status atualizado',
+      title: statusMessages[newStatus] || 'Status atualizado',
       description: `A folha de pagamento foi atualizada para ${newStatus}`,
       variant: "default",
     });

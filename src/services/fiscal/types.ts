@@ -1,9 +1,9 @@
 
 /**
- * Tipos para cálculos fiscais
+ * Types for fiscal calculations
  */
 
-export type TipoImposto = "IRPJ" | "CSLL" | "PIS" | "COFINS" | "ICMS" | "ISS" | "DAS" | "INSS" | "FGTS";
+export type TipoImposto = "IRPJ" | "CSLL" | "PIS" | "COFINS" | "ICMS" | "ISS" | "DAS" | "INSS" | "FGTS" | "Simples";
 
 export interface ParametrosCalculo {
   valor: number;
@@ -22,7 +22,7 @@ export interface ResultadoCalculo {
   valorFinal: number;
   dataVencimento: string;
   codigoReceita?: string;
-  dadosOrigem?: any;  // Adicionar propriedade que estava faltando
+  dadosOrigem?: any;  // Add missing property
 }
 
 export interface ImpostoConfig {

@@ -20,8 +20,8 @@ export function useEmployeesList() {
     setIsLoading(true);
     
     try {
-      // Usar função RPC para buscar funcionários com filtros
-      const { data, error } = await supabase.rpc(
+      // Using RPC function to fetch employees with filters
+      const { data, error } = await supabase.rpc<Employee[]>(
         'get_filtered_employees',
         { 
           p_client_id: selectedClientId,
@@ -57,7 +57,7 @@ export function useEmployeesList() {
     
     try {
       if (data.id) {
-        // Atualizar funcionário existente
+        // Update existing employee
         const { error } = await supabase.rpc(
           'update_employee',
           { 
@@ -78,7 +78,7 @@ export function useEmployeesList() {
           description: `${data.name} foi atualizado com sucesso.`,
         });
       } else {
-        // Criar novo funcionário
+        // Create new employee
         const { error } = await supabase.rpc(
           'create_employee',
           {
@@ -89,7 +89,7 @@ export function useEmployeesList() {
             p_hire_date: data.hire_date,
             p_base_salary: parseFloat(data.base_salary),
             p_status: data.status || 'active',
-            p_cpf: data.cpf || '00000000000' // Valor padrão temporário
+            p_cpf: data.cpf || '00000000000' // Default temporary value
           }
         );
         
@@ -101,7 +101,7 @@ export function useEmployeesList() {
         });
       }
       
-      // Atualizar a lista de funcionários
+      // Update employee list
       await fetchEmployees();
       return true;
     } catch (error) {

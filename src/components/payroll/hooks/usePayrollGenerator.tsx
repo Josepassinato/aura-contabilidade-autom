@@ -26,8 +26,8 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     setIsLoading(true);
     
     try {
-      // Usar RPC para buscar funcionários ativos
-      const { data, error } = await supabase.rpc(
+      // Using RPC to fetch active employees
+      const { data, error } = await supabase.rpc<Employee[]>(
         'get_active_employees',
         { p_client_id: clientId }
       );
@@ -35,8 +35,8 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
       if (error) throw error;
       
       setEmployees(data || []);
-      // Auto-select todos os funcionários ativos
-      if (data) {
+      // Auto-select all active employees
+      if (data && data.length > 0) {
         setSelectedEmployees(data.map(emp => emp.id) || []);
       }
     } catch (error) {
@@ -77,13 +77,13 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     setIsGenerating(true);
     
     try {
-      // Processar múltiplos funcionários em paralelo usando Promise.all
+      // Process multiple employees in parallel using Promise.all
       await Promise.all(
         selectedEmployees.map(async (employeeId) => {
           const employee = employees.find(emp => emp.id === employeeId);
           if (!employee) return;
 
-          // Chamar RPC para gerar folha de pagamento por funcionário
+          // Call RPC to generate payroll per employee
           const { error } = await supabase.rpc(
             'generate_payroll',
             {

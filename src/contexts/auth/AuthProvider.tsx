@@ -1,11 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
 import { UserProfile, UserRole } from '@/lib/supabase';
 import { supabase, supabaseAuth, getUserProfile } from '@/lib/supabaseService';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
 import { cleanupAuthState, checkForAuthLimboState } from './cleanupUtils';
+
+// Extended mock user type that matches User interface
+interface MockUser extends Partial<User> {
+  id: string;
+  email: string;
+  user_metadata: { name: string };
+}
+
+// Extended mock session type that matches Session interface
+interface MockSession extends Partial<Session> {
+  user: MockUser;
+}
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -14,48 +25,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Inicialização e configuração de listener para mudanças de autenticação
+  // Initialize and configure auth state change listener
   useEffect(() => {
     setIsLoading(true);
     
-    // Verificar e relatar estados de limbo potenciais
+    // Check for and report potential limbo states
     checkForAuthLimboState();
     
-    // 1. Configurar listener de eventos de autenticação primeiro
+    // 1. Set up auth event listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       console.log('Auth state changed:', event);
       
-      // Atualizar estados de sessão e usuário imediatamente (síncrono)
+      // Update session and user states immediately (synchronous)
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setIsAuthenticated(!!newSession);
       
-      // Se ocorreu um login, buscar dados adicionais de forma assíncrona usando setTimeout
+      // If login occurred, fetch additional data asynchronously using setTimeout
       if (event === 'SIGNED_IN' && newSession?.user) {
         setTimeout(() => {
           fetchUserProfile(newSession.user.id);
         }, 0);
       }
       
-      // Se ocorreu um logout, limpar dados do perfil
+      // If logout occurred, clear profile data
       if (event === 'SIGNED_OUT') {
         setUserProfile(null);
         setIsAuthenticated(false);
       }
     });
     
-    // 2. Verificar sessão existente
+    // 2. Check existing session
     const initializeAuth = async () => {
       try {
-        // Verificar role no localStorage para teste
+        // Check for role in localStorage for testing
         const userRole = localStorage.getItem('user_role');
         const hasMockSession = localStorage.getItem('mock_session') === 'true' || userRole !== null;
         
         if (hasMockSession) {
-          // Configuração para ambiente de teste/demo
+          // Setup for test/demo environment
           setupMockSession(userRole || 'accountant');
         } else {
-          // Verificar sessão real do Supabase
+          // Check real Supabase session
           const { data: { session: existingSession }, error } = await supabase.auth.getSession();
           
           if (error) {
@@ -67,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(existingSession.user);
             setIsAuthenticated(true);
             
-            // Buscar perfil adicional usando setTimeout para evitar deadlocks
+            // Fetch additional profile using setTimeout to avoid deadlocks
             setTimeout(() => {
               fetchUserProfile(existingSession.user.id);
             }, 0);
@@ -77,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
       } catch (error) {
-        console.error('Erro ao inicializar autenticação:', error);
+        console.error('Error initializing auth:', error);
         setIsAuthenticated(false);
         setUserProfile(null);
         setSession(null);
@@ -89,18 +100,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     initializeAuth();
     
-    // Limpar o listener quando o componente for desmontado
+    // Clean up the listener when component unmounts
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-  // Buscar perfil de usuário adicional
+  // Fetch additional user profile
   const fetchUserProfile = async (userId: string) => {
     try {
       if (!userId) return;
       
-      // Para ambiente de teste/demo, usar perfil mock
+      // For test/demo environment, use mock profile
       if (localStorage.getItem('mock_session') === 'true') {
         return;
       }
@@ -110,27 +121,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile(profile);
       }
     } catch (error) {
-      console.error('Erro ao buscar perfil do usuário:', error);
+      console.error('Error fetching user profile:', error);
     }
   };
 
-  // Configurar sessão mock para ambiente de teste/demo
+  // Setup mock session for test/demo environment
   const setupMockSession = (role: string) => {
-    const mockUser = {
+    const mockUser: MockUser = {
       id: '123',
       email: role === 'client' ? 'cliente@empresa.com.br' : 
               role === 'admin' ? 'admin@contaflix.com.br' : 'contador@contaflix.com.br',
       user_metadata: {
         name: role === 'client' ? 'Empresa Cliente' : 
               role === 'admin' ? 'Admin Contaflix' : 'Contador Teste',
-      }
+      },
+      app_metadata: {},
+      created_at: new Date().toISOString(),
     };
     
-    const mockProfile = {
+    const mockProfile: UserProfile = {
       id: '123',
       email: mockUser.email,
       name: mockUser.user_metadata.name,
-      role: (role as UserRole) || 'accountant',
+      role: role as UserRole,
       full_name: mockUser.user_metadata.name,
       company_id: role === 'client' ? 'client-123' : 'contaflix-001'
     };
@@ -147,7 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Para ambiente de teste/demo
+      // For test/demo environment
       if (email && password) {
         let role = 'accountant';
         let name = 'Contador Teste';
@@ -160,17 +173,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           name = 'Admin Contaflix';
         }
         
-        // Limpar estado de autenticação anterior
+        // Clear previous auth state
         cleanupAuthState();
         
-        // Configurar sessão mock
+        // Setup mock session
         localStorage.setItem('mock_session', 'true');
         localStorage.setItem('user_role', role);
         
-        // Criar mock do usuário e sessão
+        // Create mock user and session
         setupMockSession(role);
         
-        toast({
+        useToast().toast({
           title: "Login bem-sucedido",
           description: `Bem-vindo, ${name}!`,
         });
@@ -179,8 +192,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return { success: false, error: 'Credenciais inválidas' };
     } catch (error) {
-      console.error('Erro no login:', error);
-      toast({
+      console.error('Error in login:', error);
+      useToast().toast({
         title: "Falha no login",
         description: "Não foi possível efetuar o login",
         variant: "destructive"
@@ -191,33 +204,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Logout com limpeza completa
+  // Logout with complete cleanup
   const logout = async () => {
     try {
       setIsLoading(true);
       
-      // Limpar dados de sessão mock
+      // Clear mock session data
       cleanupAuthState();
       
-      // Resetar estados
+      // Reset states
       setIsAuthenticated(false);
       setUserProfile(null);
       setSession(null);
       setUser(null);
       
-      toast({
+      useToast().toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso",
       });
     } catch (error) {
-      console.error('Erro no logout:', error);
-      toast({
+      console.error('Error in logout:', error);
+      useToast().toast({
         title: "Erro no logout",
         description: "Ocorreu um erro ao tentar desconectar",
         variant: "destructive"
       });
       
-      // Forçar limpeza em caso de erro
+      // Force cleanup in case of error
       cleanupAuthState();
       window.location.href = '/login';
     } finally {
@@ -225,14 +238,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Adaptadores para a API do AuthContext
+  // Adapters for AuthContext API
   const signIn = async (email: string, password: string) => {
     try {
       const result = await login(email, password);
       return { error: result.success ? null : new Error(result.error) };
     } catch (error) {
-      console.error('Erro no SignIn:', error);
-      toast({
+      console.error('Error in SignIn:', error);
+      useToast().toast({
         title: "Falha no login",
         description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive"
@@ -243,9 +256,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      // Mock signup para testes
+      // Mock signup for tests
       if (email && password) {
-        toast({
+        useToast().toast({
           title: "Conta criada",
           description: "Sua conta foi criada com sucesso",
         });
@@ -253,15 +266,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await login(email, password);
         return { error: null };
       }
-      toast({
+      useToast().toast({
         title: "Erro no cadastro",
         description: "Credenciais inválidas",
         variant: "destructive"
       });
       return { error: new Error('Credenciais inválidas') };
     } catch (error) {
-      console.error('Erro no SignUp:', error);
-      toast({
+      console.error('Error in SignUp:', error);
+      useToast().toast({
         title: "Erro no cadastro",
         description: error instanceof Error ? error.message : "Não foi possível criar sua conta",
         variant: "destructive"
@@ -274,20 +287,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await logout();
     } catch (error) {
-      console.error('Erro no SignOut:', error);
-      toast({
+      console.error('Error in SignOut:', error);
+      useToast().toast({
         title: "Erro ao sair",
         description: error instanceof Error ? error.message : "Falha ao fazer logout",
         variant: "destructive"
       });
       
-      // Forçar limpeza e redirecionamento em caso de erro
+      // Force cleanup and redirect in case of error
       cleanupAuthState();
       window.location.href = '/login';
     }
   };
 
-  // Determinar roles com base no perfil
+  // Determine roles based on profile
   const isAdmin = userProfile?.role === 'admin';
   const isAccountant = userProfile?.role === 'accountant' || isAdmin;
   const isClient = userProfile?.role === 'client';

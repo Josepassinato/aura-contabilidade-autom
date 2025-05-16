@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Download } from 'lucide-react';
 import { formatPeriod, getStatusBadge } from '../../utils/payrollFormatters';
 
+interface PayrollData {
+  id: string;
+  period: string;
+  created_at: string;
+  status: string;
+  client_id: string;
+  [key: string]: any; // Allow additional properties
+}
+
 interface PayrollHeaderProps {
-  payrollData: any;
+  payrollData: PayrollData;
 }
 
 export function PayrollHeader({ payrollData }: PayrollHeaderProps) {
