@@ -20,7 +20,7 @@ export function AccountantSection() {
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/clientes')}>
+            <SidebarMenuButton asChild isActive={isActive('/clientes')}>
               <Link to="/clientes">
                 <Users className="h-4 w-4 mr-2" />
                 <span>Gerenciar Clientes</span>
@@ -28,7 +28,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/relatorios')}>
+            <SidebarMenuButton asChild isActive={isActive('/relatorios')}>
               <Link to="/relatorios">
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
                 <span>Relatórios Financeiros</span>
@@ -36,7 +36,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/calculos-fiscais')}>
+            <SidebarMenuButton asChild isActive={isActive('/calculos-fiscais')}>
               <Link to="/calculos-fiscais">
                 <Calculator className="h-4 w-4 mr-2" />
                 <span>Cálculos Fiscais</span>
@@ -44,7 +44,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/obrigacoes-fiscais')}>
+            <SidebarMenuButton asChild isActive={isActive('/obrigacoes-fiscais')}>
               <Link to="/obrigacoes-fiscais">
                 <CalendarDays className="h-4 w-4 mr-2" />
                 <span>Obrigações Fiscais</span>
@@ -52,7 +52,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/folha-pagamento')}>
+            <SidebarMenuButton asChild isActive={isActive('/folha-pagamento')}>
               <Link to="/folha-pagamento">
                 <CircleDollarSign className="h-4 w-4 mr-2" />
                 <span>Folha de Pagamento</span>
@@ -60,7 +60,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/integracoes-gov')}>
+            <SidebarMenuButton asChild isActive={isActive('/integracoes-gov')}>
               <Link to="/integracoes-gov">
                 <Network className="h-4 w-4 mr-2" />
                 <span>Integrações Governamentais</span>
@@ -68,7 +68,7 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/documentos')}>
+            <SidebarMenuButton asChild isActive={isActive('/documentos')}>
               <Link to="/documentos">
                 <FileText className="h-4 w-4 mr-2" />
                 <span>Documentos dos Clientes</span>

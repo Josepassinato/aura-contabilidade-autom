@@ -20,7 +20,7 @@ export function CommonSection() {
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/') || isActive('/dashboard')}>
+            <SidebarMenuButton asChild isActive={isActive('/') || isActive('/dashboard')}>
               <Link to="/">
                 <HomeIcon className="h-4 w-4 mr-2" />
                 <span>Dashboard</span>
@@ -28,7 +28,7 @@ export function CommonSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/notifications')}>
+            <SidebarMenuButton asChild isActive={isActive('/notifications')}>
               <Link to="/notifications">
                 <BellIcon className="h-4 w-4 mr-2" />
                 <span>Notificações</span>
@@ -36,7 +36,7 @@ export function CommonSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild active={isActive('/settings')}>
+            <SidebarMenuButton asChild isActive={isActive('/settings')}>
               <Link to="/settings">
                 <Settings2Icon className="h-4 w-4 mr-2" />
                 <span>Configurações</span>
