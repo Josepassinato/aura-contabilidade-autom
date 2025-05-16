@@ -107,7 +107,7 @@ export const useSupabaseClient = () => {
   const supabase = {
     from: (table: string) => ({
       select: (columns: string = '*') => {
-        const query = {
+        return {
           eq: (column: string, value: any) => {
             return {
               single: () => Promise.resolve({ data: null, error: null }),
@@ -122,14 +122,13 @@ export const useSupabaseClient = () => {
           },
           order: (column: string, { ascending = true } = {}) => ({
             limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
-            data: null,
+            data: [],
             error: null
           }),
           limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
-          data: null,
+          data: [],
           error: null
         };
-        return query;
       },
       insert: (values: any) => ({
         select: (columns: string = '*') => Promise.resolve({ data: null, error: null }),

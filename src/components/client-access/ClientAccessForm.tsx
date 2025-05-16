@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -59,10 +60,12 @@ export const ClientAccessForm = () => {
       const normalizedCNPJ = data.cnpj.replace(/\D/g, "");
       
       // Buscar o cliente pelo CNPJ
-      const clientResult = await supabase
+      const clientQuery = supabase
         .from('accounting_clients')
         .select('*');
         
+      const clientResult = await clientQuery.limit(100);
+      
       const clientData = clientResult.data?.filter(client => client.cnpj === normalizedCNPJ) || [];
       const clientError = clientResult.error;
       
@@ -73,10 +76,12 @@ export const ClientAccessForm = () => {
       const client = clientData[0];
       
       // Verificar o token de acesso
-      const accessResult = await supabase
+      const accessQuery = supabase
         .from('client_access_tokens')
         .select('*');
         
+      const accessResult = await accessQuery.limit(100);
+      
       const accessData = accessResult.data?.filter(token => 
         token.client_id === client.id && 
         token.token === data.accessToken && 

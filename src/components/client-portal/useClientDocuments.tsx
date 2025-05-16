@@ -18,20 +18,20 @@ export const useClientDocuments = (clientId: string | null) => {
     try {
       if (supabase) {
         // Fetch client documents from Supabase
-        const result = await supabase
+        const query = supabase
           .from('client_documents')
           .select('*')
           .eq('client_id', clientId)
           .order('created_at', { ascending: false });
           
-        const { data, error } = result;
+        const result = await query.limit(100);
         
-        if (error) {
-          throw error;
+        if (result.error) {
+          throw result.error;
         }
         
-        if (data) {
-          const formattedDocs = data.map(doc => ({
+        if (result.data) {
+          const formattedDocs = result.data.map(doc => ({
             id: doc.id,
             client_id: doc.client_id,
             title: doc.title,
@@ -56,7 +56,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'NFe-2025-001245.pdf', 
             title: 'NFe-2025-001245.pdf',
             type: 'nota-fiscal', 
-            size: 420000, // Use number instead of string
+            size: 420000, 
             date: '15/05/2025', 
             status: 'processado',
             created_at: '2025-05-15T12:00:00Z'
@@ -67,7 +67,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'Recibo-Aluguel-Maio.pdf', 
             title: 'Recibo-Aluguel-Maio.pdf',
             type: 'recibo', 
-            size: 180000, // Use number instead of string
+            size: 180000,
             date: '10/05/2025', 
             status: 'processado',
             created_at: '2025-05-10T12:00:00Z'
@@ -78,7 +78,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'Extrato-BancoXYZ-Maio.pdf', 
             title: 'Extrato-BancoXYZ-Maio.pdf',
             type: 'extrato', 
-            size: 310000, // Use number instead of string
+            size: 310000,
             date: '05/05/2025', 
             status: 'pendente',
             created_at: '2025-05-05T12:00:00Z'
@@ -89,7 +89,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'Contrato-Prestacao-Servicos.pdf', 
             title: 'Contrato-Prestacao-Servicos.pdf',
             type: 'contrato', 
-            size: 1200000, // Use number instead of string
+            size: 1200000,
             date: '01/05/2025', 
             status: 'processado',
             created_at: '2025-05-01T12:00:00Z'
@@ -100,7 +100,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'NFe-2025-001189.pdf', 
             title: 'NFe-2025-001189.pdf',
             type: 'nota-fiscal', 
-            size: 390000, // Use number instead of string
+            size: 390000,
             date: '28/04/2025', 
             status: 'processado',
             created_at: '2025-04-28T12:00:00Z'
@@ -111,7 +111,7 @@ export const useClientDocuments = (clientId: string | null) => {
             name: 'Folha-Pagamento-Abril.pdf', 
             title: 'Folha-Pagamento-Abril.pdf',
             type: 'outro', 
-            size: 280000, // Use number instead of string
+            size: 280000,
             date: '25/04/2025', 
             status: 'rejeitado',
             created_at: '2025-04-25T12:00:00Z'
