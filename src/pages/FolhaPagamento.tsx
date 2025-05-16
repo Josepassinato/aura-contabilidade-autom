@@ -1,15 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/auth';
 import { PayrollList } from '@/components/payroll/PayrollList';
 import { EmployeesList } from '@/components/payroll/EmployeesList';
 import { PayrollReports } from '@/components/payroll/PayrollReports';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
+import { toast } from '@/hooks/use-toast';
 
 const FolhaPagamento = () => {
   const { requireAuth } = useAuth();
   const [activeTab, setActiveTab] = useState("folhas");
+
+  // Check for auth limbo state when component mounts
+  useEffect(() => {
+    if (checkForAuthLimboState()) {
+      toast({
+        title: "Estado de autenticação inconsistente",
+        description: "Detectamos um problema com sua sessão. Por favor, faça login novamente.",
+        variant: "destructive",
+      });
+      // The requireAuth function will handle the redirect
+    }
+  }, []);
 
   // Verify authentication before rendering
   const { authenticated, loading } = requireAuth();

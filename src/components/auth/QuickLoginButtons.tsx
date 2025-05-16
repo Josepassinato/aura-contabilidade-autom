@@ -1,137 +1,116 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth';
+import { toast } from '@/hooks/use-toast';
 import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
-export const QuickLoginButtons = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  
-  // Função para login rápido como contador para teste
-  const loginAsAccountant = () => {
-    setIsLoading(true);
-    // Clean up any existing auth state first
-    cleanupAuthState();
+export function QuickLoginButtons() {
+  const { enhancedLogin } = useAuth();
+  const [isLoading, setIsLoading] = React.useState<string | null>(null);
+
+  const handleQuickLogin = async (type: 'accountant' | 'client' | 'admin') => {
+    setIsLoading(type);
     
     try {
-      // Set up mock session for accountant
-      localStorage.setItem('mock_session', 'true');
-      localStorage.setItem('user_role', 'accountant');
+      // Clean up auth state before login attempt
+      cleanupAuthState();
       
-      // Create a toast notification
-      toast({
-        title: "Login como contador",
-        description: "Acessando como Contador Teste",
-      });
+      let email = '';
+      let password = 'senha123';
       
-      // Navigate to dashboard
-      navigate("/dashboard");
-      window.location.reload();
+      switch (type) {
+        case 'accountant':
+          email = 'contador@example.com';
+          break;
+        case 'client':
+          email = 'cliente@example.com';
+          break;
+        case 'admin':
+          email = 'admin@example.com';
+          break;
+      }
+      
+      const result = await enhancedLogin(email, password);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Falha na autenticação");
+      }
+      
+      // Login successful, will be redirected by the auth context
     } catch (error) {
-      console.error("Erro no login como contador:", error);
+      console.error('Erro no login rápido:', error);
       toast({
-        title: "Falha no acesso",
-        description: "Não foi possível acessar como contador",
+        title: "Erro no login",
+        description: error instanceof Error ? error.message : "Não foi possível fazer login",
         variant: "destructive",
       });
-      setIsLoading(false);
-    }
-  };
-  
-  // Função para login rápido como cliente para teste
-  const loginAsClient = () => {
-    setIsLoading(true);
-    // Clean up any existing auth state first
-    cleanupAuthState();
-    
-    try {
-      // Set up mock session for client
-      localStorage.setItem('mock_session', 'true');
-      localStorage.setItem('user_role', 'client');
-      
-      // Create a toast notification
-      toast({
-        title: "Login como cliente",
-        description: "Acessando como Empresa Cliente",
-      });
-      
-      // Navigate to client portal
-      navigate("/client-portal");
-      window.location.reload();
-    } catch (error) {
-      console.error("Erro no login como cliente:", error);
-      toast({
-        title: "Falha no acesso",
-        description: "Não foi possível acessar como cliente",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-  
-  // Função para login rápido como admin para teste
-  const loginAsAdmin = () => {
-    setIsLoading(true);
-    // Clean up any existing auth state first
-    cleanupAuthState();
-    
-    try {
-      // Set up mock session for admin
-      localStorage.setItem('mock_session', 'true');
-      localStorage.setItem('user_role', 'admin');
-      
-      // Create a toast notification
-      toast({
-        title: "Login como admin",
-        description: "Acessando como Admin Contaflix",
-      });
-      
-      // Navigate to admin analytics
-      navigate("/admin/analytics");
-      window.location.reload();
-    } catch (error) {
-      console.error("Erro no login como admin:", error);
-      toast({
-        title: "Falha no acesso",
-        description: "Não foi possível acessar como admin",
-        variant: "destructive",
-      });
-      setIsLoading(false);
+    } finally {
+      setIsLoading(null);
     }
   };
 
   return (
-    <div className="mt-6 border-t pt-4">
-      <p className="text-sm text-muted-foreground mb-2">Acesso rápido para testes:</p>
-      <div className="grid grid-cols-3 gap-2">
+    <div className="mt-6 space-y-4">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Acesso rápido para teste
+          </span>
+        </div>
+      </div>
+
+      <div className="grid gap-2">
         <Button 
           variant="outline" 
-          size="sm" 
-          onClick={loginAsAccountant} 
-          disabled={isLoading}
+          onClick={() => handleQuickLogin('accountant')}
+          disabled={!!isLoading}
         >
-          Contador
+          {isLoading === 'accountant' ? (
+            <>
+              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
+              Entrando...
+            </>
+          ) : (
+            "Entrar como Contador"
+          )}
         </Button>
+        
         <Button 
           variant="outline" 
-          size="sm" 
-          onClick={loginAsClient} 
-          disabled={isLoading}
+          onClick={() => handleQuickLogin('client')}
+          disabled={!!isLoading}
         >
-          Cliente
+          {isLoading === 'client' ? (
+            <>
+              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
+              Entrando...
+            </>
+          ) : (
+            "Entrar como Cliente"
+          )}
         </Button>
+        
         <Button 
           variant="outline" 
-          size="sm" 
-          onClick={loginAsAdmin} 
-          disabled={isLoading}
+          onClick={() => handleQuickLogin('admin')}
+          disabled={!!isLoading}
         >
-          Admin
+          {isLoading === 'admin' ? (
+            <>
+              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
+              Entrando...
+            </>
+          ) : (
+            "Entrar como Administrador"
+          )}
         </Button>
       </div>
     </div>
   );
-};
+}
+
+export default QuickLoginButtons;

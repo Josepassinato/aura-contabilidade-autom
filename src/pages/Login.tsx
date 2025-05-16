@@ -9,21 +9,32 @@ import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { QuickLoginButtons } from '@/components/auth/QuickLoginButtons';
+import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
 const Login = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAccountant, isAdmin, isClient } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
 
+  // Clean any stale auth state when the login page loads
+  useEffect(() => {
+    cleanupAuthState();
+  }, []);
+
   useEffect(() => {
     // If already authenticated, redirect based on role
     if (isAuthenticated) {
+      console.log("User authenticated, redirecting based on role");
+      
       if (isAdmin) {
         navigate('/admin/analytics', { replace: true });
       } else if (isAccountant) {
         navigate('/dashboard', { replace: true });
       } else if (isClient) {
         navigate('/client-portal', { replace: true });
+      } else {
+        // Fallback if no specific role is detected but user is authenticated
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [isAuthenticated, isAccountant, isAdmin, isClient, navigate]);

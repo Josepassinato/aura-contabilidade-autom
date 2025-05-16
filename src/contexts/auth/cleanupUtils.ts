@@ -1,90 +1,72 @@
 
 /**
- * Utility functions for cleaning up authentication state
- * and detecting problematic authentication states
+ * Utilities for cleaning up authentication state
+ * to prevent auth limbo states and token conflicts
  */
 
 /**
- * Limpa completamente o estado de autenticação do browser
- * para prevenir problemas de sessão
+ * Clean up all authentication state from local storage and session storage
+ * to ensure a fresh authentication state
  */
 export const cleanupAuthState = () => {
-  // Limpar dados de sessão do localStorage
-  localStorage.removeItem('mock_session');
-  localStorage.removeItem('user_role');
-  
-  // Limpar tokens da Supabase (quando aplicável)
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
-  
-  // Limpar dados de sessão do sessionStorage (quando aplicável)
   try {
-    Object.keys(sessionStorage).forEach(key => {
+    // Clear standard auth tokens
+    localStorage.removeItem('supabase.auth.token');
+    
+    // Clear all Supabase auth related items from localStorage
+    Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
       }
     });
-  } catch (e) {
-    // Ignore errors if sessionStorage is not available
+    
+    // Clear from sessionStorage if available
+    if (typeof sessionStorage !== 'undefined') {
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    
+    console.log('Auth state cleaned successfully');
+  } catch (error) {
+    console.error('Error cleaning auth state:', error);
   }
-  
-  // Limpar tokens de cliente para acesso portal
-  sessionStorage.removeItem('client_id');
-  sessionStorage.removeItem('client_name');
-  sessionStorage.removeItem('client_cnpj');
-  sessionStorage.removeItem('client_access_token');
-  sessionStorage.removeItem('client_authenticated');
 };
 
 /**
- * Verifica problemas potenciais de estado de autenticação
- * que podem causar comportamento inconsistente
- * @returns true se um problema foi detectado e corrigido
+ * Check for potential auth limbo states where tokens might be
+ * expired but still present, causing authentication issues
+ * @returns {boolean} true if a limbo state was detected and fixed
  */
-export const checkForAuthLimboState = (): boolean => {
-  try {
-    // Verificar tokens inconsistentes em mock_session
-    const mockSession = localStorage.getItem('mock_session') === 'true';
-    const userRole = localStorage.getItem('user_role');
-    
-    // Verificar inconsistência entre mock_session e user_role
-    if (mockSession && !userRole) {
-      console.warn('Estado inconsistente: mock_session = true mas sem user_role');
-      cleanupAuthState();
-      return true;
+export const checkForAuthLimboState = () => {
+  // Check for inconsistent auth state
+  const hasSession = localStorage.getItem('supabase.auth.token') !== null;
+  const hasSessionExpiry = localStorage.getItem('supabase.auth.expires_at') !== null;
+  const hasMockSession = localStorage.getItem('mock_session') === 'true';
+  
+  // Check if session is expired
+  let isExpired = false;
+  if (hasSessionExpiry) {
+    try {
+      const expiresAt = parseInt(localStorage.getItem('supabase.auth.expires_at') || '0');
+      isExpired = expiresAt > 0 && Date.now() > expiresAt;
+    } catch (e) {
+      // If we can't parse the expiry, assume it's corrupted
+      isExpired = true;
     }
-    
-    if (!mockSession && userRole) {
-      console.warn('Estado inconsistente: user_role definido mas mock_session = false');
-      cleanupAuthState();
-      return true;
-    }
-    
-    // Para cada sessão de teste, garantir que as variáveis de sessão são consistentes
-    const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
-    const clientId = sessionStorage.getItem('client_id');
-    
-    if (clientAuthenticated && !clientId) {
-      console.warn('Estado inconsistente: cliente autenticado mas sem ID');
-      cleanupAuthState();
-      return true;
-    }
-    
-    // Verificar problemas em tokens do Supabase (quando aplicável)
-    // Se detectar um token expirado ou inválido
-    const authToken = localStorage.getItem('supabase.auth.token');
-    if (authToken && (authToken.includes('invalid') || authToken.includes('expired'))) {
-      console.warn('Token Supabase potencialmente inválido ou expirado');
-      cleanupAuthState();
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Erro ao verificar estado de autenticação:', error);
-    return false;
   }
+  
+  // Detect mock session without proper role
+  const hasMockWithoutRole = hasMockSession && !localStorage.getItem('user_role');
+  
+  // If we have a session that's expired or corrupted, clean up
+  if ((hasSession && isExpired) || hasMockWithoutRole) {
+    console.warn('Detected auth limbo state, cleaning up');
+    cleanupAuthState();
+    return true;
+  }
+  
+  return false;
 };

@@ -1,71 +1,48 @@
 
 import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { LogIn } from 'lucide-react';
+import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/auth';
-import { useToast } from '@/hooks/use-toast';
 import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
+import { toast } from "@/hooks/use-toast";
 
-// Schema para validação do formulário de login
-const loginFormSchema = z.object({
-  email: z.string().email({ message: "E-mail inválido" }),
-  password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
-});
-
-export type LoginFormValues = z.infer<typeof loginFormSchema>;
-
-export const LoginForm = () => {
+export function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
-  const { toast } = useToast();
+  const { enhancedLogin } = useAuth();
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-  
-  const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Email e senha são obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
-      // Clean up any existing auth state first
+      setIsLoading(true);
+      
+      // Clean up auth state before login attempt
       cleanupAuthState();
       
-      const { error } = await signIn(data.email, data.password);
+      const result = await enhancedLogin(email, password);
       
-      if (!error) {
-        toast({
-          title: "Login bem-sucedido",
-          description: "Bem-vindo de volta!",
-        });
-        
-        // Redirection will be handled by the useEffect in the parent component
-      } else {
-        toast({
-          title: "Falha no login",
-          description: error.message || "Credenciais inválidas",
-          variant: "destructive",
-        });
+      if (!result.success) {
+        throw new Error(result.error || "Falha na autenticação");
       }
-    } catch (error: any) {
+      
+      // Login successful, will be redirected by the auth context
+    } catch (error) {
+      console.error('Erro no login:', error);
       toast({
-        title: "Erro no sistema",
-        description: error.message || "Ocorreu um erro inesperado",
+        title: "Erro no login",
+        description: error instanceof Error ? error.message : "Não foi possível fazer login",
         variant: "destructive",
       });
     } finally {
@@ -74,53 +51,57 @@ export const LoginForm = () => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>E-mail</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="seu@email.com"
-                  type="email"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Senha</FormLabel>
-              <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder="••••••"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Senha</Label>
+          <a
+            href="#"
+            className="text-xs text-primary hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              toast({
+                title: "Recuperação de senha",
+                description: "Funcionalidade em desenvolvimento",
+              });
+            }}
+          >
+            Esqueceu a senha?
+          </a>
+        </div>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={isLoading}
-        >
-          <LogIn className="mr-2 h-4 w-4" />
-          {isLoading ? "Entrando..." : "Entrar"}
-        </Button>
-      </form>
-    </Form>
+      </div>
+      
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+            Entrando...
+          </>
+        ) : (
+          "Entrar"
+        )}
+      </Button>
+    </form>
   );
-};
+}
+
+export default LoginForm;
