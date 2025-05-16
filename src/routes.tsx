@@ -31,6 +31,7 @@ import ClientDocuments from "@/pages/ClientDocuments";
 import IntegracoesGov from "@/pages/IntegracoesGov";
 import IntegracoesEstaduais from "@/pages/IntegracoesEstaduais";
 import ApuracaoAutomatica from "@/pages/ApuracaoAutomatica";
+import Notifications from "@/pages/Notifications";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -164,10 +165,14 @@ const routes = createBrowserRouter([
         path: "integracoes-estaduais",
         element: <IntegracoesEstaduais />
       },
-      // Adding the apuracao-automatica route
       {
         path: "apuracao-automatica",
         element: <ApuracaoAutomatica />
+      },
+      // Adding the notifications route
+      {
+        path: "notifications",
+        element: <Notifications />
       }
     ]
   },

@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-export function FolhaPagamento() {
+export function FolhaPagamentoCard() {
   return (
     <Card>
       <CardHeader>

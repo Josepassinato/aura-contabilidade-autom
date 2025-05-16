@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -92,80 +91,78 @@ const Notifications = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   
   return (
-    <DashboardLayout>
-      <div className="flex flex-col space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Notificações</h1>
-            <p className="text-muted-foreground">
-              Gerencie suas notificações e alertas do sistema
-            </p>
-          </div>
-          {unreadCount > 0 && (
-            <Button onClick={markAllAsRead}>
-              Marcar todas como lidas ({unreadCount})
-            </Button>
-          )}
+    <div className="flex flex-col space-y-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Notificações</h1>
+          <p className="text-muted-foreground">
+            Gerencie suas notificações e alertas do sistema
+          </p>
         </div>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Suas notificações</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all" className="flex items-center gap-2">
-                  <Bell className="h-4 w-4" />
-                  Todas
-                </TabsTrigger>
-                <TabsTrigger value="prazo" className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Prazos
-                </TabsTrigger>
-                <TabsTrigger value="alerta" className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  Alertas
-                </TabsTrigger>
-                <TabsTrigger value="info" className="flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  Informações
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all" className="m-0">
-                <NotificationsList 
-                  notifications={filteredNotifications}
-                  onMarkAsRead={markAsRead}
-                  onDelete={deleteNotification}
-                />
-              </TabsContent>
-              <TabsContent value="prazo" className="m-0">
-                <NotificationsList 
-                  notifications={filteredNotifications}
-                  onMarkAsRead={markAsRead}
-                  onDelete={deleteNotification}
-                />
-              </TabsContent>
-              <TabsContent value="alerta" className="m-0">
-                <NotificationsList 
-                  notifications={filteredNotifications}
-                  onMarkAsRead={markAsRead}
-                  onDelete={deleteNotification}
-                />
-              </TabsContent>
-              <TabsContent value="info" className="m-0">
-                <NotificationsList 
-                  notifications={filteredNotifications}
-                  onMarkAsRead={markAsRead}
-                  onDelete={deleteNotification}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        {unreadCount > 0 && (
+          <Button onClick={markAllAsRead}>
+            Marcar todas como lidas ({unreadCount})
+          </Button>
+        )}
       </div>
-    </DashboardLayout>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Suas notificações</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="all" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                Todas
+              </TabsTrigger>
+              <TabsTrigger value="prazo" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Prazos
+              </TabsTrigger>
+              <TabsTrigger value="alerta" className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Alertas
+              </TabsTrigger>
+              <TabsTrigger value="info" className="flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                Informações
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all" className="m-0">
+              <NotificationsList 
+                notifications={filteredNotifications}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            </TabsContent>
+            <TabsContent value="prazo" className="m-0">
+              <NotificationsList 
+                notifications={filteredNotifications}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            </TabsContent>
+            <TabsContent value="alerta" className="m-0">
+              <NotificationsList 
+                notifications={filteredNotifications}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            </TabsContent>
+            <TabsContent value="info" className="m-0">
+              <NotificationsList 
+                notifications={filteredNotifications}
+                onMarkAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
