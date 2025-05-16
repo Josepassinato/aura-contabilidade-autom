@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileBarChart, Mic, Settings } from "lucide-react";
+import { FileBarChart, Mic, Settings, ListFilter } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { GeracaoRelatorioPorVoz } from '@/components/relatorios/GeracaoRelatorioPorVoz';
+import { ReportsList } from '@/components/relatorios/ReportsList';
 import { VoiceAssistantConfig } from '@/components/dashboard/voice-assistant/VoiceAssistantConfig';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isOpenAIConfigured } from '@/components/settings/openai/openAiService';
@@ -74,9 +75,22 @@ const RelatoriosIA = () => {
         
         <Tabs defaultValue="assistente" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="assistente">Assistente de Voz</TabsTrigger>
-            <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
-            <TabsTrigger value="configuracao">Configuração</TabsTrigger>
+            <TabsTrigger value="assistente" className="flex items-center gap-1.5">
+              <Mic className="h-4 w-4" />
+              Assistente de Voz
+            </TabsTrigger>
+            <TabsTrigger value="relatorios" className="flex items-center gap-1.5">
+              <FileBarChart className="h-4 w-4" />
+              Relatórios
+            </TabsTrigger>
+            <TabsTrigger value="relatorios-salvos" className="flex items-center gap-1.5">
+              <ListFilter className="h-4 w-4" />
+              Relatórios Salvos
+            </TabsTrigger>
+            <TabsTrigger value="configuracao" className="flex items-center gap-1.5">
+              <Settings className="h-4 w-4" />
+              Configuração
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="assistente" className="space-y-4">
@@ -151,6 +165,23 @@ const RelatoriosIA = () => {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="relatorios-salvos">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <ListFilter className="h-5 w-5 text-primary" />
+                  <CardTitle>Relatórios Salvos</CardTitle>
+                </div>
+                <CardDescription>
+                  Visualize e gerencie todos os relatórios que foram gerados e salvos no sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ReportsList />
               </CardContent>
             </Card>
           </TabsContent>

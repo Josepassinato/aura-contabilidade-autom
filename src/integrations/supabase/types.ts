@@ -373,6 +373,54 @@ export type Database = {
           },
         ]
       }
+      generated_reports: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_format: string
+          file_path: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          is_public: boolean
+          report_type: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_format?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          is_public?: boolean
+          report_type: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_format?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          is_public?: boolean
+          report_type?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       integracoes_estaduais: {
         Row: {
           certificado_info: Json | null
