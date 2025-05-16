@@ -26,19 +26,21 @@ function ConfiguracaoSwitch({ id, label, checked, onChange }: ConfiguracaoSwitch
 }
 
 interface ConfiguracoesAdicionaisProps {
-  usarIA: boolean;
-  notificarInconsistencias: boolean;
-  aplicarCorrecoes: boolean;
-  salvarHistorico: boolean;
-  onChangeConfig: (key: string, value: boolean) => void;
+  usarContextoHistorico: boolean;
+  setUsarContextoHistorico: React.Dispatch<React.SetStateAction<boolean>>;
+  validacaoCruzada: boolean;
+  setValidacaoCruzada: React.Dispatch<React.SetStateAction<boolean>>;
+  gravarHistoricoDecisoes: boolean;
+  setGravarHistoricoDecisoes: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function ConfiguracoesAdicionais({
-  usarIA,
-  notificarInconsistencias,
-  aplicarCorrecoes,
-  salvarHistorico,
-  onChangeConfig
+  usarContextoHistorico,
+  setUsarContextoHistorico,
+  validacaoCruzada,
+  setValidacaoCruzada,
+  gravarHistoricoDecisoes,
+  setGravarHistoricoDecisoes
 }: ConfiguracoesAdicionaisProps) {
   return (
     <div className="space-y-2">
@@ -48,31 +50,24 @@ export function ConfiguracoesAdicionais({
       
       <div className="space-y-2">
         <ConfiguracaoSwitch 
-          id="usar-ia" 
-          label="Usar Inteligência Artificial" 
-          checked={usarIA} 
-          onChange={(value) => onChangeConfig('usarIA', value)} 
+          id="usar-contexto" 
+          label="Usar Contexto Histórico" 
+          checked={usarContextoHistorico} 
+          onChange={setUsarContextoHistorico} 
         />
         
         <ConfiguracaoSwitch 
-          id="notificar" 
-          label="Notificar Inconsistências" 
-          checked={notificarInconsistencias} 
-          onChange={(value) => onChangeConfig('notificarInconsistencias', value)} 
+          id="validacao-cruzada" 
+          label="Ativar Validação Cruzada" 
+          checked={validacaoCruzada} 
+          onChange={setValidacaoCruzada} 
         />
         
         <ConfiguracaoSwitch 
-          id="corrigir" 
-          label="Aplicar Correções Automáticas" 
-          checked={aplicarCorrecoes} 
-          onChange={(value) => onChangeConfig('aplicarCorrecoes', value)} 
-        />
-        
-        <ConfiguracaoSwitch 
-          id="salvar-historico" 
-          label="Salvar Histórico de Verificações" 
-          checked={salvarHistorico} 
-          onChange={(value) => onChangeConfig('salvarHistorico', value)} 
+          id="gravar-historico" 
+          label="Gravar Histórico de Decisões" 
+          checked={gravarHistoricoDecisoes} 
+          onChange={setGravarHistoricoDecisoes} 
         />
       </div>
     </div>
