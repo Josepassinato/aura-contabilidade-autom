@@ -55,17 +55,17 @@ export function ReconciliacaoBancaria() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("reconciliacao");
   
-  // Função para gerar dados de lançamentos de exemplo
+  // Function to generate example transaction records
   const gerarLancamentosExemplo = (): Lancamento[] => {
-    // Reaproveitando lógica para criar dados de exemplo
+    // Reusing existing logic to create example data
     const hoje = new Date();
     const dataInicial = new Date(hoje);
     dataInicial.setDate(hoje.getDate() - 30);
     
     const lancamentos: Lancamento[] = [];
     
-    // Vamos criar lançamentos que correspondam mais ou menos às transações bancárias que geramos
-    // para facilitar a reconciliação na demonstração
+    // We'll create transactions that correspond roughly to the bank transactions we generated
+    // to facilitate reconciliation in the demonstration
     for (let i = 0; i < 15; i++) {
       const diferencaDias = Math.floor(Math.random() * 30);
       const data = new Date(dataInicial);
@@ -99,7 +99,7 @@ export function ReconciliacaoBancaria() {
     return lancamentos;
   };
   
-  // Função para importar transações bancárias
+  // Function to import bank transactions
   const importarTransacoes = async () => {
     if (!periodoInicio || !periodoFim) {
       toast({
@@ -113,7 +113,7 @@ export function ReconciliacaoBancaria() {
     setIsLoading(true);
     
     try {
-      // Simulamos a chamada à API bancária
+      // Simulating a call to the bank API
       const transacoesImportadas = await obterExtratoBancario(
         { banco: bancoSelecionado, agencia: "0001", conta: "12345-6", tipoConta: "corrente" },
         periodoInicio,
@@ -122,11 +122,11 @@ export function ReconciliacaoBancaria() {
       
       setTransacoes(transacoesImportadas);
       
-      // Para fins de demonstração, vamos gerar lançamentos correspondentes
+      // For demonstration purposes, we'll generate example transactions
       const lancamentosExemplo = gerarLancamentosExemplo();
       setLancamentos(lancamentosExemplo);
       
-      // Limpa resultado de reconciliação anterior
+      // Clear previous reconciliation results
       setResultadoReconciliacao(null);
       
       toast({
@@ -146,7 +146,7 @@ export function ReconciliacaoBancaria() {
     }
   };
   
-  // Função para realizar reconciliação
+  // Function to execute reconciliation
   const executarReconciliacao = async () => {
     if (transacoes.length === 0 || lancamentos.length === 0) {
       toast({
@@ -160,10 +160,21 @@ export function ReconciliacaoBancaria() {
     setIsLoading(true);
     
     try {
-      // Aqui estamos simulando um processamento assíncrono com mensageria
+      // Here we're simulating an asynchronous processing with messaging
       const resultado = await simularFluxoProcessamento(transacoes, lancamentos);
       
-      setResultadoReconciliacao(resultado);
+      // Make sure the result conforms to our expected type
+      const typedResult: ResultadoReconciliacao = {
+        transacoesConciliadas: resultado.transacoesConciliadas,
+        transacoesNaoConciliadas: resultado.transacoesNaoConciliadas,
+        lancamentosNaoConciliados: resultado.lancamentosNaoConciliados,
+        totalConciliado: resultado.totalConciliado,
+        totalNaoConciliado: typeof resultado.totalNaoConciliado === 'number' 
+          ? resultado.totalNaoConciliado
+          : resultado.totalNaoConciliado.transacoes + resultado.totalNaoConciliado.lancamentos
+      };
+      
+      setResultadoReconciliacao(typedResult);
       
       toast({
         title: "Reconciliação concluída",
@@ -182,7 +193,7 @@ export function ReconciliacaoBancaria() {
     }
   };
   
-  // Inicializa datas para um período padrão (último mês)
+  // Initialize dates for a default period (last month)
   React.useEffect(() => {
     const hoje = new Date();
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
@@ -424,7 +435,7 @@ export function ReconciliacaoBancaria() {
                   
                   <div className="divide-y">
                     {transacoes.map((transacao) => {
-                      // Verifica se a transação está reconciliada
+                      // Check if the transaction is reconciled
                       const reconciliada = resultadoReconciliacao?.transacoesConciliadas.some(
                         item => item.transacao.id === transacao.id
                       );
@@ -478,7 +489,7 @@ export function ReconciliacaoBancaria() {
                   
                   <div className="divide-y">
                     {lancamentos.map((lancamento) => {
-                      // Verifica se o lançamento está reconciliado
+                      // Check if the transaction is reconciled
                       const reconciliado = resultadoReconciliacao?.transacoesConciliadas.some(
                         item => item.lancamento.id === lancamento.id
                       );

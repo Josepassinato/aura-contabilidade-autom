@@ -1,3 +1,4 @@
+
 import React from "react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -53,20 +54,23 @@ export const CalculoLancamentos: React.FC<CalculoLancamentosProps> = ({
 
     try {
       setIsLoading(true);
-      // Pass cnpj and periodo, remove regimeTributario
+      // Call with just the two required parameters
       const result = await calcularImpostosPorLancamentos(cnpj, periodo);
       
-      // Make sure result is converted to the expected format for setResultados
-      // It expects a Record<TipoImposto, ResultadoCalculo> object
+      // Convert array results to record object
       const formattedResults: Record<TipoImposto, ResultadoCalculo> = {};
       
-      // Convert array results to record object
       if (Array.isArray(result)) {
         result.forEach((item: ResultadoCalculo) => {
           if (item.tipoImposto) {
             formattedResults[item.tipoImposto] = item;
           }
         });
+      }
+      
+      // Make sure we're passing a non-empty object
+      if (Object.keys(formattedResults).length === 0) {
+        throw new Error("Nenhum resultado foi retornado pelo cálculo");
       }
       
       setResultados(formattedResults);
@@ -77,6 +81,11 @@ export const CalculoLancamentos: React.FC<CalculoLancamentosProps> = ({
       });
     } catch (error) {
       console.error("Erro ao calcular impostos:", error);
+      toast({
+        title: "Erro no cálculo",
+        description: "Não foi possível calcular os impostos. Verifique os dados e tente novamente.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

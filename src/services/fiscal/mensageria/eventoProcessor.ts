@@ -1,4 +1,3 @@
-
 /**
  * Serviço de mensageria para eventos fiscais
  * Implementa um sistema pub/sub para comunicação entre módulos
@@ -206,7 +205,10 @@ export const simularFluxoProcessamento = async (
     transacoesNaoConciliadas,
     lancamentosNaoConciliados,
     totalConciliado: transacoesConciliadas.length,
-    totalNaoConciliado: transacoesNaoConciliadas.length
+    totalNaoConciliado: {
+      transacoes: transacoesNaoConciliadas.length,
+      lancamentos: lancamentosNaoConciliados.length
+    }
   };
   
   // Simula a publicação de eventos de reconciliação
