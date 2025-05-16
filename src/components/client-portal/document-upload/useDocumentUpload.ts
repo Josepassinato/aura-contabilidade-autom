@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
@@ -73,7 +74,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
         }
         
         // Register the document in the database after successful upload
-        const result = await supabase
+        const { data, error } = await supabase
           .from('client_documents')
           .insert({
             client_id: clientId,
@@ -84,10 +85,11 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
             status: 'pendente',
             title: fileItem.name,
             uploaded_at: new Date().toISOString()
-          });
+          })
+          .select();
           
-        if (result.error) {
-          throw new Error(`Erro ao registrar documento: ${result.error.message}`);
+        if (error) {
+          throw new Error(`Erro ao registrar documento: ${error.message}`);
         }
         
         return { success: true, fileName: fileItem.name };

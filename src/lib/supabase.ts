@@ -59,6 +59,7 @@ export interface Document {
   status: string;
   created_at?: string;
   updated_at?: string;
+  date?: string; // Added for compatibility
 }
 
 // AccountingClient type
@@ -102,20 +103,21 @@ export interface SupabaseSession {
 }
 
 export const useSupabaseClient = () => {
-  // Expanded mock implementation with required methods to fix TypeScript errors
+  // Enhanced mock implementation with improved method chaining
   const supabase = {
     from: (table: string) => ({
-      select: (columns: string = '*') => ({ 
+      select: (columns: string = '*') => ({
         eq: (column: string, value: any) => ({
           single: () => Promise.resolve({ data: null, error: null }),
           maybeSingle: () => Promise.resolve({ data: null, error: null }),
-          order: (column: string, { ascending = true } = {}) => ({ 
+          order: (column: string, { ascending = true } = {}) => ({
             limit: (limit: number = 10) => Promise.resolve({ data: [], error: null })
           }),
+          limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
           data: null,
           error: null
         }),
-        order: (column: string, { ascending = true } = {}) => ({ 
+        order: (column: string, { ascending = true } = {}) => ({
           limit: (limit: number = 10) => Promise.resolve({ data: [], error: null }),
           data: null,
           error: null
@@ -124,14 +126,23 @@ export const useSupabaseClient = () => {
         data: null,
         error: null
       }),
-      insert: (values: any) => Promise.resolve({ data: null, error: null }),
+      insert: (values: any) => ({
+        select: (columns: string = '*') => Promise.resolve({ data: null, error: null }),
+        single: () => Promise.resolve({ data: null, error: null }),
+        data: null,
+        error: null
+      }),
       update: (values: any) => ({
         eq: (column: string, value: any) => Promise.resolve({ data: null, error: null }),
-        match: (criteria: any) => Promise.resolve({ data: null, error: null })
+        match: (criteria: any) => Promise.resolve({ data: null, error: null }),
+        data: null,
+        error: null
       }),
       delete: () => ({
         eq: (column: string, value: any) => Promise.resolve({ data: null, error: null }),
-        match: (criteria: any) => Promise.resolve({ data: null, error: null })
+        match: (criteria: any) => Promise.resolve({ data: null, error: null }),
+        data: null,
+        error: null
       }),
       upsert: (values: any) => Promise.resolve({ data: null, error: null })
     }),

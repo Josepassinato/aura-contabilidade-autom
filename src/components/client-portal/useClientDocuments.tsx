@@ -1,18 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
 import { getFileUrl } from "@/services/supabase/storageService";
-
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  date: string;
-  status: 'pendente' | 'processado' | 'rejeitado';
-  file_path?: string;
-}
+import { Document } from "@/lib/supabase";
 
 export const useClientDocuments = (clientId: string | null) => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -27,25 +17,29 @@ export const useClientDocuments = (clientId: string | null) => {
     try {
       if (supabase) {
         // Fetch client documents from Supabase
-        const result = await supabase
+        const { data, error } = await supabase
           .from('client_documents')
           .select('*')
           .eq('client_id', clientId)
           .order('created_at', { ascending: false });
           
-        if (result.error) {
-          throw result.error;
+        if (error) {
+          throw error;
         }
         
-        if (result.data) {
-          const formattedDocs = result.data.map(doc => ({
+        if (data) {
+          const formattedDocs = data.map(doc => ({
             id: doc.id,
+            client_id: doc.client_id,
+            title: doc.title,
             name: doc.name,
             type: doc.type,
             size: formatFileSize(doc.size || 0),
             date: new Date(doc.created_at || doc.updated_at).toLocaleDateString('pt-BR'),
             status: doc.status as 'pendente' | 'processado' | 'rejeitado',
-            file_path: doc.file_path
+            file_path: doc.file_path,
+            created_at: doc.created_at,
+            updated_at: doc.updated_at
           }));
           
           setDocuments(formattedDocs);
@@ -53,7 +47,17 @@ export const useClientDocuments = (clientId: string | null) => {
       } else {
         // Fallback to mock data when Supabase is not available
         const mockDocuments: Document[] = [
-          { id: '1', name: 'NFe-2025-001245.pdf', type: 'nota-fiscal', size: '420 KB', date: '15/05/2025', status: 'processado' },
+          { 
+            id: '1', 
+            client_id: clientId || '', 
+            name: 'NFe-2025-001245.pdf', 
+            title: 'NFe-2025-001245.pdf',
+            type: 'nota-fiscal', 
+            size: '420 KB', 
+            date: '15/05/2025', 
+            status: 'processado',
+            created_at: '2025-05-15T12:00:00Z'
+          },
           { id: '2', name: 'Recibo-Aluguel-Maio.pdf', type: 'recibo', size: '180 KB', date: '10/05/2025', status: 'processado' },
           { id: '3', name: 'Extrato-BancoXYZ-Maio.pdf', type: 'extrato', size: '310 KB', date: '05/05/2025', status: 'pendente' },
           { id: '4', name: 'Contrato-Prestacao-Servicos.pdf', type: 'contrato', size: '1.2 MB', date: '01/05/2025', status: 'processado' },
@@ -104,7 +108,7 @@ export const useClientDocuments = (clientId: string | null) => {
       console.error("Erro ao obter URL do documento:", error);
       toast({
         title: "Erro ao visualizar documento",
-        description: "Não foi possível acessar este documento. Tente novamente mais tarde.",
+        description: "Não foi poss��vel acessar este documento. Tente novamente mais tarde.",
         variant: "destructive"
       });
     }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/auth';
@@ -121,7 +120,7 @@ const RelatoriosFinanceiros = () => {
               
               <TabsContent value="indexes">
                 <IndexesFinanceiros 
-                  client_id={selectedClient.id} 
+                  clientId={selectedClient.id} 
                   periodo={selectedPeriod}
                 />
               </TabsContent>

@@ -60,39 +60,39 @@ export const ClientAccessForm = () => {
       const normalizedCNPJ = data.cnpj.replace(/\D/g, "");
       
       // Buscar o cliente pelo CNPJ
-      const clientResult = await supabase
+      const { data: clientData, error: clientError } = await supabase
         .from('accounting_clients')
         .select('*')
         .eq('cnpj', normalizedCNPJ);
       
-      if (clientResult.error || !clientResult.data || clientResult.data.length === 0) {
+      if (clientError || !clientData || clientData.length === 0) {
         throw new Error("Cliente não encontrado");
       }
 
-      const clientData = clientResult.data[0];
+      const client = clientData[0];
       
       // Verificar o token de acesso
-      const accessResult = await supabase
+      const { data: accessData, error: accessError } = await supabase
         .from('client_access_tokens')
         .select('*')
-        .eq('client_id', clientData.id)
+        .eq('client_id', client.id)
         .eq('token', data.accessToken)
         .eq('is_active', true);
       
-      if (accessResult.error || !accessResult.data || accessResult.data.length === 0) {
+      if (accessError || !accessData || accessData.length === 0) {
         throw new Error("Token de acesso inválido ou expirado");
       }
 
-      const accessData = accessResult.data[0];
+      const access = accessData[0];
       
       // Salvar informações do cliente na sessão
-      sessionStorage.setItem('client_id', clientData.id);
-      sessionStorage.setItem('client_name', clientData.name);
-      sessionStorage.setItem('client_cnpj', clientData.cnpj);
+      sessionStorage.setItem('client_id', client.id);
+      sessionStorage.setItem('client_name', client.name);
+      sessionStorage.setItem('client_cnpj', client.cnpj);
       
       toast({
         title: "Acesso autorizado",
-        description: `Bem-vindo, ${clientData.name}!`,
+        description: `Bem-vindo, ${client.name}!`,
       });
       
       // Redirecionar para o portal do cliente
