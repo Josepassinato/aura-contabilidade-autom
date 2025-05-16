@@ -10,7 +10,7 @@ interface ReportSectionProps {
     title: string;
     url: string;
     type: string;
-    id: string;
+    id: string;  // Já está corretamente definido na interface
   } | null;
 }
 
