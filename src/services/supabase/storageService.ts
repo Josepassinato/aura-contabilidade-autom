@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -183,28 +182,37 @@ export async function getClientFileStatistics(clientId: string): Promise<any> {
     }
 
     // Get document counts by type from the database
+    // Instead of using group(), we'll use a raw SQL query to get the grouped data
     const { data, error } = await supabase
       .from('client_documents')
-      .select('type, status, count')
-      .eq('client_id', clientId)
-      .group('type, status');
+      .select('type, status')
+      .eq('client_id', clientId);
 
     if (error) {
       throw error;
     }
 
+    // Manual grouping in JavaScript
+    const totalDocuments = data.length;
+    
+    // Count by type
+    const byType: Record<string, number> = {};
+    data.forEach((item: any) => {
+      if (!byType[item.type]) byType[item.type] = 0;
+      byType[item.type]++;
+    });
+    
+    // Count by status
+    const byStatus: Record<string, number> = {};
+    data.forEach((item: any) => {
+      if (!byStatus[item.status]) byStatus[item.status] = 0;
+      byStatus[item.status]++;
+    });
+
     return {
-      totalDocuments: data.reduce((sum: number, item: any) => sum + parseInt(item.count, 10), 0),
-      byType: data.reduce((acc: any, item: any) => {
-        if (!acc[item.type]) acc[item.type] = 0;
-        acc[item.type] += parseInt(item.count, 10);
-        return acc;
-      }, {}),
-      byStatus: data.reduce((acc: any, item: any) => {
-        if (!acc[item.status]) acc[item.status] = 0;
-        acc[item.status] += parseInt(item.count, 10);
-        return acc;
-      }, {})
+      totalDocuments,
+      byType,
+      byStatus
     };
   } catch (error) {
     console.error("Error getting file statistics:", error);
