@@ -10,6 +10,7 @@ import { DatabaseConfigForm } from "@/components/settings/DatabaseConfigForm";
 import { GovAPIConfigForm } from "@/components/settings/GovAPIConfigForm";
 import { SupabaseConfig } from "@/components/settings/SupabaseConfig";
 import { BancoConfigForm } from "@/components/settings/BancoConfigForm";
+import { LegislacaoApiConfigForm } from "@/components/settings/LegislacaoApiConfigForm";
 import { useAuth } from "@/contexts/auth";
 
 const Settings = () => {
@@ -39,12 +40,13 @@ const Settings = () => {
         </p>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full md:w-auto grid grid-cols-5 mb-6">
+          <TabsList className="w-full md:w-auto grid grid-cols-6 mb-6">
             {isAdmin && <TabsTrigger value="supabase">Supabase</TabsTrigger>}
             {isAdmin && <TabsTrigger value="openai">OpenAI API</TabsTrigger>}
             <TabsTrigger value="database">Banco de Dados</TabsTrigger>
             <TabsTrigger value="govapi">APIs Governamentais</TabsTrigger>
             <TabsTrigger value="bancos">Integração Bancária</TabsTrigger>
+            <TabsTrigger value="legislacao">Legislação Contábil</TabsTrigger>
           </TabsList>
           <div className="p-4 border rounded-lg">
             {isAdmin && (
@@ -65,6 +67,9 @@ const Settings = () => {
             </TabsContent>
             <TabsContent value="bancos" className="space-y-4">
               <BancoConfigForm />
+            </TabsContent>
+            <TabsContent value="legislacao" className="space-y-4">
+              <LegislacaoApiConfigForm />
             </TabsContent>
           </div>
         </Tabs>

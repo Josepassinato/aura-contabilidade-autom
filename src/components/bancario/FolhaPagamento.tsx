@@ -16,3 +16,5 @@ export function FolhaPagamentoCard() {
     </Card>
   );
 }
+
+export { FolhaPagamentoCard as FolhaPagamento };
