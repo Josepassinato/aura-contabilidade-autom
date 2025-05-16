@@ -23,7 +23,9 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
     setDocumentType,
     handleFileSelect,
     removeFile,
-    handleUpload
+    handleUpload,
+    autoClassifyEnabled,
+    setAutoClassifyEnabled
   } = useDocumentUpload({ 
     clientId,
     onUploadComplete: () => {
@@ -56,6 +58,19 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
               documentType={documentType} 
               onTypeChange={handleTypeChange} 
             />
+            
+            <div className="col-span-4 flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="auto-classify"
+                checked={autoClassifyEnabled}
+                onChange={(e) => setAutoClassifyEnabled(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="auto-classify" className="text-sm text-muted-foreground">
+                Classificar e processar automaticamente
+              </label>
+            </div>
             
             <FileUploader 
               onFileSelect={handleFileSelect} 

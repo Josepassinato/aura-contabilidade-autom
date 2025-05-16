@@ -12,7 +12,7 @@ export interface FileUploadResponse {
 }
 
 /**
- * Uploads a file to Supabase Storage
+ * Uploads a file to Supabase Storage with improved organization
  * @param clientId ID do cliente
  * @param file File to upload
  * @param documentType Type of document
@@ -30,7 +30,14 @@ export async function uploadFile(
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-    const filePath = `${clientId}/${documentType}/${fileName}`;
+    
+    // Organize files by year and month for better navigation
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    
+    // Create path format: clientId/documentType/YYYY/MM/fileName
+    const filePath = `${clientId}/${documentType}/${year}/${month}/${fileName}`;
     
     const { error, data } = await supabase.storage
       .from('client-documents')
@@ -119,17 +126,35 @@ export async function deleteFile(filePath: string): Promise<boolean> {
  * Lists all files in a folder
  * @param clientId ID do cliente
  * @param documentType Type of document (optional)
+ * @param year Year filter (optional)
+ * @param month Month filter (optional)
  * @returns Array of file objects or empty array if there was an error
  */
-export async function listFiles(clientId: string, documentType?: string): Promise<any[]> {
+export async function listFiles(
+  clientId: string, 
+  documentType?: string,
+  year?: number,
+  month?: string
+): Promise<any[]> {
   try {
     if (!supabase) {
       return [];
     }
 
-    const folderPath = documentType 
-      ? `${clientId}/${documentType}` 
-      : `${clientId}`;
+    // Build the folder path based on filters
+    let folderPath = clientId;
+    
+    if (documentType) {
+      folderPath += `/${documentType}`;
+      
+      if (year) {
+        folderPath += `/${year}`;
+        
+        if (month) {
+          folderPath += `/${month}`;
+        }
+      }
+    }
     
     const { data, error } = await supabase.storage
       .from('client-documents')
@@ -146,3 +171,43 @@ export async function listFiles(clientId: string, documentType?: string): Promis
   }
 }
 
+/**
+ * Gets file statistics for a client
+ * @param clientId Client ID
+ * @returns Statistics about the client's files
+ */
+export async function getClientFileStatistics(clientId: string): Promise<any> {
+  try {
+    if (!supabase) {
+      return null;
+    }
+
+    // Get document counts by type from the database
+    const { data, error } = await supabase
+      .from('client_documents')
+      .select('type, status, count')
+      .eq('client_id', clientId)
+      .group('type, status');
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      totalDocuments: data.reduce((sum: number, item: any) => sum + parseInt(item.count, 10), 0),
+      byType: data.reduce((acc: any, item: any) => {
+        if (!acc[item.type]) acc[item.type] = 0;
+        acc[item.type] += parseInt(item.count, 10);
+        return acc;
+      }, {}),
+      byStatus: data.reduce((acc: any, item: any) => {
+        if (!acc[item.status]) acc[item.status] = 0;
+        acc[item.status] += parseInt(item.count, 10);
+        return acc;
+      }, {})
+    };
+  } catch (error) {
+    console.error("Error getting file statistics:", error);
+    return null;
+  }
+}
