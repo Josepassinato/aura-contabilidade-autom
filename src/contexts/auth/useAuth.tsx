@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { cleanupAuthState } from "./cleanupUtils";
+import { cleanupAuthState, checkForAuthLimboState } from "./cleanupUtils";
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -66,6 +66,9 @@ export const useAuth = () => {
       // Limpar possíveis estados de autenticação anteriores
       cleanupAuthState();
       
+      // Check for and clean any limbo states
+      checkForAuthLimboState();
+      
       const result = await context.login?.(email, password);
       
       if (result?.success) {
@@ -110,11 +113,20 @@ export const useAuth = () => {
 
   // Verificação de autenticação com feedback
   const requireAuth = (redirectPath = '/login') => {
+    // Check for auth limbo state and clean it up if found
+    if (checkForAuthLimboState()) {
+      console.warn("Auth limbo state detected in requireAuth, cleaning up");
+      cleanupAuthState();
+      navigate(redirectPath, { replace: true });
+      return { authenticated: false };
+    }
+    
     if (context.isLoading) {
-      return { loading: true };
+      return { loading: true, authenticated: false };
     }
     
     if (!context.isAuthenticated) {
+      console.log("User not authenticated, redirecting to login");
       toast({
         title: "Acesso restrito",
         description: "Faça login para acessar esta página",
@@ -122,10 +134,10 @@ export const useAuth = () => {
       });
       
       navigate(redirectPath, { replace: true });
-      return { authenticated: false };
+      return { authenticated: false, loading: false };
     }
     
-    return { authenticated: true };
+    return { authenticated: true, loading: false };
   };
 
   // Verificar se o usuário tem um determinado papel

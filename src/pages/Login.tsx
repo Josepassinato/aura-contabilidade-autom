@@ -9,7 +9,7 @@ import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { QuickLoginButtons } from '@/components/auth/QuickLoginButtons';
-import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
+import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +18,13 @@ const Login = () => {
 
   // Clean any stale auth state when the login page loads
   useEffect(() => {
+    console.log("Cleaning up auth state on Login page mount");
     cleanupAuthState();
+    
+    // Check if we have an auth limbo state and clean it up
+    if (checkForAuthLimboState()) {
+      console.log("Detected and fixed auth limbo state");
+    }
   }, []);
 
   useEffect(() => {

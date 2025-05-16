@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
-import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
+import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 
 export function QuickLoginButtons() {
   const { enhancedLogin } = useAuth();
@@ -15,6 +15,11 @@ export function QuickLoginButtons() {
     try {
       // Clean up auth state before login attempt
       cleanupAuthState();
+      
+      // Check for and fix any potential auth limbo states
+      if (checkForAuthLimboState()) {
+        console.log("Fixed auth limbo state during quick login");
+      }
       
       let email = '';
       let password = 'senha123';
@@ -31,6 +36,7 @@ export function QuickLoginButtons() {
           break;
       }
       
+      console.log(`Tentando login rápido como ${type} com email: ${email}`);
       const result = await enhancedLogin(email, password);
       
       if (!result.success) {
