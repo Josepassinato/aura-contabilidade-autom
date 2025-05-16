@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -54,9 +53,24 @@ export const CalculoNotasFiscais: React.FC<CalculoNotasFiscaisProps> = ({
 
     try {
       setIsLoading(true);
-      // Pass regimeTributario instead of a string to avoid type error
-      const result = await calcularImpostosPorNotasFiscais(cnpj, periodo, regimeTributario);
-      setResultados(result);
+      // Pass only cnpj and periodo, remove regimeTributario
+      const result = await calcularImpostosPorNotasFiscais(cnpj, periodo);
+      
+      // Make sure result is converted to the expected format for setResultados
+      // It expects a Record<TipoImposto, ResultadoCalculo> object
+      const formattedResults: Record<TipoImposto, ResultadoCalculo> = {};
+      
+      // Convert array results to record object
+      if (Array.isArray(result)) {
+        result.forEach((item: ResultadoCalculo) => {
+          if (item.tipoImposto) {
+            formattedResults[item.tipoImposto] = item;
+          }
+        });
+      }
+      
+      setResultados(formattedResults);
+      
       toast({
         title: "Cálculo realizado",
         description: `Impostos calculados com base nas notas fiscais do período ${periodo}.`

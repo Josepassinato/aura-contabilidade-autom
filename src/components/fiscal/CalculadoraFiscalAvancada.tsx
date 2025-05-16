@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,16 +156,12 @@ export function CalculadoraFiscalAvancada() {
       if (fonteCalculo === "notasFiscais") {
         resultadoCalculo = await calcularImpostoPorNotasFiscais(
           cnpjLimpo, 
-          periodo, 
-          tipoImposto, 
-          regimeTributario
+          periodo
         );
       } else {
         resultadoCalculo = await calcularImpostoPorDadosContabeis(
           cnpjLimpo, 
-          periodo, 
-          tipoImposto, 
-          regimeTributario
+          periodo
         );
       }
       

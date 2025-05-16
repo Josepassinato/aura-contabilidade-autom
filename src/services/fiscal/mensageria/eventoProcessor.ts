@@ -5,7 +5,9 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
-import { EventoFiscal, TipoEvento, EventoSubscriber } from "../types";
+import { EventoFiscal, TipoEvento, EventoSubscriber, TipoImposto, ResultadoReconciliacao } from "../types";
+import { TransacaoBancaria } from "@/services/bancario/openBankingService";
+import { Lancamento } from "../classificacao/classificacaoML";
 
 // Re-export types for components that need them
 export type { EventoFiscal, TipoEvento, EventoSubscriber };
@@ -154,27 +156,65 @@ export const limparEventosRecentes = (): void => {
  * necessário para ReconciliacaoBancaria.tsx
  */
 export const simularFluxoProcessamento = async (
-  tipo: TipoEvento, 
-  quantidadeEventos: number = 5, 
-  intervalMs: number = 1000
-): Promise<void> => {
-  for (let i = 0; i < quantidadeEventos; i++) {
-    const dados = {
-      simulacao: true,
-      indice: i + 1,
-      total: quantidadeEventos,
-      timestamp: new Date().toISOString(),
-      detalhes: {
-        descricao: `Evento simulado ${i + 1} de ${quantidadeEventos}`,
-        progresso: ((i + 1) / quantidadeEventos) * 100
-      }
-    };
-    
-    await publicarEvento(tipo, dados);
-    
-    // Esperar intervalo antes de próximo evento
-    if (i < quantidadeEventos - 1) {
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
+  transacoes: TransacaoBancaria[],
+  lancamentos: Lancamento[]
+): Promise<ResultadoReconciliacao> => {
+  // Simula o processamento de reconciliação e o fluxo de eventos
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Vamos simular a reconciliação com base nos dados fornecidos
+  // Imaginando que cerca de 60-70% das transações serão reconciliadas
+  const transacoesConciliadas: any[] = [];
+  const transacoesNaoConciliadas: TransacaoBancaria[] = [];
+  const lancamentosNaoConciliados: Lancamento[] = [];
+  
+  // Copia das listas originais para manipulação
+  const transacoesRestantes = [...transacoes];
+  const lancamentosRestantes = [...lancamentos];
+  
+  // Para cada transação, tenta encontrar um lançamento correspondente
+  transacoesRestantes.forEach((transacao, index) => {
+    if (index < lancamentosRestantes.length && Math.random() > 0.3) {
+      // Probabilidade de 70% de reconciliação
+      const lancamento = lancamentosRestantes[index];
+      
+      // Cria um item reconciliado
+      transacoesConciliadas.push({
+        transacao,
+        lancamento,
+        conciliacaoAutomatica: Math.random() > 0.5,
+        score: 0.7 + (Math.random() * 0.3), // Score entre 0.7 e 1.0
+        dataConciliacao: new Date().toISOString()
+      });
+      
+      // Marca o lançamento como usado
+      lancamentosRestantes[index] = null as any;
+    } else {
+      // Transação não reconciliada
+      transacoesNaoConciliadas.push(transacao);
     }
-  }
+  });
+  
+  // Lançamentos que sobraram são não reconciliados
+  lancamentosRestantes.filter(Boolean).forEach(lancamento => {
+    if (lancamento) lancamentosNaoConciliados.push(lancamento);
+  });
+  
+  // Cria o objeto de resultado
+  const resultado: ResultadoReconciliacao = {
+    transacoesConciliadas,
+    transacoesNaoConciliadas,
+    lancamentosNaoConciliados,
+    totalConciliado: transacoesConciliadas.length,
+    totalNaoConciliado: transacoesNaoConciliadas.length
+  };
+  
+  // Simula a publicação de eventos de reconciliação
+  await publicarEvento('entry.reconciled', {
+    qtdReconciliados: transacoesConciliadas.length,
+    qtdPendentes: transacoesNaoConciliadas.length + lancamentosNaoConciliados.length,
+    timestamp: new Date().toISOString()
+  });
+  
+  return resultado;
 };

@@ -43,67 +43,181 @@ export const calcularImposto = (tipoImposto: string, params: any): any => {
 
 // Função para cálculo de imposto por dados contábeis
 export const calcularImpostoPorDadosContabeis = async (
-  tipoImposto: string,
-  params: any
+  cnpj: string,
+  periodo: string
 ): Promise<any> => {
-  console.log(`Calculando ${tipoImposto} com dados contábeis:`, params);
+  console.log(`Calculando impostos com dados contábeis para CNPJ ${cnpj} no período ${periodo}`);
   
   // Simulação de processamento assíncrono
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // Calcular imposto com os parâmetros fornecidos
-  return calcularImposto(tipoImposto, {
-    ...params,
-    fonte: 'contabilidade'
-  });
+  // Esta é uma implementação simplificada para exemplo
+  return {
+    tipoImposto: 'IRPJ',
+    periodo,
+    cnpj,
+    valorBase: 10000,
+    baseCalculo: 8000,
+    aliquotaEfetiva: 0.15,
+    aliquota: 0.15,
+    valorFinal: 1200,
+    dataVencimento: '2023-03-31',
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '2089',
+    deducoes: 2000
+  };
 };
 
 // Função para cálculo de imposto por notas fiscais
 export const calcularImpostoPorNotasFiscais = async (
-  tipoImposto: string,
-  params: any
+  cnpj: string,
+  periodo: string
 ): Promise<any> => {
-  console.log(`Calculando ${tipoImposto} com notas fiscais:`, params);
+  console.log(`Calculando impostos com notas fiscais para CNPJ ${cnpj} no período ${periodo}`);
   
   // Simulação de processamento assíncrono
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // Calcular imposto com os parâmetros fornecidos
-  return calcularImposto(tipoImposto, {
-    ...params,
-    fonte: 'notasFiscais'
-  });
+  // Esta é uma implementação simplificada para exemplo
+  return {
+    tipoImposto: 'PIS',
+    periodo,
+    cnpj,
+    valorBase: 50000,
+    baseCalculo: 50000,
+    aliquotaEfetiva: 0.0165,
+    aliquota: 0.0165,
+    valorFinal: 825,
+    dataVencimento: '2023-03-25',
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '8109',
+    deducoes: 0
+  };
 };
 
 // Função para cálculo conjunto de impostos por notas fiscais
 export const calcularImpostosPorNotasFiscais = async (
-  tiposImposto: string[],
-  params: any
+  cnpj: string,
+  periodo: string
 ): Promise<any[]> => {
-  console.log(`Calculando impostos [${tiposImposto.join(', ')}] por notas fiscais`);
+  console.log(`Calculando múltiplos impostos por notas fiscais para CNPJ ${cnpj} no período ${periodo}`);
   
-  // Calcular cada imposto individualmente
-  const resultados = await Promise.all(
-    tiposImposto.map(tipo => calcularImpostoPorNotasFiscais(tipo, params))
-  );
+  // Simulação de processamento assíncrono
+  await new Promise(resolve => setTimeout(resolve, 1500));
   
-  return resultados;
+  // Retorna um array com diferentes impostos calculados
+  return [
+    {
+      tipoImposto: 'PIS',
+      periodo,
+      cnpj,
+      valorBase: 50000,
+      baseCalculo: 50000,
+      aliquotaEfetiva: 0.0165,
+      aliquota: 0.0165,
+      valorFinal: 825,
+      dataVencimento: '2023-03-25',
+      calculadoEm: new Date().toISOString(),
+      status: 'ativo',
+      codigoReceita: '8109',
+      deducoes: 0
+    },
+    {
+      tipoImposto: 'COFINS',
+      periodo,
+      cnpj,
+      valorBase: 50000,
+      baseCalculo: 50000,
+      aliquotaEfetiva: 0.076,
+      aliquota: 0.076,
+      valorFinal: 3800,
+      dataVencimento: '2023-03-25',
+      calculadoEm: new Date().toISOString(),
+      status: 'ativo',
+      codigoReceita: '2172',
+      deducoes: 0
+    },
+    {
+      tipoImposto: 'ISS',
+      periodo,
+      cnpj,
+      valorBase: 30000,
+      baseCalculo: 30000,
+      aliquotaEfetiva: 0.05,
+      aliquota: 0.05,
+      valorFinal: 1500,
+      dataVencimento: '2023-04-10',
+      calculadoEm: new Date().toISOString(),
+      status: 'ativo',
+      codigoReceita: 'ISS',
+      deducoes: 0
+    }
+  ];
 };
 
 // Função para cálculo conjunto de impostos por lançamentos contábeis
 export const calcularImpostosPorLancamentos = async (
-  tiposImposto: string[],
-  params: any
+  cnpj: string,
+  periodo: string
 ): Promise<any[]> => {
-  console.log(`Calculando impostos [${tiposImposto.join(', ')}] por lançamentos contábeis`);
+  console.log(`Calculando múltiplos impostos por lançamentos para CNPJ ${cnpj} no período ${periodo}`);
   
-  // Calcular cada imposto individualmente
-  const resultados = await Promise.all(
-    tiposImposto.map(tipo => calcularImpostoPorDadosContabeis(tipo, params))
-  );
+  // Simulação de processamento assíncrono
+  await new Promise(resolve => setTimeout(resolve, 1200));
   
-  return resultados;
+  // Retorna um array com diferentes impostos calculados
+  return [
+    {
+      tipoImposto: 'IRPJ',
+      periodo,
+      cnpj,
+      valorBase: 100000,
+      baseCalculo: 80000,
+      aliquotaEfetiva: 0.15,
+      aliquota: 0.15,
+      valorFinal: 12000,
+      dataVencimento: '2023-03-31',
+      calculadoEm: new Date().toISOString(),
+      status: 'ativo',
+      codigoReceita: '2089',
+      deducoes: 20000
+    },
+    {
+      tipoImposto: 'CSLL',
+      periodo,
+      cnpj,
+      valorBase: 100000,
+      baseCalculo: 80000,
+      aliquotaEfetiva: 0.09,
+      aliquota: 0.09,
+      valorFinal: 7200,
+      dataVencimento: '2023-03-31',
+      calculadoEm: new Date().toISOString(),
+      status: 'ativo',
+      codigoReceita: '2372',
+      deducoes: 20000
+    }
+  ];
 };
 
-// Reexportar a função de geração de DARF do serviço específico
-export { gerarDARF } from "./darfService";
+// DARF generation function
+export const gerarDARF = async (
+  tipoImposto: string, 
+  resultado: any, 
+  cnpj: string
+): Promise<string> => {
+  // Simulate async processing
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  // Generate a fake barcode for demonstration
+  const randomDigits = () => Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  
+  // Create a realistic looking barcode string
+  const barcode = `${randomDigits()}.${randomDigits()} ${randomDigits()}.${randomDigits()} ${randomDigits()}.${randomDigits()} ${randomDigits()}.${randomDigits()}`;
+  
+  return barcode;
+};
