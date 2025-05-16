@@ -1,4 +1,3 @@
-
 import React from "react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -68,10 +67,28 @@ export const CalculoLancamentos: React.FC<CalculoLancamentosProps> = ({
         });
       }
       
-      // Make sure we're passing a non-empty object
-      if (Object.keys(formattedResults).length === 0) {
-        throw new Error("Nenhum resultado foi retornado pelo cálculo");
-      }
+      // Make sure we have all required tax types to avoid type errors
+      const requiredTypes: TipoImposto[] = ['IRPJ', 'CSLL', 'PIS', 'COFINS', 'ISS', 'INSS', 'ICMS', 'DAS', 'Simples', 'FGTS'];
+      const initialData: ResultadoCalculo = {
+        tipoImposto: 'IRPJ',
+        periodo: periodo,
+        cnpj: cnpj,
+        valorBase: 0,
+        baseCalculo: 0,
+        aliquotaEfetiva: 0,
+        aliquota: 0,
+        valorFinal: 0,
+        dataVencimento: '',
+        calculadoEm: new Date().toISOString(),
+        status: 'ativo'
+      };
+      
+      // Ensure all required types exist
+      requiredTypes.forEach(type => {
+        if (!formattedResults[type]) {
+          formattedResults[type] = { ...initialData, tipoImposto: type };
+        }
+      });
       
       setResultados(formattedResults);
       

@@ -112,4 +112,5 @@ export interface TransacaoBancaria {
   tipo: 'credito' | 'debito';
   categoria?: string;
   conciliado?: boolean;
+  contraparte?: string;
 }

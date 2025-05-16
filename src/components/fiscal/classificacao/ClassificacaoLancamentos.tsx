@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,9 +10,11 @@ import { Check, AlertCircle, Brain, RefreshCcw, CheckCircle2 } from "lucide-reac
 import { 
   classificarLancamentos, 
   treinarModelo, 
-  obterEstatisticasModelo, 
+  obterEstatisticasModelo,
+  reclassificarLancamento,
   Lancamento 
 } from "@/services/fiscal/classificacao/classificacaoML";
+import { PainelExcecoes } from "./PainelExcecoes";
 import { toast } from "@/hooks/use-toast";
 
 // Dados de exemplo para demonstração
@@ -141,6 +142,23 @@ export function ClassificacaoLancamentos() {
     });
   };
   
+  // Função de reclassificação para o Painel de Exceções
+  const handleReclassificacaoExterna = (lancamentoAtualizado: Lancamento, novaCategoria: string) => {
+    setClassificados(prevClassificados => 
+      prevClassificados.map(item => 
+        item.id === lancamentoAtualizado.id ? lancamentoAtualizado : item
+      )
+    );
+    
+    toast({
+      title: "Lançamento reclassificado",
+      description: `O lançamento foi reclassificado para "${novaCategoria}" pelo painel de exceções.`
+    });
+    
+    // Atualiza estatísticas após reclassificação
+    setEstatisticas(obterEstatisticasModelo());
+  };
+  
   return (
     <div className="space-y-4">
       <Card>
@@ -175,6 +193,7 @@ export function ClassificacaoLancamentos() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="lancamentos">Lançamentos</TabsTrigger>
+              <TabsTrigger value="excecoes">Painel de Exceções</TabsTrigger>
               <TabsTrigger value="modelo">Modelo ML</TabsTrigger>
               <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
             </TabsList>
@@ -250,6 +269,13 @@ export function ClassificacaoLancamentos() {
                   )}
                 </div>
               )}
+            </TabsContent>
+            
+            <TabsContent value="excecoes">
+              <PainelExcecoes 
+                lancamentosClassificados={classificados} 
+                onReclassificar={handleReclassificacaoExterna}
+              />
             </TabsContent>
             
             <TabsContent value="modelo">

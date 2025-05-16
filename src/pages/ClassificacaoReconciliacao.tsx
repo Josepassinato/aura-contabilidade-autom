@@ -10,10 +10,19 @@ import { Navigate } from 'react-router-dom';
 import { ClassificacaoLancamentos } from "@/components/fiscal/classificacao/ClassificacaoLancamentos";
 import { ReconciliacaoBancaria } from "@/components/fiscal/reconciliacao/ReconciliacaoBancaria";
 import { MonitorEventos } from "@/components/fiscal/mensageria/MonitorEventos";
+import { AnomaliasPainel } from "@/components/fiscal/classificacao/AnomaliasPainel";
 
 const ClassificacaoReconciliacao = () => {
   const { isAuthenticated, isAccountant } = useAuth();
   const [activeTab, setActiveTab] = React.useState("classificacao");
+  const [selectedClientId, setSelectedClientId] = React.useState<string>("");
+
+  // Handler para mudança de cliente
+  const handleClientChange = (client: any) => {
+    if (client && client.id) {
+      setSelectedClientId(client.id);
+    }
+  };
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -34,13 +43,14 @@ const ClassificacaoReconciliacao = () => {
             Motor de regras e ML para classificação automática de lançamentos e reconciliação bancária
           </p>
         </div>
-        <ClientSelector />
+        <ClientSelector onClientChange={handleClientChange} />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="mb-4">
           <TabsTrigger value="classificacao">Classificação ML</TabsTrigger>
           <TabsTrigger value="reconciliacao">Reconciliação Bancária</TabsTrigger>
+          <TabsTrigger value="anomalias">Detecção de Anomalias</TabsTrigger>
           <TabsTrigger value="eventos">Eventos do Sistema</TabsTrigger>
         </TabsList>
 
@@ -50,6 +60,10 @@ const ClassificacaoReconciliacao = () => {
         
         <TabsContent value="reconciliacao">
           <ReconciliacaoBancaria />
+        </TabsContent>
+        
+        <TabsContent value="anomalias">
+          <AnomaliasPainel clientId={selectedClientId} />
         </TabsContent>
         
         <TabsContent value="eventos">
