@@ -36,7 +36,9 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
       
       setEmployees(data || []);
       // Auto-select todos os funcionários ativos
-      setSelectedEmployees(data?.map(emp => emp.id) || []);
+      if (data) {
+        setSelectedEmployees(data.map(emp => emp.id) || []);
+      }
     } catch (error) {
       console.error('Error fetching employees:', error);
       toast({
