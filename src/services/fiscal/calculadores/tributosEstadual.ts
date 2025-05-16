@@ -1,56 +1,91 @@
 
 /**
- * Funções para cálculo de tributos estaduais
+ * Funções para cálculo de tributos estaduais e municipais
  */
 
 import { ParametrosCalculo, ResultadoCalculo } from "../types";
 
+/**
+ * Calcula o ICMS (Imposto sobre Circulação de Mercadorias e Serviços)
+ */
 export const calcularICMS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de ICMS
-  const { valor, aliquota = 0.18, deducoes = 0 } = params;
+  const { valor, cnpj, periodo } = params;
   
-  // Base de cálculo
-  let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  // Alíquota padrão (varia por estado)
+  const aliquota = params.aliquota || 0.18; // 18% como exemplo
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (varia por estado, usando o 20 do mês seguinte como exemplo)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
+  const baseCalculo = valor;
+  const valorFinal = baseCalculo * aliquota;
+  
+  // Data de vencimento (geralmente 10º dia do mês seguinte)
+  const dataVencimento = calcularDataVencimentoEstadual(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0]
+    tipoImposto: 'ICMS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: aliquota,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    deducoes: 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };
 
-export const calcularISS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de ISS
-  const { valor, aliquota = 0.05, deducoes = 0 } = params;
+/**
+ * Calcula o ISSQN (Imposto sobre Serviços de Qualquer Natureza)
+ */
+export const calcularISSQN = (params: ParametrosCalculo): ResultadoCalculo => {
+  const { valor, cnpj, periodo } = params;
   
-  // Base de cálculo
-  let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  // Alíquota varia por município e atividade
+  const aliquota = params.aliquota || 0.05; // 5% como exemplo
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (varia por município, usando o 15 do mês seguinte como exemplo)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 15);
+  const baseCalculo = valor;
+  const valorFinal = baseCalculo * aliquota;
+  
+  // Data de vencimento (geralmente 10º dia do mês seguinte)
+  const dataVencimento = calcularDataVencimentoEstadual(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0]
+    tipoImposto: 'ISS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: aliquota,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    deducoes: 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
+};
+
+/**
+ * Calcula a data de vencimento para tributos estaduais e municipais
+ * (geralmente dia 10 do mês seguinte ao período)
+ */
+const calcularDataVencimentoEstadual = (periodo: string): string => {
+  // Formato esperado do período: "YYYY-MM"
+  const [ano, mes] = periodo.split('-').map(Number);
+  
+  // Data do 10º dia do mês seguinte
+  let proximoMes = mes + 1;
+  let anoVencimento = ano;
+  if (proximoMes > 12) {
+    proximoMes = 1;
+    anoVencimento++;
+  }
+  
+  const dataVencimento = new Date(anoVencimento, proximoMes - 1, 10);
+  
+  return dataVencimento.toISOString().split('T')[0];
 };

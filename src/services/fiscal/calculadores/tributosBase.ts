@@ -1,131 +1,174 @@
 
 /**
- * Funções básicas para cálculo de tributos
+ * Funções comuns para cálculo de tributos federais
  */
 
-import { toast } from "@/hooks/use-toast";
-import { TipoImposto, ParametrosCalculo, ResultadoCalculo } from "../types";
+import { ParametrosCalculo, ResultadoCalculo } from "../types";
 
-// Funções auxiliares para cálculos fiscais
+/**
+ * Calcula o IRPJ (Imposto de Renda Pessoa Jurídica)
+ */
 export const calcularIRPJ = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de IRPJ
-  const { valor, deducoes = 0, regimeTributario } = params;
+  const { valor, regimeTributario, cnpj, periodo } = params;
   
-  // Determinando alíquota baseada no regime tributário
-  let aliquota = 0.15; // Padrão para Lucro Real e Presumido
-  let adicional = 0;
+  // Alíquota depende do regime tributário
+  let aliquota = 0;
+  let baseCalculo = valor;
   
-  // Base de cálculo
-  let baseCalculo = regimeTributario === 'LucroPresumido' ? valor * 0.32 : valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
-  
-  // Cálculo do imposto
-  let valorImposto = baseCalculo * aliquota;
-  
-  // Adicional de 10% sobre o valor que exceder R$ 20.000,00 mensais
-  if (baseCalculo > 20000) {
-    adicional = (baseCalculo - 20000) * 0.1;
-    valorImposto += adicional;
+  if (regimeTributario === 'LucroPresumido') {
+    aliquota = 0.15;
+    baseCalculo = valor * 0.32; // Presunção de 32% para serviços em geral
+  } else if (regimeTributario === 'LucroReal') {
+    aliquota = 0.15;
+    // No Lucro Real, a base de cálculo seria o lucro contábil ajustado
+    baseCalculo = valor - (params.deducoes || 0);
   }
-
-  // Data de vencimento (último dia útil do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 2, 0);
+  
+  const valorFinal = baseCalculo * aliquota;
+  const dataVencimento = calcularDataVencimento(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: '2203'
+    tipoImposto: 'IRPJ',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: valorFinal / valor,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '2203',
+    deducoes: params.deducoes || 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };
 
+/**
+ * Calcula a CSLL (Contribuição Social sobre o Lucro Líquido)
+ */
 export const calcularCSLL = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de CSLL
-  const { valor, deducoes = 0, regimeTributario } = params;
+  const { valor, regimeTributario, cnpj, periodo } = params;
   
-  // Alíquota CSLL (9% para Lucro Real/Presumido)
-  const aliquota = 0.09;
+  // Alíquota depende do regime tributário
+  let aliquota = 0;
+  let baseCalculo = valor;
   
-  // Base de cálculo
-  let baseCalculo = regimeTributario === 'LucroPresumido' ? valor * 0.32 : valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  if (regimeTributario === 'LucroPresumido') {
+    aliquota = 0.09;
+    baseCalculo = valor * 0.32; // Presunção de 32% para serviços em geral
+  } else if (regimeTributario === 'LucroReal') {
+    aliquota = 0.09;
+    // No Lucro Real, a base de cálculo seria o lucro contábil ajustado
+    baseCalculo = valor - (params.deducoes || 0);
+  }
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (último dia útil do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 2, 0);
+  const valorFinal = baseCalculo * aliquota;
+  const dataVencimento = calcularDataVencimento(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: '2372'
+    tipoImposto: 'CSLL',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: valorFinal / valor,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '2372',
+    deducoes: params.deducoes || 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };
 
+/**
+ * Calcula o PIS (Programa de Integração Social)
+ */
 export const calcularPIS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de PIS
-  const { valor, deducoes = 0, regimeTributario } = params;
+  const { valor, regimeTributario, cnpj, periodo } = params;
   
-  // Alíquota PIS (0.65% para Lucro Presumido, 1.65% para Lucro Real)
-  const aliquota = regimeTributario === 'LucroPresumido' ? 0.0065 : 0.0165;
-  
-  // Base de cálculo
+  // Alíquota depende do regime tributário
+  let aliquota = 0;
   let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (25 do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 25);
+  if (regimeTributario === 'LucroPresumido' || regimeTributario === 'LucroReal') {
+    aliquota = 0.0165; // 1,65% na modalidade não-cumulativa
+    // Deduções permitidas no regime não-cumulativo
+    baseCalculo = valor - (params.deducoes || 0);
+  }
+  
+  const valorFinal = baseCalculo * aliquota;
+  const dataVencimento = calcularDataVencimento(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: regimeTributario === 'LucroPresumido' ? '8109' : '6912'
+    tipoImposto: 'PIS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: valorFinal / valor,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '8109',
+    deducoes: params.deducoes || 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };
 
+/**
+ * Calcula o COFINS (Contribuição para o Financiamento da Seguridade Social)
+ */
 export const calcularCOFINS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de COFINS
-  const { valor, deducoes = 0, regimeTributario } = params;
+  const { valor, regimeTributario, cnpj, periodo } = params;
   
-  // Alíquota COFINS (3% para Lucro Presumido, 7.6% para Lucro Real)
-  const aliquota = regimeTributario === 'LucroPresumido' ? 0.03 : 0.076;
-  
-  // Base de cálculo
+  // Alíquota depende do regime tributário
+  let aliquota = 0;
   let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (25 do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 25);
+  if (regimeTributario === 'LucroPresumido' || regimeTributario === 'LucroReal') {
+    aliquota = 0.076; // 7,6% na modalidade não-cumulativa
+    // Deduções permitidas no regime não-cumulativo
+    baseCalculo = valor - (params.deducoes || 0);
+  }
+  
+  const valorFinal = baseCalculo * aliquota;
+  const dataVencimento = calcularDataVencimento(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: regimeTributario === 'LucroPresumido' ? '2172' : '5856'
+    tipoImposto: 'COFINS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: valorFinal / valor,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '2172',
+    deducoes: params.deducoes || 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
+};
+
+/**
+ * Calcula a data de vencimento para tributos federais
+ * (geralmente dia 20 do mês seguinte ao período)
+ */
+const calcularDataVencimento = (periodo: string): string => {
+  // Formato esperado do período: "YYYY-MM"
+  const [ano, mes] = periodo.split('-').map(Number);
+  
+  // Data do último dia do mês seguinte
+  const dataVencimento = new Date(ano, mes, 20);
+  
+  return dataVencimento.toISOString().split('T')[0];
 };

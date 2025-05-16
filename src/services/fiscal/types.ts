@@ -38,6 +38,7 @@ export interface ResultadoCalculo {
     fonte: 'notasFiscais' | 'contabilidade' | 'lancamentos' | 'microservice-simulator';
     totalRegistros?: number;
     documentos?: any[];
+    parametros?: Record<string, any>;
   };
   valorImposto?: number; // Added for legacy support
 }
@@ -72,3 +73,39 @@ export interface EventoFiscal {
 }
 
 export type EventoSubscriber = (evento: EventoFiscal) => void | Promise<void>;
+
+// Interface for ReconciliacaoBancaria component
+export interface ResultadoReconciliacao {
+  transacoesConciliadas: Array<any>;
+  transacoesNaoConciliadas: Array<any>;
+  totalConciliado: number;
+  totalNaoConciliado: number;
+}
+
+// Interface for document management
+export interface DocumentoArrecadacao {
+  id: string;
+  tipo: "DARF" | "GPS" | "DAS" | "GARE";
+  cnpj: string;
+  periodo: string;
+  codigoReceita: string;
+  valorPrincipal: number;
+  valorJuros?: number;
+  valorMulta?: number;
+  valorTotal: number;
+  dataVencimento: string;
+  referencia: string;
+  codigoBarras?: string;
+  linhaDigitavel?: string;
+  geradoEm: string;
+}
+
+export interface TransacaoBancaria {
+  id: string;
+  data: string;
+  valor: number;
+  descricao: string;
+  tipo: 'credito' | 'debito';
+  categoria?: string;
+  conciliado?: boolean;
+}

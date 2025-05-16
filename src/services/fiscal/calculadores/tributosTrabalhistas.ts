@@ -5,60 +5,94 @@
 
 import { ParametrosCalculo, ResultadoCalculo } from "../types";
 
-export const calcularINSS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de INSS para pessoa jurídica (patronal)
-  const { valor, deducoes = 0 } = params;
+/**
+ * Calcula o FGTS (Fundo de Garantia do Tempo de Serviço)
+ */
+export const calcularFGTS = (params: ParametrosCalculo): ResultadoCalculo => {
+  const { valor, cnpj, periodo } = params;
   
-  // Alíquota INSS patronal básica (20%)
-  const aliquota = 0.2;
+  // Alíquota padrão de 8% para o FGTS
+  const aliquota = 0.08;
   
-  // Base de cálculo
-  let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  const baseCalculo = valor;
+  const valorFinal = baseCalculo * aliquota;
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (dia 20 do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
+  // Data de vencimento (dia 7 do mês seguinte)
+  const dataVencimento = calcularDataVencimentoTrabalhista(periodo);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: '2100'
+    tipoImposto: 'FGTS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: aliquota,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '0115',
+    deducoes: 0,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };
 
-export const calcularFGTS = (params: ParametrosCalculo): ResultadoCalculo => {
-  // Implementação simplificada de cálculo de FGTS
-  const { valor, deducoes = 0 } = params;
+/**
+ * Calcula o INSS (Instituto Nacional do Seguro Social) - parte patronal
+ */
+export const calcularINSS = (params: ParametrosCalculo): ResultadoCalculo => {
+  const { valor, cnpj, periodo } = params;
   
-  // Alíquota FGTS (8%)
-  const aliquota = 0.08;
+  // Alíquota básica de 20% para contribuição patronal
+  const aliquota = 0.20;
   
-  // Base de cálculo
-  let baseCalculo = valor;
-  baseCalculo = Math.max(0, baseCalculo - deducoes);
+  // Algumas empresas podem ter redução na base de cálculo
+  const deducoes = params.deducoes || 0;
   
-  // Cálculo do imposto
-  const valorImposto = baseCalculo * aliquota;
-
-  // Data de vencimento (dia 7 do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
-  const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 7);
+  const baseCalculo = valor - deducoes;
+  const valorFinal = baseCalculo * aliquota;
+  
+  // RAT/FAP pode variar entre empresas (não implementado neste exemplo)
+  
+  // Data de vencimento (dia 20 do mês seguinte)
+  const dataVencimento = calcularDataVencimentoTrabalhista(periodo, 20);
   
   return {
-    valorBase: baseCalculo,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
+    tipoImposto: 'INSS',
+    periodo,
+    cnpj,
+    valorBase: valor,
+    baseCalculo,
+    aliquotaEfetiva: valorFinal / valor,
+    aliquota,
+    valorFinal,
+    dataVencimento,
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: '2100',
     deducoes,
-    valorFinal: valorImposto,
-    dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: 'FGTS'
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
+};
+
+/**
+ * Calcula a data de vencimento para tributos trabalhistas
+ * (varia conforme o tributo)
+ */
+const calcularDataVencimentoTrabalhista = (periodo: string, dia: number = 7): string => {
+  // Formato esperado do período: "YYYY-MM"
+  const [ano, mes] = periodo.split('-').map(Number);
+  
+  // Data do dia especificado do mês seguinte
+  let proximoMes = mes + 1;
+  let anoVencimento = ano;
+  if (proximoMes > 12) {
+    proximoMes = 1;
+    anoVencimento++;
+  }
+  
+  const dataVencimento = new Date(anoVencimento, proximoMes - 1, dia);
+  
+  return dataVencimento.toISOString().split('T')[0];
 };

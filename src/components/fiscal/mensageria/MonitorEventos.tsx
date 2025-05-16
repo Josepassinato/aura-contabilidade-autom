@@ -6,32 +6,29 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bell, AlertTriangle, Activity, RefreshCw } from "lucide-react";
 import { 
-  subscribe, 
-  TipoEvento, 
-  EventoFiscal
+  subscribe,
+  EventoFiscal,
+  TipoEvento
 } from "@/services/fiscal/mensageria/eventoProcessor";
-
-// Define AllEventTypes to include all the event types we need to handle
-type AllEventTypes = TipoEvento;
 
 export function MonitorEventos() {
   const [eventos, setEventos] = useState<EventoFiscal[]>([]);
-  const [filtroTipo, setFiltroTipo] = useState<AllEventTypes | 'todos'>('todos');
+  const [filtroTipo, setFiltroTipo] = useState<TipoEvento | 'todos'>('todos');
   
   // Assina todos os tipos de eventos quando o componente é montado
   useEffect(() => {
     const canceladores: (() => void)[] = [];
     
     const tiposEvento: TipoEvento[] = [
-      'bank.transaction',
-      'entry.created',
-      'entry.classified',
-      'entry.reconciled',
       'fiscal.calculated',
       'fiscal.generated',
       'guia.generated',
       'pagamento.scheduled',
-      'pagamento.executed'
+      'pagamento.executed',
+      'bank.transaction',
+      'entry.created',
+      'entry.classified',
+      'entry.reconciled'
     ];
     
     // Assina cada tipo de evento
@@ -110,7 +107,7 @@ export function MonitorEventos() {
           <div className="flex space-x-2">
             <select
               value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value as AllEventTypes | 'todos')}
+              onChange={(e) => setFiltroTipo(e.target.value as TipoEvento | 'todos')}
               className="border rounded-md p-1 text-sm"
             >
               <option value="todos">Todos os eventos</option>

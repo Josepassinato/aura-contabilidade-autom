@@ -5,42 +5,24 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { publicarEvento } from "./mensageria/eventoProcessor";
-
-interface DocumentoArrecadacao {
-  id: string;
-  tipo: "DARF" | "GPS" | "DAS" | "GARE";
-  cnpj: string;
-  periodo: string;
-  codigoReceita: string;
-  valorPrincipal: number;
-  valorJuros?: number;
-  valorMulta?: number;
-  valorTotal: number;
-  dataVencimento: string;
-  referencia: string;
-  codigoBarras?: string;
-  linhaDigitavel?: string;
-  geradoEm: string;
-}
-
-interface GeracaoDocumentoParams {
-  cnpj: string;
-  periodo: string;
-  codigoReceita: string;
-  valorPrincipal: number;
-  valorJuros?: number;
-  valorMulta?: number;
-  valorTotal: number;
-  dataVencimento: string;
-  referencia: string;
-}
+import { TipoImposto, ResultadoCalculo, DocumentoArrecadacao } from "./types";
 
 /**
  * Gera um documento de arrecadação (DARF, GPS, DAS, etc)
  */
 export const gerarDocumentoArrecadacao = async (
   tipo: "DARF" | "GPS" | "DAS" | "GARE",
-  params: GeracaoDocumentoParams
+  params: {
+    cnpj: string;
+    periodo: string;
+    codigoReceita: string;
+    valorPrincipal: number;
+    valorJuros?: number;
+    valorMulta?: number;
+    valorTotal: number;
+    dataVencimento: string;
+    referencia: string;
+  }
 ): Promise<DocumentoArrecadacao> => {
   try {
     console.log(`Gerando ${tipo} para ${params.cnpj} - período ${params.periodo}`);
@@ -88,8 +70,30 @@ export const gerarDocumentoArrecadacao = async (
 };
 
 /**
- * Alias para gerarDocumentoArrecadacao com tipo DARF
+ * Gera um documento DARF a partir de um resultado de cálculo
  */
-export const gerarDARF = async (params: GeracaoDocumentoParams): Promise<DocumentoArrecadacao> => {
-  return gerarDocumentoArrecadacao("DARF", params);
+export const gerarDARF = async (
+  tipoImposto: TipoImposto, 
+  resultado: ResultadoCalculo,
+  cnpj: string
+): Promise<string> => {
+  try {
+    const documento = await gerarDocumentoArrecadacao("DARF", {
+      cnpj: cnpj || resultado.cnpj,
+      periodo: resultado.periodo,
+      codigoReceita: resultado.codigoReceita || "0000",
+      valorPrincipal: resultado.valorFinal,
+      valorJuros: 0,
+      valorMulta: 0,
+      valorTotal: resultado.valorFinal,
+      dataVencimento: resultado.dataVencimento,
+      referencia: `${tipoImposto} - ${resultado.periodo}`
+    });
+    
+    // Retornar o código de barras para pagamento
+    return documento.codigoBarras || "";
+  } catch (error) {
+    console.error("Erro ao gerar DARF:", error);
+    throw new Error(`Falha ao gerar DARF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+  }
 };

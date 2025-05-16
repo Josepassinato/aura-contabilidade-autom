@@ -7,7 +7,7 @@ import { ParametrosCalculo, ResultadoCalculo } from "../types";
 
 export const calcularSimples = (params: ParametrosCalculo): ResultadoCalculo => {
   // Implementação simplificada do cálculo do Simples Nacional
-  const { valor, cnpj } = params;
+  const { valor, cnpj, periodo } = params;
   
   // Em uma implementação real, buscaríamos a faixa e anexo do Simples
   // com base no CNPJ e faturamento acumulado
@@ -17,13 +17,13 @@ export const calcularSimples = (params: ParametrosCalculo): ResultadoCalculo => 
   const valorFinal = valor * aliquota - deducao;
 
   // Data de vencimento (dia 20 do mês seguinte)
-  const dataPeriodo = new Date(params.periodo + '-01');
+  const dataPeriodo = new Date(periodo + '-01');
   const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
   
   return {
     tipoImposto: 'Simples',
-    periodo: params.periodo,
-    cnpj: params.cnpj,
+    periodo: periodo,
+    cnpj: cnpj,
     valorBase: valor,
     baseCalculo: valor,
     aliquotaEfetiva: aliquota,
@@ -33,6 +33,7 @@ export const calcularSimples = (params: ParametrosCalculo): ResultadoCalculo => 
     calculadoEm: new Date().toISOString(),
     status: 'ativo',
     codigoReceita: 'DAS',
-    deducoes: deducao
+    deducoes: deducao,
+    valorImposto: valorFinal // Mantendo compatibilidade
   };
 };

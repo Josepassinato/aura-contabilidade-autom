@@ -187,13 +187,20 @@ export async function executarWorkflow(workflowId: string): Promise<WorkflowCalc
       } else {
         // Para outros impostos, usaríamos outros endpoints, mas para simulação:
         resultado = {
+          tipoImposto,
+          periodo: workflow.periodo,
+          cnpj: workflow.cnpj,
           valorBase: params.valor,
-          valorImposto: params.valor * 0.05, // 5% genérico
+          baseCalculo: params.valor,
           aliquotaEfetiva: 0.05,
-          deducoes: params.deducoes,
+          aliquota: 0.05,
           valorFinal: params.valor * 0.05,
+          valorImposto: params.valor * 0.05,
+          calculadoEm: new Date().toISOString(),
+          status: 'ativo',
           dataVencimento: new Date().toISOString().split('T')[0],
-          codigoReceita: "0000"
+          codigoReceita: "0000",
+          deducoes: params.deducoes
         };
       }
       
@@ -203,7 +210,7 @@ export async function executarWorkflow(workflowId: string): Promise<WorkflowCalc
       const barCode = await gerarDARF(tipoImposto, resultado, workflow.cnpj);
       codigosBarras[tipoImposto] = barCode;
       
-      console.log(`DARF gerado para ${tipoImposto}: ${barCode.substring(0, 20)}...`);
+      console.log(`DARF gerado para ${tipoImposto}: ${barCode}`);
     }
     
     // Atualizar workflow com resultados

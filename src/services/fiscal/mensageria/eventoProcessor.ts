@@ -4,11 +4,11 @@
  * Implementa um sistema pub/sub para comunicação entre módulos
  */
 
-import { EventoFiscal, TipoEvento, EventoSubscriber } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { EventoFiscal, TipoEvento, EventoSubscriber } from "../types";
 
 // Re-export types for components that need them
-export { EventoFiscal, TipoEvento, EventoSubscriber };
+export type { EventoFiscal, TipoEvento, EventoSubscriber };
 
 // Armazenamento interno de subscribers por tipo de evento
 const subscribers: Map<TipoEvento, EventoSubscriber[]> = new Map();
@@ -116,6 +116,26 @@ export const publicarEvento = async (tipo: TipoEvento, dados: Record<string, any
 };
 
 /**
+ * Simula um evento fiscal para testes
+ */
+export const simularEvento = async (tipo: TipoEvento): Promise<EventoFiscal> => {
+  const dados = {
+    simulacao: true,
+    cnpj: '12345678000199',
+    periodo: '2023-01',
+    valor: Math.floor(Math.random() * 1000) + 500,
+    tipoImposto: 'IRPJ' as TipoImposto,
+    dataVencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    contribuinte: 'Empresa Simulada LTDA'
+  };
+  
+  console.log(`Simulando evento: ${tipo}`, dados);
+  
+  // Publicar o evento simulado
+  return await publicarEvento(tipo, dados);
+};
+
+/**
  * Retorna os eventos recentes para fins de debug
  */
 export const obterEventosRecentes = (): EventoFiscal[] => {
@@ -134,12 +154,11 @@ export const limparEventosRecentes = (): void => {
  * necessário para ReconciliacaoBancaria.tsx
  */
 export const simularFluxoProcessamento = async (
-  tipo: string, 
+  tipo: TipoEvento, 
   quantidadeEventos: number = 5, 
   intervalMs: number = 1000
 ): Promise<void> => {
   for (let i = 0; i < quantidadeEventos; i++) {
-    const tipoEvento = tipo as TipoEvento;
     const dados = {
       simulacao: true,
       indice: i + 1,
@@ -151,7 +170,7 @@ export const simularFluxoProcessamento = async (
       }
     };
     
-    await publicarEvento(tipoEvento, dados);
+    await publicarEvento(tipo, dados);
     
     // Esperar intervalo antes de próximo evento
     if (i < quantidadeEventos - 1) {
