@@ -1,6 +1,21 @@
 
 import { useQuery, UseQueryOptions, QueryKey } from '@tanstack/react-query';
 import { PostgrestError } from '@supabase/supabase-js';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+export function QueryProvider({ children }: { children: React.ReactNode }) {
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
 
 type FetchFunction<TData = any> = () => Promise<{ data: TData | null; error: PostgrestError | null }>;
 
@@ -49,20 +64,9 @@ export function useSupabaseQuery<
   queryFn: FetchFunction<TData>,
   options?: Omit<UseQueryOptions<{ data: TData | null; error: PostgrestError | null }, TError, { data: TData | null; error: PostgrestError | null }, TQueryKey>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery({
+  return useQuery<{ data: TData | null; error: PostgrestError | null }, TError>({
     queryKey,
     queryFn,
-    ...options,
-    onSettled: (data, error) => {
-      // Handle error in the onSettled callback
-      if (error) {
-        console.error('Query error:', error);
-      }
-      
-      // Call user-provided onSettled if present
-      if (options?.onSettled) {
-        options.onSettled(data, error);
-      }
-    }
+    ...options
   });
 }
