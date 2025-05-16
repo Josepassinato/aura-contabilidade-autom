@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
@@ -104,56 +103,54 @@ const IntegracoesEstaduais = () => {
   };
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6 pb-24">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold tracking-tight">Integrações Estaduais</h1>
-              <Button variant="outline" size="sm" asChild className="ml-2">
-                <Link to="/">
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Dashboard
-                </Link>
-              </Button>
-            </div>
-            <p className="text-muted-foreground">
-              Configure o acesso aos portais das secretarias estaduais da fazenda
-            </p>
+    <div className="space-y-6 pb-24">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-bold tracking-tight">Integrações Estaduais</h1>
+            <Button variant="outline" size="sm" asChild className="ml-2">
+              <Link to="/">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Dashboard
+              </Link>
+            </Button>
           </div>
-          <ClientSelector onClientSelect={handleClientSelect} />
+          <p className="text-muted-foreground">
+            Configure o acesso aos portais das secretarias estaduais da fazenda
+          </p>
         </div>
-        
-        {!selectedClientId ? (
-          <EmptyClientState />
-        ) : (
-          <>
-            {isLoading ? (
-              <div className="text-center py-12">
-                <p>Carregando integrações...</p>
-              </div>
-            ) : (
-              <>
-                <IntegracaoStatusGrid 
-                  integracoes={integracoes} 
-                  selectedUf={activeTab}
-                  onUfSelect={handleUfSelect}
-                />
-                
-                <UfTabs
-                  estados={ESTADOS}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  clientId={selectedClientId}
-                  clientName={selectedClientName}
-                  onSave={handleSaveIntegracao}
-                />
-              </>
-            )}
-          </>
-        )}
+        <ClientSelector onClientSelect={handleClientSelect} />
       </div>
-    </DashboardLayout>
+      
+      {!selectedClientId ? (
+        <EmptyClientState />
+      ) : (
+        <>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p>Carregando integrações...</p>
+            </div>
+          ) : (
+            <>
+              <IntegracaoStatusGrid 
+                integracoes={integracoes} 
+                selectedUf={activeTab}
+                onUfSelect={handleUfSelect}
+              />
+              
+              <UfTabs
+                estados={ESTADOS}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                clientId={selectedClientId}
+                clientName={selectedClientName}
+                onSave={handleSaveIntegracao}
+              />
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 

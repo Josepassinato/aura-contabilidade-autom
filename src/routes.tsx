@@ -26,6 +26,8 @@ import EmailService from "@/pages/EmailService";
 import GuiasFiscais from "@/pages/GuiasFiscais";
 import AnalisesPreditivas from "@/pages/AnalisesPreditivas";
 import Colaboradores from "@/pages/Colaboradores";
+import IntegracoesGov from "@/pages/IntegracoesGov";
+import IntegracoesEstaduais from "@/pages/IntegracoesEstaduais";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
@@ -144,6 +146,15 @@ const routes = createBrowserRouter([
       {
         path: "obrigacoes-fiscais",
         element: <ObrigacoesFiscais />
+      },
+      // Adding missing routes for Integrações governamentais
+      {
+        path: "integracoes-gov",
+        element: <IntegracoesGov />
+      },
+      {
+        path: "integracoes-estaduais",
+        element: <IntegracoesEstaduais />
       }
     ]
   },
