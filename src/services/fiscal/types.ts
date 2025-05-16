@@ -1,3 +1,4 @@
+
 /**
  * Definição de tipos para o sistema fiscal
  */
@@ -77,9 +78,9 @@ export type EventoSubscriber = (evento: EventoFiscal) => void | Promise<void>;
 export interface ResultadoReconciliacao {
   transacoesConciliadas: Array<any>;
   transacoesNaoConciliadas: Array<any>;
-  lancamentosNaoConciliados: Array<any>; // Adding missing property
+  lancamentosNaoConciliados: Array<any>;
   totalConciliado: number;
-  totalNaoConciliado: number | { // Make this flexible to accommodate both versions
+  totalNaoConciliado: number | {
     transacoes: number;
     lancamentos: number;
   };

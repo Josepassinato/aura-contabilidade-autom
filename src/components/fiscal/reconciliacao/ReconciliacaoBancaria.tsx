@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { 
   Card, 
@@ -169,9 +170,14 @@ export function ReconciliacaoBancaria() {
         transacoesNaoConciliadas: resultado.transacoesNaoConciliadas,
         lancamentosNaoConciliados: resultado.lancamentosNaoConciliados,
         totalConciliado: resultado.totalConciliado,
-        totalNaoConciliado: typeof resultado.totalNaoConciliado === 'number' 
-          ? resultado.totalNaoConciliado
-          : resultado.totalNaoConciliado.transacoes + resultado.totalNaoConciliado.lancamentos
+        totalNaoConciliado: {
+          transacoes: typeof resultado.totalNaoConciliado === 'object' 
+            ? resultado.totalNaoConciliado.transacoes 
+            : resultado.totalNaoConciliado,
+          lancamentos: typeof resultado.totalNaoConciliado === 'object'
+            ? resultado.totalNaoConciliado.lancamentos
+            : 0
+        }
       };
       
       setResultadoReconciliacao(typedResult);

@@ -155,52 +155,52 @@ export const limparEventosRecentes = (): void => {
  * necessário para ReconciliacaoBancaria.tsx
  */
 export const simularFluxoProcessamento = async (
-  transacoes: TransacaoBancaria[],
+  transacoes: TransacaoBancaria[], 
   lancamentos: Lancamento[]
 ): Promise<ResultadoReconciliacao> => {
-  // Simula o processamento de reconciliação e o fluxo de eventos
-  await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Vamos simular a reconciliação com base nos dados fornecidos
-  // Imaginando que cerca de 60-70% das transações serão reconciliadas
+  // Simulamos algum tempo de processamento
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // Vamos simular a conciliação
   const transacoesConciliadas: any[] = [];
-  const transacoesNaoConciliadas: TransacaoBancaria[] = [];
-  const lancamentosNaoConciliados: Lancamento[] = [];
+  const transacoesNaoConciliadas: any[] = [];
+  const lancamentosNaoConciliados: any[] = [];
   
-  // Copia das listas originais para manipulação
-  const transacoesRestantes = [...transacoes];
-  const lancamentosRestantes = [...lancamentos];
-  
-  // Para cada transação, tenta encontrar um lançamento correspondente
-  transacoesRestantes.forEach((transacao, index) => {
-    if (index < lancamentosRestantes.length && Math.random() > 0.3) {
-      // Probabilidade de 70% de reconciliação
-      const lancamento = lancamentosRestantes[index];
-      
-      // Cria um item reconciliado
+  // Marcar algumas transações como conciliadas (simulação simples)
+  transacoes.forEach((transacao, index) => {
+    if (index < lancamentos.length && index % 3 !== 0) {
+      // Conciliar com o lançamento correspondente
       transacoesConciliadas.push({
         transacao,
-        lancamento,
+        lancamento: lancamentos[index],
+        score: 0.7 + Math.random() * 0.3, // Score entre 0.7 e 1.0
         conciliacaoAutomatica: Math.random() > 0.5,
-        score: 0.7 + (Math.random() * 0.3), // Score entre 0.7 e 1.0
-        dataConciliacao: new Date().toISOString()
+        timestamp: new Date().toISOString()
       });
-      
-      // Marca o lançamento como usado
-      lancamentosRestantes[index] = null as any;
     } else {
-      // Transação não reconciliada
       transacoesNaoConciliadas.push(transacao);
     }
   });
   
-  // Lançamentos que sobraram são não reconciliados
-  lancamentosRestantes.filter(Boolean).forEach(lancamento => {
-    if (lancamento) lancamentosNaoConciliados.push(lancamento);
+  // Adicionar lançamentos não conciliados
+  lancamentos.forEach((lancamento, index) => {
+    if (index >= transacoes.length || index % 4 === 0) {
+      lancamentosNaoConciliados.push(lancamento);
+    }
   });
   
-  // Cria o objeto de resultado
-  const resultado: ResultadoReconciliacao = {
+  // Simular o evento de conciliação
+  await gerarEvento(
+    'entry.reconciled',
+    `Reconciliação automática: ${transacoesConciliadas.length} itens conciliados`,
+    {
+      totalConciliado: transacoesConciliadas.length,
+      timestamp: new Date().toISOString()
+    }
+  );
+  
+  return {
     transacoesConciliadas,
     transacoesNaoConciliadas,
     lancamentosNaoConciliados,
@@ -210,13 +210,44 @@ export const simularFluxoProcessamento = async (
       lancamentos: lancamentosNaoConciliados.length
     }
   };
+};
+
+/**
+ * Gera um evento e notifica os subscribers
+ */
+export const gerarEvento = async (tipo: TipoEvento, mensagem: string, dados: Record<string, any>): Promise<EventoFiscal> => {
+  const evento: EventoFiscal = {
+    id: uuidv4(),
+    tipo,
+    timestamp: new Date().toISOString(),
+    origem: 'sistema-fiscal',
+    dados,
+  };
   
-  // Simula a publicação de eventos de reconciliação
-  await publicarEvento('entry.reconciled', {
-    qtdReconciliados: transacoesConciliadas.length,
-    qtdPendentes: transacoesNaoConciliadas.length + lancamentosNaoConciliados.length,
-    timestamp: new Date().toISOString()
-  });
+  // Guardar evento na lista recente
+  eventosRecentes.push(evento);
   
-  return resultado;
+  // Manter apenas os MAX_EVENTOS_GUARDADOS mais recentes
+  if (eventosRecentes.length > MAX_EVENTOS_GUARDADOS) {
+    eventosRecentes.shift();
+  }
+  
+  console.log(`Evento publicado: ${tipo}`, dados);
+  
+  // Notificar todos os subscribers de forma assíncrona
+  const eventoSubscribers = subscribers.get(tipo);
+  if (eventoSubscribers && eventoSubscribers.length > 0) {
+    // Usar Promise.all para esperar que todos os handlers completem
+    await Promise.all(
+      eventoSubscribers.map(async (callback) => {
+        try {
+          await callback(evento);
+        } catch (error) {
+          console.error(`Erro ao processar evento ${tipo} por subscriber:`, error);
+        }
+      })
+    );
+  }
+  
+  return evento;
 };

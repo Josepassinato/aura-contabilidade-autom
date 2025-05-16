@@ -58,7 +58,7 @@ export const CalculoNotasFiscais: React.FC<CalculoNotasFiscaisProps> = ({
       const result = await calcularImpostosPorNotasFiscais(cnpj, periodo);
       
       // Convert array results to record object
-      const formattedResults: Record<TipoImposto, ResultadoCalculo> = {};
+      const formattedResults: Record<TipoImposto, ResultadoCalculo> = {} as Record<TipoImposto, ResultadoCalculo>;
       
       if (Array.isArray(result)) {
         result.forEach((item: ResultadoCalculo) => {
