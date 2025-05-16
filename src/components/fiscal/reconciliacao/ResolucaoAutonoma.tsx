@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Card, 
@@ -81,9 +80,16 @@ export function ResolucaoAutonoma({
         decididoPor: 'sistema_automatico'
       });
       
+      // Calcular o total de resoluções para exibir na notificação
+      const totalResolucoes = resultadoResolucao.duplicacoesResolvidas + 
+        resultadoResolucao.divergenciasCorrigidas +
+        resultadoResolucao.lancamentosCriados.length +
+        resultadoResolucao.transacoesIgnoradas.length +
+        resultadoResolucao.padroesAplicados;
+      
       toast({
         title: "Resolução automática concluída",
-        description: `${resultadoResolucao.totalResolucoes} discrepâncias resolvidas com sucesso.`
+        description: `${totalResolucoes} discrepâncias resolvidas com sucesso.`
       });
     } catch (error) {
       console.error("Erro na resolução automática:", error);
