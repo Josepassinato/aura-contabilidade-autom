@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Mail, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { sendEmail, sendTemplateEmail, EmailOptions } from "@/services/email/emailService";
+import { sendEmail, sendTemplateEmail, EmailData } from "@/services/email/emailService";
 
 interface EmailSenderProps {
   defaultTo?: string;
@@ -131,17 +131,17 @@ export function EmailSender({
         }
         
         // Prepare email options
-        const emailOptions: EmailOptions = {
+        const emailData: EmailData = {
           to: to.split(',').map(email => email.trim()),
           subject,
           body,
           isHtml
         };
         
-        if (cc) emailOptions.cc = cc.split(',').map(email => email.trim());
-        if (bcc) emailOptions.bcc = bcc.split(',').map(email => email.trim());
+        if (cc) emailData.cc = cc.split(',').map(email => email.trim());
+        if (bcc) emailData.bcc = bcc.split(',').map(email => email.trim());
         
-        const result = await sendEmail(emailOptions);
+        const result = await sendEmail(emailData);
         success = result.success;
       }
       
