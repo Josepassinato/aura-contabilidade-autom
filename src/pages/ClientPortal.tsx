@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ClientHeader } from "@/components/client-portal/ClientHeader";
@@ -8,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { LogOut, Mic } from "lucide-react";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { VoiceAssistantButton } from "@/components/layout/VoiceAssistantButton";
+import { ClientDocumentUpload } from "@/components/client-portal/ClientDocumentUpload";
+import { ExternalIntegrations } from "@/components/client-portal/ExternalIntegrations";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -125,7 +126,18 @@ const ClientPortal = () => {
       </header>
       
       <main className="flex-1 container py-6">
+        {/* Add new document upload component above the tabs */}
+        <div className="mb-6">
+          <ClientDocumentUpload clientId={clientId || ''} />
+        </div>
+
+        {/* Main content tabs */}
         <ClientPortalTabs toggleAssistant={toggleAssistant} />
+        
+        {/* External integrations section */}
+        <div className="mt-8">
+          <ExternalIntegrations clientId={clientId || ''} />
+        </div>
       </main>
       
       <footer className="border-t py-4">
