@@ -1,41 +1,65 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { ClientAccessForm } from "@/components/client-access/ClientAccessForm";
 import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
 import { ClientTokenManager } from "@/components/client-access/ClientTokenManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 
 const ClientAccess = () => {
-  const { isAuthenticated, isAccountant, isAdmin, navigateToLogin } = useAuth();
+  const { isAuthenticated, isAccountant, isAdmin } = useAuth();
   const isAccountantOrAdmin = isAccountant || isAdmin;
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Se o usuário logado for um contador ou administrador, mostrar a página de gerenciamento de tokens
   // Caso contrário, mostrar o formulário de acesso para clientes
   
   const accessTestAccount = () => {
-    // Configurar cliente de exemplo para teste
-    sessionStorage.setItem('client_id', 'test-client-123');
-    sessionStorage.setItem('client_name', 'Empresa Teste');
-    sessionStorage.setItem('client_cnpj', '12.345.678/0001-90');
-    
-    toast({
-      title: "Acesso direto ativado",
-      description: "Você está acessando como cliente de teste",
-    });
-    
-    // Redirecionar para o portal do cliente
-    window.location.href = '/client-portal';
+    try {
+      // Configurar cliente de exemplo para teste com dados mais completos
+      sessionStorage.setItem('client_id', 'test-client-123');
+      sessionStorage.setItem('client_name', 'Empresa Teste');
+      sessionStorage.setItem('client_cnpj', '12.345.678/0001-90');
+      sessionStorage.setItem('client_access_token', 'test-token-123456');
+      sessionStorage.setItem('client_authenticated', 'true');
+      
+      toast({
+        title: "Acesso direto ativado",
+        description: "Você está acessando como cliente de teste",
+      });
+      
+      // Redirecionar para o portal do cliente após um curto delay para garantir que o toast seja visto
+      setTimeout(() => {
+        navigate('/client-portal');
+      }, 500);
+    } catch (error) {
+      console.error("Erro ao configurar cliente de teste:", error);
+      toast({
+        title: "Erro ao acessar",
+        description: "Não foi possível configurar o acesso de teste",
+        variant: "destructive"
+      });
+    }
   };
+  
+  // Verificar se já existe uma sessão de cliente ativa
+  useEffect(() => {
+    const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
+    const clientId = sessionStorage.getItem('client_id');
+    
+    if (clientAuthenticated && clientId) {
+      navigate('/client-portal');
+    }
+  }, [navigate]);
   
   const handleBackToMain = () => {
     // Navegação direta para o dashboard principal
-    window.location.href = '/';
+    navigate('/');
   };
   
   if (isAuthenticated && isAccountantOrAdmin) {

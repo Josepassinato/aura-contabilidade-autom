@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -11,6 +10,7 @@ import GerenciarClientes from "@/pages/GerenciarClientes";
 import BusinessAnalytics from "@/pages/admin/BusinessAnalytics";
 import CustomerManagement from "@/pages/admin/CustomerManagement";
 import UsageMetrics from "@/pages/admin/UsageMetrics";
+import AccountingUpdateService from "@/pages/admin/AccountingUpdateService";
 import Settings from "@/pages/Settings";
 import RelatoriosIA from "@/pages/RelatoriosIA";
 import ClientAccess from "@/pages/ClientAccess";
@@ -45,6 +45,15 @@ const routes = createBrowserRouter([
   {
     path: "/client-access",
     element: <ClientAccess />
+  },
+  // Rota específica para o portal do cliente (fora do layout do Dashboard)
+  {
+    path: "/client-portal",
+    element: <ClientPortal />
+  },
+  {
+    path: "/client-portal/:clientId",
+    element: <ClientPortal />
   },
   
   // Rotas protegidas dentro do layout do Dashboard
@@ -90,20 +99,16 @@ const routes = createBrowserRouter([
         element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
       },
       {
+        path: "admin/accounting-update-service",
+        element: <AccountingUpdateService />
+      },
+      {
         path: "settings",
         element: <Settings />
       },
       {
         path: "relatorios-ia",
         element: <RelatoriosIA />
-      },
-      {
-        path: "client-portal",
-        element: <ClientPortal />
-      },
-      {
-        path: "client-portal/:clientId",
-        element: <ClientPortal />
       },
       {
         path: "parametros-fiscais",
@@ -169,7 +174,6 @@ const routes = createBrowserRouter([
         path: "apuracao-automatica",
         element: <ApuracaoAutomatica />
       },
-      // Adding the notifications route
       {
         path: "notifications",
         element: <Notifications />

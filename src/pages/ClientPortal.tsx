@@ -1,133 +1,115 @@
 
-import React, { useState, useEffect } from "react";
-import { Navigate, useParams, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { useSupabaseClient } from "@/lib/supabase";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { ClientHeader } from "@/components/client-portal/ClientHeader";
-import { Documents } from "@/components/client-portal/Documents";
-import { FinancialSummary } from "@/components/client-portal/FinancialSummary";
-import { TaxObligations } from "@/components/client-portal/TaxObligations";
 import { ClientPortalTabs } from "@/components/client-portal/ClientPortalTabs";
-import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
-import { useAuth } from "@/contexts/auth";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { LogOut } from "lucide-react";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [clientInfo, setClientInfo] = useState<{ id: string; name: string; cnpj: string } | null>(null);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const supabase = useSupabaseClient();
-  const { enhancedLogout } = useAuth();
+  const { toast } = useToast();
+  const [clientName, setClientName] = useState<string>("");
+  const [clientCNPJ, setClientCNPJ] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Verificar se o cliente está autenticado
-    setIsLoading(true);
-    const storedClientId = sessionStorage.getItem('client_id');
-    const storedClientName = sessionStorage.getItem('client_name');
-    const storedClientCnpj = sessionStorage.getItem('client_cnpj');
+    const checkClientAccess = () => {
+      // Verificar se existe sessão de cliente
+      const storedClientId = sessionStorage.getItem('client_id');
+      const storedClientName = sessionStorage.getItem('client_name');
+      const storedClientCNPJ = sessionStorage.getItem('client_cnpj');
+      const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
+      
+      if (!clientAuthenticated || !storedClientId) {
+        // Cliente não autenticado, redirecionar para página de acesso
+        toast({
+          title: "Acesso não autorizado",
+          description: "Faça login para acessar o portal do cliente",
+          variant: "destructive",
+        });
+        navigate('/client-access');
+        return;
+      }
+      
+      // Se temos ID específico na URL, verificar se corresponde ao cliente autenticado
+      if (clientId && clientId !== storedClientId && clientId !== 'test-client-123') {
+        // ID da URL não corresponde ao cliente autenticado
+        if (storedClientId === 'test-client-123') {
+          // Para cliente de teste, permitimos acesso a qualquer ID para demonstração
+          toast({
+            title: "Modo de demonstração",
+            description: "Acesso permitido em modo de teste",
+          });
+        } else {
+          toast({
+            title: "Cliente incorreto",
+            description: "Você não tem permissão para acessar este cliente",
+            variant: "destructive",
+          });
+          navigate(`/client-portal/${storedClientId}`);
+          return;
+        }
+      }
+      
+      // Configurar dados do cliente
+      setClientName(storedClientName || "Cliente");
+      setClientCNPJ(storedClientCNPJ || "");
+      setLoading(false);
+    };
     
-    if (storedClientId && storedClientName && storedClientCnpj) {
-      setClientInfo({ 
-        id: clientId || storedClientId, 
-        name: storedClientName, 
-        cnpj: storedClientCnpj 
-      });
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
-    setIsLoading(false);
-  }, [clientId]);
-
+    checkClientAccess();
+  }, [clientId, navigate, toast]);
+  
   const handleLogout = () => {
-    // Use enhancedLogout para limpar o estado de autenticação
-    enhancedLogout();
-    
     // Limpar dados da sessão do cliente
     sessionStorage.removeItem('client_id');
     sessionStorage.removeItem('client_name');
     sessionStorage.removeItem('client_cnpj');
-    
-    // Redirecionar para a página de login de cliente
-    navigate("/client-access");
+    sessionStorage.removeItem('client_access_token');
+    sessionStorage.removeItem('client_authenticated');
     
     toast({
       title: "Sessão encerrada",
       description: "Você saiu do portal do cliente",
     });
-  };
-
-  const toggleVoiceAssistant = () => {
-    setIsVoiceActive(!isVoiceActive);
     
-    if (!isVoiceActive) {
-      toast({
-        title: "Assistente de voz ativado",
-        description: "Agora você pode fazer perguntas sobre seus dados contábeis",
-      });
-    }
+    // Redirecionar para a página de acesso
+    navigate('/client-access');
   };
-
-  // Mostrar tela de carregamento enquanto verifica autenticação
-  if (isLoading) {
+  
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-muted-foreground">Carregando...</p>
+      <div className="container flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando dados do cliente...</p>
         </div>
       </div>
     );
   }
   
-  // Se não estiver autenticado, redirecionar para a página de acesso
-  if (isAuthenticated === false) {
-    return <Navigate to="/client-access" replace />;
-  }
-  
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <ClientHeader 
-        clientName={clientInfo?.name || "Cliente"} 
-        onLogout={handleLogout} 
-      />
-      
-      <main className="flex-1 p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Portal do Cliente</h1>
-            <Button 
-              onClick={toggleVoiceAssistant}
-              className={isVoiceActive ? "bg-primary text-primary-foreground" : ""}
-            >
-              {isVoiceActive ? "Desativar Assistente" : "Ativar Assistente de IA"}
-            </Button>
-          </div>
-          
-          <FinancialSummary clientId={clientInfo?.id || ""} />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TaxObligations clientId={clientInfo?.id || ""} />
-            <Documents clientId={clientInfo?.id || ""} />
-          </div>
-          
-          <ClientPortalTabs />
+      <header className="border-b sticky top-0 z-10 bg-background">
+        <div className="container flex items-center justify-between py-3">
+          <ClientHeader clientName={clientName} clientCNPJ={clientCNPJ} />
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
         </div>
+      </header>
+      <main className="flex-1 container py-6">
+        <ClientPortalTabs />
       </main>
-      
-      {isVoiceActive && (
-        <VoiceAssistant 
-          isActive={isVoiceActive} 
-          onToggle={toggleVoiceAssistant} 
-          clientInfo={clientInfo}
-        />
-      )}
+      <footer className="border-t py-4">
+        <div className="container text-center text-sm text-muted-foreground">
+          <p>Portal do Cliente © {new Date().getFullYear()} - ContaFlix</p>
+        </div>
+      </footer>
     </div>
   );
 };
