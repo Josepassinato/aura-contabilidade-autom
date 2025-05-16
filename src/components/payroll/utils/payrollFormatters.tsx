@@ -1,21 +1,8 @@
 
-import React from 'react';
 import { Badge } from "@/components/ui/badge";
+import React from "react";
 
-/**
- * Formats a currency value to BRL format
- */
-export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
-  
-/**
- * Formats a period string (YYYY-MM) into a readable month and year format
- */
-export const formatPeriod = (period: string): string => {
+export function formatPeriod(period: string) {
   const [year, month] = period.split('-');
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -23,22 +10,26 @@ export const formatPeriod = (period: string): string => {
   ];
   
   return `${monthNames[parseInt(month) - 1]} ${year}`;
-};
+}
 
-/**
- * Returns an appropriate Badge component for the given status
- */
-export const getStatusBadge = (status: string) => {
+export function formatCurrency(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
+}
+
+export function getStatusBadge(status: string) {
   switch (status) {
     case 'draft':
-      return <Badge className="bg-gray-100 text-gray-800">Rascunho</Badge>;
+      return <Badge variant="outline" className="text-amber-500 border-amber-200 bg-amber-50">Rascunho</Badge>;
     case 'processing':
-      return <Badge className="bg-blue-100 text-blue-800">Processando</Badge>;
+      return <Badge variant="outline" className="text-blue-500 border-blue-200 bg-blue-50">Processando</Badge>;
     case 'approved':
-      return <Badge className="bg-green-100 text-green-800">Aprovado</Badge>;
+      return <Badge variant="outline" className="text-green-500 border-green-200 bg-green-50">Aprovado</Badge>;
     case 'paid':
-      return <Badge variant="default">Pago</Badge>;
+      return <Badge variant="outline" className="text-purple-500 border-purple-200 bg-purple-50">Pago</Badge>;
     default:
-      return <Badge>{status}</Badge>;
+      return <Badge variant="outline">{status}</Badge>;
   }
-};
+}

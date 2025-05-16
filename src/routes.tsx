@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -118,6 +117,8 @@ const AppRoutes = () => {
           <Index />
         </ProtectedRoute>
       } />
+      
+      {/* Rotas protegidas para contadores */}
       <Route path="/clientes" element={
         <AccountantRoute>
           <GerenciarClientes />
@@ -168,51 +169,61 @@ const AppRoutes = () => {
           <ClientDocuments />
         </ProtectedRoute>
       } />
+      
       <Route path="/folha-pagamento" element={
         <ProtectedRoute>
           <FolhaPagamento />
         </ProtectedRoute>
       } />
+      
       <Route path="/regime-fiscal" element={
         <ProtectedRoute>
           <RegimeFiscal />
         </ProtectedRoute>
       } />
+      
       <Route path="/apuracao-automatica" element={
         <ProtectedRoute>
           <ApuracaoAutomatica />
         </ProtectedRoute>
       } />
+      
       <Route path="/parametros-fiscais" element={
         <ProtectedRoute>
           <GerenciarParametrosFiscais />
         </ProtectedRoute>
       } />
+      
       <Route path="/analises-preditivas" element={
         <ProtectedRoute>
           <AnalisesPreditivas />
         </ProtectedRoute>
       } />
+      
       <Route path="/colaboradores" element={
         <ProtectedRoute>
           <Colaboradores />
         </ProtectedRoute>
       } />
+      
       <Route path="/settings" element={
         <ProtectedRoute>
           <Settings />
         </ProtectedRoute>
       } />
+      
       <Route path="/automacao-bancaria" element={
         <ProtectedRoute>
           <AutomacaoBancaria />
         </ProtectedRoute>
       } />
+      
       <Route path="/notifications" element={
         <ProtectedRoute>
           <Notifications />
         </ProtectedRoute>
       } />
+      
       <Route path="/classificacao-reconciliacao" element={
         <ProtectedRoute>
           <ClassificacaoReconciliacao />
