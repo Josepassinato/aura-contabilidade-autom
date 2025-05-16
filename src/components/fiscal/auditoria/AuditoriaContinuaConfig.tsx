@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Settings2, Play, Clock, Shield, Zap, RotateCcw } from "lucide-react";
@@ -115,15 +114,15 @@ export function AuditoriaContinuaConfig() {
               className="flex space-x-4"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="tempo-real" id="tempo-real" />
+                <RadioItem value="tempo-real" id="tempo-real" />
                 <Label htmlFor="tempo-real">Tempo Real</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="diaria" id="diaria" />
+                <RadioItem value="diaria" id="diaria" />
                 <Label htmlFor="diaria">Diária</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="semanal" id="semanal" />
+                <RadioItem value="semanal" id="semanal" />
                 <Label htmlFor="semanal">Semanal</Label>
               </div>
             </RadioGroup>
