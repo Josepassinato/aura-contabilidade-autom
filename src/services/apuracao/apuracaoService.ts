@@ -1,4 +1,3 @@
-
 /**
  * Serviço para apuração contábil inteligente
  * Integra com processador NLP para interpretação avançada de dados contábeis
@@ -59,6 +58,14 @@ export interface ResultadoApuracao {
   };
   status: 'processado' | 'em_processamento' | 'com_inconsistencias' | 'pendente';
   regimeTributario: string;
+  origemDados?: string;
+  processamento_automatico?: boolean;
+  detalhesProcessamento?: {
+    processador: string;
+    data: string;
+    tempoProcessamento: number;
+    [key: string]: any;
+  };
 }
 
 // Interface para configuração da apuração
@@ -71,6 +78,7 @@ export interface ConfiguracaoApuracao {
   alertarAnomalia: boolean;
   limiteValorAnomalia?: number;
   regrasNegocio: Record<string, any>;
+  usarFontesAutomaticas?: boolean;
 }
 
 // Parâmetros para apuração
@@ -106,7 +114,8 @@ const configuracaoPadrao: ConfiguracaoApuracao = {
     ignorarValoresAbaixo: 10,
     considerarReceitasComplementares: true,
     metodoConciliacaoBancaria: 'avancado'
-  }
+  },
+  usarFontesAutomaticas: true
 };
 
 /**
@@ -442,7 +451,14 @@ const gerarDadosApuracaoSimulados = async (
       resultado: receitaBruta - custos - despesas
     },
     status: 'processado',
-    regimeTributario
+    regimeTributario,
+    origemDados: 'simulacao',
+    processamento_automatico: true,
+    detalhesProcessamento: {
+      processador: 'NLP',
+      data: new Date().toISOString(),
+      tempoProcessamento: 1500
+    }
   };
 };
 
