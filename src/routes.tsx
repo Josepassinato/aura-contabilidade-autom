@@ -1,186 +1,95 @@
 
-import React, { Suspense } from 'react';
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import { DashboardLayout } from "./components/layout/DashboardLayout";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Onboarding from "@/pages/Onboarding";
-import OnboardingWelcome from "@/pages/OnboardingWelcome";
-import GerenciarClientes from "@/pages/GerenciarClientes";
-import BusinessAnalytics from "@/pages/admin/BusinessAnalytics";
-import CustomerManagement from "@/pages/admin/CustomerManagement";
-import UsageMetrics from "@/pages/admin/UsageMetrics";
-import Settings from "@/pages/Settings";
-import RelatoriosIA from "@/pages/RelatoriosIA";
-import ClientAccess from "@/pages/ClientAccess";
-import ClientPortal from "@/pages/ClientPortal";
-import GerenciarParametrosFiscais from "@/pages/GerenciarParametrosFiscais";
-import CalculosFiscais from "@/pages/CalculosFiscais";
-import AutomacaoBancaria from "@/pages/AutomacaoBancaria";
-import FolhaPagamento from "@/pages/FolhaPagamento";
-import ObrigacoesFiscais from "@/pages/ObrigacoesFiscais";
-import RelatoriosFinanceiros from "@/pages/RelatoriosFinanceiros";
-import NotFound from "@/pages/NotFound";
-import EmailService from "@/pages/EmailService";
-import GuiasFiscais from "@/pages/GuiasFiscais";
-import AnalisesPreditivas from "@/pages/AnalisesPreditivas";
-import Colaboradores from "@/pages/Colaboradores";
-import RegimeFiscal from "@/pages/RegimeFiscal";
-import ClientDocuments from "@/pages/ClientDocuments";
-import IntegracoesGov from "@/pages/IntegracoesGov";
-import IntegracoesEstaduais from "@/pages/IntegracoesEstaduais";
-import ApuracaoAutomatica from "@/pages/ApuracaoAutomatica";
-import Notifications from "@/pages/Notifications";
+// Importação das páginas
+import Index from './pages/Index';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+import Settings from './pages/Settings';
+import GerenciarClientes from './pages/GerenciarClientes';
+import RelatoriosFinanceiros from './pages/RelatoriosFinanceiros';
+import RelatoriosIA from './pages/RelatoriosIA';
+import CalculosFiscais from './pages/CalculosFiscais';
+import ObrigacoesFiscais from './pages/ObrigacoesFiscais';
+import GuiasFiscais from './pages/GuiasFiscais';
+import IntegracoesGov from './pages/IntegracoesGov';
+import IntegracoesEstaduais from './pages/IntegracoesEstaduais';
+import EmailService from './pages/EmailService';
+import ClientDocuments from './pages/ClientDocuments';
+import ClientAccess from './pages/ClientAccess';
+import ClientPortal from './pages/ClientPortal';
+import FolhaPagamento from './pages/FolhaPagamento';
+import RegimeFiscal from './pages/RegimeFiscal';
+import ApuracaoAutomatica from './pages/ApuracaoAutomatica';
+import GerenciarParametrosFiscais from './pages/GerenciarParametrosFiscais';
+import AnalisesPreditivas from './pages/AnalisesPreditivas';
+import Colaboradores from './pages/Colaboradores';
+import PlansAndPricing from './pages/PlansAndPricing';
+import Onboarding from './pages/Onboarding';
+import OnboardingWelcome from './pages/OnboardingWelcome';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCanceled from './pages/PaymentCanceled';
+import AutomacaoBancaria from './pages/AutomacaoBancaria';
+import Notifications from './pages/Notifications';
 
-const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
+// Admin pages
+import BusinessAnalytics from './pages/admin/BusinessAnalytics';
+import CustomerManagement from './pages/admin/CustomerManagement';
+import UsageMetrics from './pages/admin/UsageMetrics';
+import OpenAIManagement from './pages/admin/OpenAIManagement';
 
-// Criação do roteador com configuração melhorada
-const routes = createBrowserRouter([
-  // Rotas públicas (não precisam de autenticação)
-  {
-    path: "/login",
-    element: <Login />
-  },
-  {
-    path: "/client-access",
-    element: <ClientAccess />
-  },
-  // Rota específica para o portal do cliente (fora do layout do Dashboard)
-  {
-    path: "/client-portal",
-    element: <ClientPortal />
-  },
-  {
-    path: "/client-portal/:clientId",
-    element: <ClientPortal />
-  },
-  
-  // Rotas protegidas dentro do layout do Dashboard
-  {
-    path: "/",
-    element: <DashboardLayout />,
-    errorElement: <Navigate to="/login" />,
-    children: [
-      {
-        index: true,
-        element: <Index />
-      },
-      {
-        path: "dashboard",
-        element: <Index />
-      },
-      {
-        path: "onboarding",
-        element: <Onboarding />
-      },
-      {
-        path: "onboarding/welcome",
-        element: <OnboardingWelcome />
-      },
-      {
-        path: "gerenciar-clientes",
-        element: <GerenciarClientes />
-      },
-      {
-        path: "admin/business-analytics",
-        element: <BusinessAnalytics />
-      },
-      {
-        path: "admin/customer-management",
-        element: <CustomerManagement />
-      },
-      {
-        path: "admin/usage-metrics",
-        element: <UsageMetrics />
-      },
-      {
-        path: "admin/openai-management",
-        element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
-      },
-      {
-        path: "settings",
-        element: <Settings />
-      },
-      {
-        path: "relatorios-ia",
-        element: <RelatoriosIA />
-      },
-      {
-        path: "parametros-fiscais",
-        element: <GerenciarParametrosFiscais />
-      },
-      {
-        path: "calculosfiscais",
-        element: <CalculosFiscais />
-      },
-      {
-        path: "automacao-bancaria",
-        element: <AutomacaoBancaria />
-      },
-      {
-        path: "folha-pagamento",
-        element: <FolhaPagamento />
-      },
-      {
-        path: "obrigacoesfiscais",
-        element: <ObrigacoesFiscais />
-      },
-      {
-        path: "relatoriosfinanceiros",
-        element: <RelatoriosFinanceiros />
-      },
-      {
-        path: "email-service",
-        element: <EmailService />
-      },
-      {
-        path: "guias-fiscais",
-        element: <GuiasFiscais />
-      },
-      {
-        path: "analises-preditivas",
-        element: <AnalisesPreditivas />
-      },
-      {
-        path: "colaboradores",
-        element: <Colaboradores />
-      },
-      {
-        path: "obrigacoes-fiscais",
-        element: <ObrigacoesFiscais />
-      },
-      {
-        path: "regime-fiscal",
-        element: <RegimeFiscal />
-      },
-      {
-        path: "documentos",
-        element: <ClientDocuments />
-      },
-      {
-        path: "integracoes-gov",
-        element: <IntegracoesGov />
-      },
-      {
-        path: "integracoes-estaduais",
-        element: <IntegracoesEstaduais />
-      },
-      {
-        path: "apuracao-automatica",
-        element: <ApuracaoAutomatica />
-      },
-      {
-        path: "notifications",
-        element: <Notifications />
-      }
-    ]
-  },
-  // Rota para capturar qualquer caminho inválido
-  {
-    path: "*",
-    element: <NotFound />
-  }
-]);
+// Nova página de Classificação e Reconciliação
+import ClassificacaoReconciliacao from './pages/ClassificacaoReconciliacao';
 
-export default routes;
+const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Rotas públicas */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/plans" element={<PlansAndPricing />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/canceled" element={<PaymentCanceled />} />
+      <Route path="/onboarding-welcome" element={<OnboardingWelcome />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      
+      {/* Rotas do portal do cliente */}
+      <Route path="/client-portal/*" element={<ClientPortal />} />
+      
+      {/* Rotas protegidas */}
+      <Route path="/" element={<Index />} />
+      <Route path="/clientes" element={<GerenciarClientes />} />
+      <Route path="/relatorios" element={<RelatoriosFinanceiros />} />
+      <Route path="/relatorios-ia" element={<RelatoriosIA />} />
+      <Route path="/calculos-fiscais" element={<CalculosFiscais />} />
+      <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
+      <Route path="/guias-fiscais" element={<GuiasFiscais />} />
+      <Route path="/integracoes-gov" element={<IntegracoesGov />} />
+      <Route path="/integracoes-estaduais" element={<IntegracoesEstaduais />} />
+      <Route path="/email-service" element={<EmailService />} />
+      <Route path="/documentos" element={<ClientDocuments />} />
+      <Route path="/client-access" element={<ClientAccess />} />
+      <Route path="/folha-pagamento" element={<FolhaPagamento />} />
+      <Route path="/regime-fiscal" element={<RegimeFiscal />} />
+      <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
+      <Route path="/parametros-fiscais" element={<GerenciarParametrosFiscais />} />
+      <Route path="/analises-preditivas" element={<AnalisesPreditivas />} />
+      <Route path="/colaboradores" element={<Colaboradores />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/automacao-bancaria" element={<AutomacaoBancaria />} />
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="/classificacao-reconciliacao" element={<ClassificacaoReconciliacao />} />
+      
+      {/* Rotas de administração */}
+      <Route path="/admin/analytics" element={<BusinessAnalytics />} />
+      <Route path="/admin/customers" element={<CustomerManagement />} />
+      <Route path="/admin/usage" element={<UsageMetrics />} />
+      <Route path="/admin/openai" element={<OpenAIManagement />} />
+      
+      {/* Rota 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
