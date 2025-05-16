@@ -11,6 +11,7 @@ import { CalculoLancamentos } from "@/components/fiscal/calculadora/CalculoLanca
 import { TabsEmDesenvolvimento } from "@/components/fiscal/calculadora/TabsEmDesenvolvimento";
 import { usePagamentoImposto } from "@/components/fiscal/calculadora/usePagamentoImposto";
 import { TipoImposto, ResultadoCalculo } from "@/services/fiscal/types";
+import WorkflowOrquestrador from "@/components/fiscal/workflow/WorkflowOrquestrador";
 
 const CalculosFiscais = () => {
   const { isAuthenticated, isAccountant } = useAuth();
@@ -56,6 +57,7 @@ const CalculosFiscais = () => {
           <TabsTrigger value="notas">Cálculo por Notas Fiscais</TabsTrigger>
           <TabsTrigger value="lancamentos">Cálculo por Lançamentos</TabsTrigger>
           <TabsTrigger value="simulacao">Simulação de Regimes</TabsTrigger>
+          <TabsTrigger value="workflow">Workflow Fiscal</TabsTrigger>
           <TabsTrigger value="retencoes">Retenções</TabsTrigger>
         </TabsList>
 
@@ -101,6 +103,10 @@ const CalculosFiscais = () => {
 
         <TabsContent value="simulacao">
           <TabsEmDesenvolvimento title="Simulação de Regimes Tributários" />
+        </TabsContent>
+
+        <TabsContent value="workflow">
+          <WorkflowOrquestrador />
         </TabsContent>
 
         <TabsContent value="retencoes">
