@@ -127,7 +127,7 @@ const routes = createBrowserRouter([
         path: "email-service",
         element: <EmailService />
       },
-      // Novas rotas adicionadas
+      // Ensuring these routes are properly defined
       {
         path: "guias-fiscais",
         element: <GuiasFiscais />
@@ -139,6 +139,11 @@ const routes = createBrowserRouter([
       {
         path: "colaboradores",
         element: <Colaboradores />
+      },
+      // Adding missing paths to match sidebar links
+      {
+        path: "obrigacoes-fiscais",
+        element: <ObrigacoesFiscais />
       }
     ]
   },

@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, FileText } from "lucide-react";
@@ -63,7 +62,7 @@ const ObrigacoesFiscais = () => {
   }).length;
 
   return (
-    <DashboardLayout>
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Obrigações Fiscais</h1>
@@ -132,7 +131,7 @@ const ObrigacoesFiscais = () => {
           </TabsContent>
         </Tabs>
       )}
-    </DashboardLayout>
+    </div>
   );
 };
 

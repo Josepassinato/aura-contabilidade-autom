@@ -58,7 +58,7 @@ export function CommonSection() {
       
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Relatórios Financeiros">
-          <Link to="/relatorios-financeiros">
+          <Link to="/relatoriosfinanceiros">
             <LineChart />
             <span>Relatórios Financeiros</span>
           </Link>
@@ -103,7 +103,7 @@ export function CommonSection() {
       
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Cálculos Fiscais">
-          <Link to="/calculos-fiscais">
+          <Link to="/calculosfiscais">
             <Calculator />
             <span>Cálculos Fiscais</span>
           </Link>

@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/auth';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Navigate } from 'react-router-dom';
 import { ClientSelector } from '@/components/layout/ClientSelector';
 import { BalancoPatrimonial } from '@/components/relatorios/BalancoPatrimonial';
@@ -68,67 +68,65 @@ const RelatoriosFinanceiros = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
-          <p className="text-muted-foreground">Visualize e analise os dados financeiros dos seus clientes</p>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1">Cliente</label>
-            <ClientSelector onClientSelect={handleClientSelect} />
-          </div>
-          {renderPeriodSelector()}
-        </div>
-
-        {!selectedClient ? (
-          <div className="bg-muted/40 p-8 rounded-lg text-center">
-            <p className="text-muted-foreground">Selecione um cliente para visualizar os relatórios.</p>
-          </div>
-        ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-              <TabsTrigger value="balanco">Balanço Patrimonial</TabsTrigger>
-              <TabsTrigger value="dre">DRE</TabsTrigger>
-              <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
-              <TabsTrigger value="indexes">Indicadores</TabsTrigger>
-            </TabsList>
-            
-            <div className="mt-6">
-              <TabsContent value="balanco">
-                <BalancoPatrimonial 
-                  clientId={selectedClient.id} 
-                  periodo={selectedPeriod} 
-                />
-              </TabsContent>
-              
-              <TabsContent value="dre">
-                <DRE 
-                  clientId={selectedClient.id} 
-                  periodo={selectedPeriod} 
-                />
-              </TabsContent>
-              
-              <TabsContent value="fluxo">
-                <FluxoCaixa 
-                  clientId={selectedClient.id} 
-                  periodo={selectedPeriod}
-                />
-              </TabsContent>
-              
-              <TabsContent value="indexes">
-                <IndexesFinanceiros 
-                  clientId={selectedClient.id} 
-                  periodo={selectedPeriod}
-                />
-              </TabsContent>
-            </div>
-          </Tabs>
-        )}
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
+        <p className="text-muted-foreground">Visualize e analise os dados financeiros dos seus clientes</p>
       </div>
-    </DashboardLayout>
+
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-1/2">
+          <label className="block text-sm font-medium mb-1">Cliente</label>
+          <ClientSelector onClientSelect={handleClientSelect} />
+        </div>
+        {renderPeriodSelector()}
+      </div>
+
+      {!selectedClient ? (
+        <div className="bg-muted/40 p-8 rounded-lg text-center">
+          <p className="text-muted-foreground">Selecione um cliente para visualizar os relatórios.</p>
+        </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+            <TabsTrigger value="balanco">Balanço Patrimonial</TabsTrigger>
+            <TabsTrigger value="dre">DRE</TabsTrigger>
+            <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
+            <TabsTrigger value="indexes">Indicadores</TabsTrigger>
+          </TabsList>
+          
+          <div className="mt-6">
+            <TabsContent value="balanco">
+              <BalancoPatrimonial 
+                clientId={selectedClient.id} 
+                periodo={selectedPeriod} 
+              />
+            </TabsContent>
+            
+            <TabsContent value="dre">
+              <DRE 
+                clientId={selectedClient.id} 
+                periodo={selectedPeriod} 
+              />
+            </TabsContent>
+            
+            <TabsContent value="fluxo">
+              <FluxoCaixa 
+                clientId={selectedClient.id} 
+                periodo={selectedPeriod}
+              />
+            </TabsContent>
+            
+            <TabsContent value="indexes">
+              <IndexesFinanceiros 
+                clientId={selectedClient.id} 
+                periodo={selectedPeriod}
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
+      )}
+    </div>
   );
 };
 
