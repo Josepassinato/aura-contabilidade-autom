@@ -1,195 +1,82 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
-import { 
-  LayoutDashboard, FileCog, FileCheck, FileText, 
-  CalendarClock, Receipt, Network, Building2, Mail, 
-  Database, Users, FileBarChart2, BarChart4, UserCog,
-  Brain, FileStack, CreditCard, Building, Bell
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
+  const location = useLocation();
+  
+  // Helper to check if a link is active
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
-    <div className="space-y-1">
-      <Link to="/">
-        <Button variant="ghost" className="w-full justify-start">
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          Dashboard
-        </Button>
-      </Link>
-      
-      <Link to="/clientes">
-        <Button variant="ghost" className="w-full justify-start">
-          <Building2 className="mr-2 h-4 w-4" />
-          Clientes
-        </Button>
-      </Link>
-      
-      <Link to="/documentos">
-        <Button variant="ghost" className="w-full justify-start">
-          <FileStack className="mr-2 h-4 w-4" />
-          Documentos
-        </Button>
-      </Link>
-      
-      <Link to="/client-access">
-        <Button variant="ghost" className="w-full justify-start">
-          <UserCog className="mr-2 h-4 w-4" />
-          Acesso de Clientes
-        </Button>
-      </Link>
-
-      {/* Fiscal */}
-      <div className="pt-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Fiscal
-        </h2>
-        <div className="space-y-1">
-          <Link to="/calculos-fiscais">
-            <Button variant="ghost" className="w-full justify-start">
-              <FileCog className="mr-2 h-4 w-4" />
-              Cálculos Fiscais
-            </Button>
-          </Link>
-          
-          <Link to="/obrigacoes-fiscais">
-            <Button variant="ghost" className="w-full justify-start">
-              <CalendarClock className="mr-2 h-4 w-4" />
-              Obrigações Fiscais
-            </Button>
-          </Link>
-          
-          <Link to="/guias-fiscais">
-            <Button variant="ghost" className="w-full justify-start">
-              <Receipt className="mr-2 h-4 w-4" />
-              Guias Fiscais
-            </Button>
-          </Link>
-          
-          <Link to="/regime-fiscal">
-            <Button variant="ghost" className="w-full justify-start">
-              <FileCheck className="mr-2 h-4 w-4" />
-              Regime Fiscal
-            </Button>
-          </Link>
-          
-          <Link to="/classificacao-reconciliacao">
-            <Button variant="ghost" className="w-full justify-start bg-slate-100">
-              <Brain className="mr-2 h-4 w-4" />
-              Classificação ML
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Integrações */}
-      <div className="pt-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Integrações
-        </h2>
-        <div className="space-y-1">
-          <Link to="/integracoes-gov">
-            <Button variant="ghost" className="w-full justify-start">
-              <Network className="mr-2 h-4 w-4" />
-              Integrações Gov
-            </Button>
-          </Link>
-          
-          <Link to="/integracoes-estaduais">
-            <Button variant="ghost" className="w-full justify-start">
-              <Database className="mr-2 h-4 w-4" />
-              Integrações Estaduais
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Bancário */}
-      <div className="pt-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Bancário
-        </h2>
-        <div className="space-y-1">
-          <Link to="/automacao-bancaria">
-            <Button variant="ghost" className="w-full justify-start">
-              <Building className="mr-2 h-4 w-4" />
-              Automação Bancária
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Relatórios */}
-      <div className="pt-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Relatórios
-        </h2>
-        <div className="space-y-1">
-          <Link to="/relatorios">
-            <Button variant="ghost" className="w-full justify-start">
-              <FileBarChart2 className="mr-2 h-4 w-4" />
-              Relatórios Financeiros
-            </Button>
-          </Link>
-          
-          <Link to="/relatorios-ia">
-            <Button variant="ghost" className="w-full justify-start">
-              <Brain className="mr-2 h-4 w-4" />
-              Relatórios com IA
-            </Button>
-          </Link>
-          
-          <Link to="/analises-preditivas">
-            <Button variant="ghost" className="w-full justify-start">
-              <BarChart4 className="mr-2 h-4 w-4" />
-              Análises Preditivas
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* RH e Folha */}
-      <div className="pt-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          RH e Folha
-        </h2>
-        <div className="space-y-1">
-          <Link to="/folha-pagamento">
-            <Button variant="ghost" className="w-full justify-start">
-              <CreditCard className="mr-2 h-4 w-4" />
-              Folha de Pagamento
-            </Button>
-          </Link>
-          
-          <Link to="/colaboradores">
-            <Button variant="ghost" className="w-full justify-start">
-              <Users className="mr-2 h-4 w-4" />
-              Colaboradores
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Extras */}
-      <div className="pt-2">
-        <div className="space-y-1">
-          <Link to="/email-service">
-            <Button variant="ghost" className="w-full justify-start">
-              <Mail className="mr-2 h-4 w-4" />
-              E-mail
-            </Button>
-          </Link>
-          
-          <Link to="/notifications">
-            <Button variant="ghost" className="w-full justify-start">
-              <Bell className="mr-2 h-4 w-4" />
-              Notificações
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
+    <SidebarGroup>
+      <SidebarGroupLabel>
+        Área do Contador
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/clientes')}>
+              <Link to="/clientes">
+                <Users className="h-4 w-4 mr-2" />
+                <span>Gerenciar Clientes</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/relatorios')}>
+              <Link to="/relatorios">
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                <span>Relatórios Financeiros</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/calculos-fiscais')}>
+              <Link to="/calculos-fiscais">
+                <Calculator className="h-4 w-4 mr-2" />
+                <span>Cálculos Fiscais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/obrigacoes-fiscais')}>
+              <Link to="/obrigacoes-fiscais">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                <span>Obrigações Fiscais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/folha-pagamento')}>
+              <Link to="/folha-pagamento">
+                <CircleDollarSign className="h-4 w-4 mr-2" />
+                <span>Folha de Pagamento</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/integracoes-gov')}>
+              <Link to="/integracoes-gov">
+                <Network className="h-4 w-4 mr-2" />
+                <span>Integrações Governamentais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild active={isActive('/documentos')}>
+              <Link to="/documentos">
+                <FileText className="h-4 w-4 mr-2" />
+                <span>Documentos dos Clientes</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }

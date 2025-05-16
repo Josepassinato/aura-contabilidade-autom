@@ -1,122 +1,68 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth';
-import { toast } from '@/hooks/use-toast';
-import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
+import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
-export function QuickLoginButtons() {
+export const QuickLoginButtons = () => {
   const { enhancedLogin } = useAuth();
-  const [isLoading, setIsLoading] = React.useState<string | null>(null);
 
-  const handleQuickLogin = async (type: 'accountant' | 'client' | 'admin') => {
-    setIsLoading(type);
+  const quickLogin = async (type: 'contador' | 'cliente' | 'admin') => {
+    // Limpar qualquer estado de autenticação anterior
+    cleanupAuthState();
     
-    try {
-      // Clean up auth state before login attempt
-      cleanupAuthState();
-      
-      // Check for and fix any potential auth limbo states
-      if (checkForAuthLimboState()) {
-        console.log("Fixed auth limbo state during quick login");
-      }
-      
-      let email = '';
-      let password = 'senha123';
-      
-      switch (type) {
-        case 'accountant':
-          email = 'contador@example.com';
-          break;
-        case 'client':
-          email = 'cliente@example.com';
-          break;
-        case 'admin':
-          email = 'admin@example.com';
-          break;
-      }
-      
-      console.log(`Tentando login rápido como ${type} com email: ${email}`);
-      const result = await enhancedLogin(email, password);
-      
-      if (!result.success) {
-        throw new Error(result.error || "Falha na autenticação");
-      }
-      
-      // Login successful, will be redirected by the auth context
-    } catch (error) {
-      console.error('Erro no login rápido:', error);
-      toast({
-        title: "Erro no login",
-        description: error instanceof Error ? error.message : "Não foi possível fazer login",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(null);
+    let email, password;
+    
+    if (type === 'contador') {
+      email = 'contador@contaflix.com.br';
+      password = 'senha123';
+    } else if (type === 'cliente') {
+      email = 'cliente@empresa.com.br';
+      password = 'senha123';
+    } else {
+      email = 'admin@contaflix.com.br';
+      password = 'senha123';
     }
+    
+    await enhancedLogin(email, password);
   };
 
   return (
-    <div className="mt-6 space-y-4">
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Acesso rápido para teste
-          </span>
-        </div>
+    <div className="mt-6">
+      <div className="text-sm text-center mb-3 text-muted-foreground">
+        Acesso rápido para demonstração
       </div>
-
-      <div className="grid gap-2">
+      <div className="flex flex-col gap-2">
         <Button 
+          type="button" 
           variant="outline" 
-          onClick={() => handleQuickLogin('accountant')}
-          disabled={!!isLoading}
+          onClick={() => quickLogin('contador')}
+          className="justify-start"
         >
-          {isLoading === 'accountant' ? (
-            <>
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
-              Entrando...
-            </>
-          ) : (
-            "Entrar como Contador"
-          )}
+          <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs mr-2">C</span>
+          Entrar como Contador
         </Button>
         
         <Button 
+          type="button" 
           variant="outline" 
-          onClick={() => handleQuickLogin('client')}
-          disabled={!!isLoading}
+          onClick={() => quickLogin('cliente')}
+          className="justify-start"
         >
-          {isLoading === 'client' ? (
-            <>
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
-              Entrando...
-            </>
-          ) : (
-            "Entrar como Cliente"
-          )}
+          <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-2">E</span>
+          Entrar como Empresa
         </Button>
         
         <Button 
+          type="button" 
           variant="outline" 
-          onClick={() => handleQuickLogin('admin')}
-          disabled={!!isLoading}
+          onClick={() => quickLogin('admin')}
+          className="justify-start"
         >
-          {isLoading === 'admin' ? (
-            <>
-              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></span>
-              Entrando...
-            </>
-          ) : (
-            "Entrar como Administrador"
-          )}
+          <span className="w-5 h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs mr-2">A</span>
+          Entrar como Administrador
         </Button>
       </div>
     </div>
   );
-}
-
-export default QuickLoginButtons;
+};

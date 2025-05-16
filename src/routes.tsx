@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import DashboardLayout from './components/layout/DashboardLayout';
 
 // Importação das páginas
 import Index from './pages/Index';
@@ -41,6 +42,52 @@ import OpenAIManagement from './pages/admin/OpenAIManagement';
 
 // Nova página de Classificação e Reconciliação
 import ClassificacaoReconciliacao from './pages/ClassificacaoReconciliacao';
+import { useAuth } from './contexts/auth';
+
+// Protected Route component that wraps routes requiring authentication
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
+// Admin Route component that wraps routes requiring admin authentication
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
+  
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
+// Accountant Route component that wraps routes requiring accountant authentication
+const AccountantRoute = ({ children }) => {
+  const { isAuthenticated, isAccountant, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
+  
+  if (!isAuthenticated || !isAccountant) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 // Observe que este arquivo agora exporta um componente funcional React
 const AppRoutes = () => {
@@ -55,41 +102,149 @@ const AppRoutes = () => {
       <Route path="/payment/canceled" element={<PaymentCanceled />} />
       <Route path="/onboarding-welcome" element={<OnboardingWelcome />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/client-access" element={<ClientAccess />} />
       
       {/* Rotas do portal do cliente */}
       <Route path="/client-portal/*" element={<ClientPortal />} />
       
-      {/* Rotas protegidas */}
-      <Route path="/" element={<Index />} />
-      <Route path="/dashboard" element={<Index />} />
-      <Route path="/clientes" element={<GerenciarClientes />} />
-      <Route path="/relatorios" element={<RelatoriosFinanceiros />} />
-      <Route path="/relatorios-ia" element={<RelatoriosIA />} />
-      <Route path="/calculos-fiscais" element={<CalculosFiscais />} />
-      <Route path="/obrigacoes-fiscais" element={<ObrigacoesFiscais />} />
-      <Route path="/guias-fiscais" element={<GuiasFiscais />} />
-      <Route path="/integracoes-gov" element={<IntegracoesGov />} />
-      <Route path="/integracoes-estaduais" element={<IntegracoesEstaduais />} />
-      <Route path="/email-service" element={<EmailService />} />
-      <Route path="/documentos" element={<ClientDocuments />} />
-      <Route path="/client-access" element={<ClientAccess />} />
-      <Route path="/folha-pagamento" element={<FolhaPagamento />} />
-      <Route path="/regime-fiscal" element={<RegimeFiscal />} />
-      <Route path="/apuracao-automatica" element={<ApuracaoAutomatica />} />
-      <Route path="/parametros-fiscais" element={<GerenciarParametrosFiscais />} />
-      <Route path="/analises-preditivas" element={<AnalisesPreditivas />} />
-      <Route path="/colaboradores" element={<Colaboradores />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/automacao-bancaria" element={<AutomacaoBancaria />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/classificacao-reconciliacao" element={<ClassificacaoReconciliacao />} />
+      {/* Rotas protegidas para contadores */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Index />
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Index />
+        </ProtectedRoute>
+      } />
+      <Route path="/clientes" element={
+        <AccountantRoute>
+          <GerenciarClientes />
+        </AccountantRoute>
+      } />
+      <Route path="/relatorios" element={
+        <ProtectedRoute>
+          <RelatoriosFinanceiros />
+        </ProtectedRoute>
+      } />
+      <Route path="/relatorios-ia" element={
+        <ProtectedRoute>
+          <RelatoriosIA />
+        </ProtectedRoute>
+      } />
+      <Route path="/calculos-fiscais" element={
+        <AccountantRoute>
+          <CalculosFiscais />
+        </AccountantRoute>
+      } />
+      <Route path="/obrigacoes-fiscais" element={
+        <ProtectedRoute>
+          <ObrigacoesFiscais />
+        </ProtectedRoute>
+      } />
+      <Route path="/guias-fiscais" element={
+        <ProtectedRoute>
+          <GuiasFiscais />
+        </ProtectedRoute>
+      } />
+      <Route path="/integracoes-gov" element={
+        <ProtectedRoute>
+          <IntegracoesGov />
+        </ProtectedRoute>
+      } />
+      <Route path="/integracoes-estaduais" element={
+        <ProtectedRoute>
+          <IntegracoesEstaduais />
+        </ProtectedRoute>
+      } />
+      <Route path="/email-service" element={
+        <ProtectedRoute>
+          <EmailService />
+        </ProtectedRoute>
+      } />
+      <Route path="/documentos" element={
+        <ProtectedRoute>
+          <ClientDocuments />
+        </ProtectedRoute>
+      } />
+      <Route path="/folha-pagamento" element={
+        <ProtectedRoute>
+          <FolhaPagamento />
+        </ProtectedRoute>
+      } />
+      <Route path="/regime-fiscal" element={
+        <ProtectedRoute>
+          <RegimeFiscal />
+        </ProtectedRoute>
+      } />
+      <Route path="/apuracao-automatica" element={
+        <ProtectedRoute>
+          <ApuracaoAutomatica />
+        </ProtectedRoute>
+      } />
+      <Route path="/parametros-fiscais" element={
+        <ProtectedRoute>
+          <GerenciarParametrosFiscais />
+        </ProtectedRoute>
+      } />
+      <Route path="/analises-preditivas" element={
+        <ProtectedRoute>
+          <AnalisesPreditivas />
+        </ProtectedRoute>
+      } />
+      <Route path="/colaboradores" element={
+        <ProtectedRoute>
+          <Colaboradores />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/automacao-bancaria" element={
+        <ProtectedRoute>
+          <AutomacaoBancaria />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
+      <Route path="/classificacao-reconciliacao" element={
+        <ProtectedRoute>
+          <ClassificacaoReconciliacao />
+        </ProtectedRoute>
+      } />
       
       {/* Rotas de administração */}
-      <Route path="/admin/analytics" element={<BusinessAnalytics />} />
-      <Route path="/admin/business-analytics" element={<BusinessAnalytics />} />
-      <Route path="/admin/customer-management" element={<CustomerManagement />} />
-      <Route path="/admin/usage-metrics" element={<UsageMetrics />} />
-      <Route path="/admin/openai-management" element={<OpenAIManagement />} />
+      <Route path="/admin/analytics" element={
+        <AdminRoute>
+          <BusinessAnalytics />
+        </AdminRoute>
+      } />
+      <Route path="/admin/business-analytics" element={
+        <AdminRoute>
+          <BusinessAnalytics />
+        </AdminRoute>
+      } />
+      <Route path="/admin/customer-management" element={
+        <AdminRoute>
+          <CustomerManagement />
+        </AdminRoute>
+      } />
+      <Route path="/admin/usage-metrics" element={
+        <AdminRoute>
+          <UsageMetrics />
+        </AdminRoute>
+      } />
+      <Route path="/admin/openai-management" element={
+        <AdminRoute>
+          <OpenAIManagement />
+        </AdminRoute>
+      } />
       
       {/* Rota 404 */}
       <Route path="*" element={<NotFound />} />

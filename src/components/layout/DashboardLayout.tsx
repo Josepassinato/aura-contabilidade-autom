@@ -24,9 +24,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   
   // Verificar possíveis problemas de estado de autenticação inconsistente
   useEffect(() => {
-    // Clean up any auth limbo state and force a fresh login if detected
+    console.log("DashboardLayout - Verificando estado de autenticação");
+    
+    // Verificar e corrigir estado de autenticação inconsistente
     if (checkForAuthLimboState()) {
-      console.log("Auth limbo state detected, cleaning up");
+      console.log("Estado de autenticação inconsistente detectado, limpando");
       cleanupAuthState();
       toast({
         title: "Estado de autenticação inconsistente detectado",
@@ -37,11 +39,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       return;
     }
 
-    // Log current path to help with debugging
-    console.log("Current location path:", location.pathname);
+    // Log da rota atual para ajudar na depuração
+    console.log("Rota atual:", location.pathname);
     
     if (!isLoading && !isAuthenticated) {
-      console.log("User not authenticated in DashboardLayout, redirecting to login");
+      console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
       navigateToLogin();
     }
   }, [location, navigateToLogin, isAuthenticated, isLoading]);
