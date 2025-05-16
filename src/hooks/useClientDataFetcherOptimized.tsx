@@ -1,6 +1,7 @@
 
 import { useSupabaseQuery, useRetry } from './useSupabaseQuery';
 import { supabase } from '@/lib/supabase/client';
+import { PostgrestError } from '@supabase/supabase-js';
 
 // Error handling interface
 interface ErrorOptions {
@@ -103,6 +104,15 @@ export function useClientDataFetcherOptimized() {
   };
 }
 
+// Modified to match the expected return type for useSupabaseQuery
+type FinancialData = {
+  client_id: string;
+  total_revenue: number;
+  total_expenses: number;
+  profit_margin: number;
+  period: string;
+};
+
 // Hook to fetch and cache client financial data with react-query
 export function useClientFinancialData(clientId: string | null, enabled = true) {
   return useSupabaseQuery(
@@ -113,7 +123,7 @@ export function useClientFinancialData(clientId: string | null, enabled = true) 
       try {
         // Note: In a real app, we would need to ensure 'financial_data' exists in the database
         // For now, we'll return mock data since the table doesn't exist in the types
-        const mockData = {
+        const mockData: FinancialData = {
           client_id: clientId,
           total_revenue: 125000.00,
           total_expenses: 78500.00,
@@ -121,12 +131,13 @@ export function useClientFinancialData(clientId: string | null, enabled = true) 
           period: "2023-05"
         };
         
-        return { data: mockData, error: null };
+        return { data: mockData, error: null as PostgrestError | null };
       } catch (error) {
-        return handleError(error, { 
-          context: 'Financial data fetch',
-          fallbackMessage: 'Error fetching financial data'
-        });
+        console.error('Error in financial data fetch:', error);
+        return { 
+          data: null, 
+          error: { message: 'Error fetching financial data' } as PostgrestError 
+        };
       }
     },
     { 

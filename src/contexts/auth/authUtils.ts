@@ -19,7 +19,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     id: userId,
     email: "user@example.com",
     name: "Mock User",
-    role: UserRole.ACCOUNTANT,
+    role: 'accountant' as UserRole, // Use string value instead of enum reference
     full_name: "Mock Full Name",
     company_id: "123456"
   };
@@ -61,8 +61,8 @@ export function mapUserToProfile(
     id: user.id,
     email: user.email || "",
     name: additionalData?.full_name || user.user_metadata?.name || user.email || "",
-    role: additionalData?.role || UserRole.USER,
-    full_name: additionalData?.full_name,
+    role: additionalData?.role || 'user' as UserRole, // Use string value instead of enum reference
+    full_name: additionalData?.full_name || "",
     company_id: additionalData?.company_id,
   };
 }

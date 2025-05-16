@@ -6,16 +6,22 @@ import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
 import { cleanupAuthState, checkForAuthLimboState } from './cleanupUtils';
 
-// Extended mock user type that matches User interface
-interface MockUser extends Partial<User> {
+// Custom interface for mock user that has all required User properties
+interface MockUser {
   id: string;
   email: string;
   user_metadata: { name: string };
+  app_metadata: any;
+  created_at: string;
 }
 
-// Extended mock session type that matches Session interface
-interface MockSession extends Partial<Session> {
+// Mock session interface with correct properties
+interface MockSession {
   user: MockUser;
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -135,7 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         name: role === 'client' ? 'Empresa Cliente' : 
               role === 'admin' ? 'Admin Contaflix' : 'Contador Teste',
       },
-      app_metadata: {},
+      app_metadata: {}, // Required property
       created_at: new Date().toISOString(),
     };
     
@@ -148,8 +154,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       company_id: role === 'client' ? 'client-123' : 'contaflix-001'
     };
     
+    // Create a mock session with all required properties
+    const mockSession: MockSession = {
+      user: mockUser,
+      access_token: 'mock_access_token',
+      refresh_token: 'mock_refresh_token',
+      expires_in: 3600,
+      token_type: 'bearer'
+    };
+    
     setUser(mockUser as User);
-    setSession({ user: mockUser } as Session);
+    setSession(mockSession as Session);
     setUserProfile(mockProfile);
     setIsAuthenticated(true);
     setIsLoading(false);

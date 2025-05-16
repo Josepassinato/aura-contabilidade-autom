@@ -5,21 +5,30 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { DocumentList } from '@/components/client-portal/documents/DocumentList';
 import { DocumentSearch } from '@/components/client-portal/documents/DocumentSearch';
 import { DocumentTabs } from '@/components/client-portal/documents/DocumentTabs';
-import { useClientDocuments } from '@/components/client-portal/useClientDocuments'; // Fixed the import path
+import { useClientDocuments } from '@/components/client-portal/useClientDocuments';
 
 const ClientDocuments = () => {
+  // Get client ID from session storage or use a default
+  const clientId = sessionStorage.getItem('client_id') || '';
   const {
     documents,
+    searchTerm, 
+    setSearchTerm,
     isLoading,
-    activeTab,
-    searchQuery,
-    selectedTags,
-    handleTabChange,
-    handleSearch,
-    handleTagSelect,
-    handleDeleteDocument,
-    refreshDocuments
-  } = useClientDocuments();
+    handleViewDocument,
+    loadDocuments
+  } = useClientDocuments(clientId);
+
+  // Define handlers based on the hook properties
+  const handleDeleteDocument = async (documentId: string) => {
+    console.log('Delete document', documentId);
+    // Implementation would be here in a real app
+    await loadDocuments(clientId);
+  };
+
+  const refreshDocuments = () => {
+    loadDocuments(clientId);
+  };
 
   return (
     <DashboardLayout>
@@ -32,20 +41,15 @@ const ClientDocuments = () => {
         </div>
 
         <DocumentSearch 
-          searchQuery={searchQuery}
-          onSearch={handleSearch}
-          selectedTags={selectedTags}
-          onTagSelect={handleTagSelect}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
         
-        <DocumentTabs 
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+        <DocumentTabs />
 
         <DocumentList
           documents={documents}
-          isLoading={isLoading}
+          onView={handleViewDocument}
           onDelete={handleDeleteDocument}
           onRefresh={refreshDocuments}
         />

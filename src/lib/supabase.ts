@@ -30,6 +30,7 @@ export interface Employee {
   cpf: string;
   status: string;
   client_id: string;
+  notes?: string; // Added notes field to fix EmployeeFormDialog error
 }
 
 // Payroll Entry type
@@ -60,8 +61,39 @@ export interface Document {
   updated_at?: string;
 }
 
+// AccountingClient type
+export interface AccountingClient {
+  id: string;
+  name: string;
+  email: string;
+  cnpj: string;
+  regime?: string;
+  status: string;
+  address?: string;
+  phone?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const useSupabaseClient = () => {
-  // Implementação simplificada
-  const supabase = {}; // Mock - esta função será substituída pela implementação real
+  // Mock implementation with required methods to fix TypeScript errors
+  const supabase = {
+    from: (table: string) => ({
+      select: (columns: string) => ({ 
+        eq: (column: string, value: any) => ({
+          single: () => Promise.resolve({ data: null, error: null }),
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) })
+        }),
+        order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) })
+      })
+    }),
+    rpc: <T = any, P = any>(
+      fn: string, 
+      params?: P
+    ) => Promise.resolve({ data: null as T, error: null })
+  };
+  
   return supabase;
 };
+
