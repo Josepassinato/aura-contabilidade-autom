@@ -26,6 +26,7 @@ import EmailService from "@/pages/EmailService";
 
 const OpenAIManagement = React.lazy(() => import('./pages/admin/OpenAIManagement'));
 
+// Criação do roteador com configuração melhorada
 const routes = createBrowserRouter([
   // Rotas públicas (não precisam de autenticação)
   {
@@ -37,92 +38,92 @@ const routes = createBrowserRouter([
     element: <ClientAccess />
   },
   
-  // Rotas protegidas (precisam de autenticação)
+  // Rotas protegidas dentro do layout do Dashboard
   {
     path: "/",
     element: <DashboardLayout />,
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />
-      },
-      {
-        path: "/dashboard",
         element: <Index />
       },
       {
-        path: "/onboarding",
+        path: "dashboard",
+        element: <Index />
+      },
+      {
+        path: "onboarding",
         element: <Onboarding />
       },
       {
-        path: "/onboarding/welcome",
+        path: "onboarding/welcome",
         element: <OnboardingWelcome />
       },
       {
-        path: "/gerenciar-clientes",
+        path: "gerenciar-clientes",
         element: <GerenciarClientes />
       },
       {
-        path: "/admin/business-analytics",
+        path: "admin/business-analytics",
         element: <BusinessAnalytics />
       },
       {
-        path: "/admin/customer-management",
+        path: "admin/customer-management",
         element: <CustomerManagement />
       },
       {
-        path: "/admin/usage-metrics",
+        path: "admin/usage-metrics",
         element: <UsageMetrics />
       },
       {
-        path: "/admin/openai-management",
+        path: "admin/openai-management",
         element: <Suspense fallback={<div>Loading...</div>}><OpenAIManagement /></Suspense>
       },
       {
-        path: "/settings",
+        path: "settings",
         element: <Settings />
       },
       {
-        path: "/relatorios-ia",
+        path: "relatorios-ia",
         element: <RelatoriosIA />
       },
       {
-        path: "/client-portal",
+        path: "client-portal",
         element: <ClientPortal />
       },
       {
-        path: "/client-portal/:clientId",
+        path: "client-portal/:clientId",
         element: <ClientPortal />
       },
       {
-        path: "/parametros-fiscais",
+        path: "parametros-fiscais",
         element: <GerenciarParametrosFiscais />
       },
       {
-        path: "/calculosfiscais",
+        path: "calculosfiscais",
         element: <CalculosFiscais />
       },
       {
-        path: "/automacao-bancaria",
+        path: "automacao-bancaria",
         element: <AutomacaoBancaria />
       },
       {
-        path: "/folha-pagamento",
+        path: "folha-pagamento",
         element: <FolhaPagamento />
       },
       {
-        path: "/obrigacoesfiscais",
+        path: "obrigacoesfiscais",
         element: <ObrigacoesFiscais />
       },
       {
-        path: "/relatoriosfinanceiros",
+        path: "relatoriosfinanceiros",
         element: <RelatoriosFinanceiros />
       },
       {
-        path: "/email-service",
+        path: "email-service",
         element: <EmailService />
       },
-      // Rota de fallback para página não encontrada
+      // Rota para capturar qualquer caminho inválido
       {
         path: "*",
         element: <NotFound />

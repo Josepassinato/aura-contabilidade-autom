@@ -9,6 +9,8 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -20,19 +22,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Verificar se o usuário está em uma rota de autenticação
-  const isAuthRoute = location.pathname === '/login' || 
-                      location.pathname === '/signup' || 
-                      location.pathname === '/client-access';
-  
-  // Redirecionar para login se não estiver autenticado e não estiver em uma rota de autenticação
+  // Verificar possíveis problemas de estado de autenticação inconsistente
   useEffect(() => {
-    // Somente redirecionar se não estiver em uma rota de autenticação
-    if (!isLoading && !isAuthenticated && !isAuthRoute) {
+    if (checkForAuthLimboState()) {
+      toast({
+        title: "Estado de autenticação inconsistente detectado",
+        description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
+        variant: "destructive",
+      });
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
+  
+  // Verificar autenticação e redirecionar quando necessário
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
       console.log("Usuário não autenticado, redirecionando para login");
       navigate("/login", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, isAuthRoute]);
+  }, [isAuthenticated, isLoading, navigate]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
@@ -50,8 +58,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
   
-  // Se não estiver autenticado e não estiver em uma rota de autenticação, mostrar botão para ir para o login
-  if (!isAuthenticated && !isAuthRoute) {
+  // Se não estiver autenticado, mostrar botão para ir para o login
+  if (!isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center p-8 border rounded-lg shadow-sm">
@@ -66,11 +74,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
     );
-  }
-
-  // Se estiver em uma rota de autenticação, não mostrar o layout do dashboard
-  if (isAuthRoute) {
-    return children || <Outlet />;
   }
 
   return (
