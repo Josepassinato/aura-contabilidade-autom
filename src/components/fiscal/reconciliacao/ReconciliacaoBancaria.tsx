@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Card, 
@@ -45,6 +44,7 @@ import {
   TransacaoBancaria 
 } from "@/services/bancario/openBankingService";
 import { simularFluxoProcessamento } from "@/services/fiscal/mensageria/eventoProcessor";
+import { ResolucaoAutonoma } from "./ResolucaoAutonoma";
 
 export function ReconciliacaoBancaria() {
   const [bancoSelecionado, setBancoSelecionado] = useState("Itaú");
@@ -58,7 +58,6 @@ export function ReconciliacaoBancaria() {
   
   // Function to generate example transaction records
   const gerarLancamentosExemplo = (): Lancamento[] => {
-    // Reusing existing logic to create example data
     const hoje = new Date();
     const dataInicial = new Date(hoje);
     dataInicial.setDate(hoje.getDate() - 30);
@@ -197,6 +196,11 @@ export function ReconciliacaoBancaria() {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Handle result from autonomous resolution
+  const handleResultadoResolvido = (resultadoAtualizado: ResultadoReconciliacao) => {
+    setResultadoReconciliacao(resultadoAtualizado);
   };
   
   // Initialize dates for a default period (last month)
@@ -412,7 +416,7 @@ export function ReconciliacaoBancaria() {
                       <AlertDescription>
                         {resultadoReconciliacao.transacoesNaoConciliadas.length} transações e{' '}
                         {resultadoReconciliacao.lancamentosNaoConciliados.length} lançamentos não foram reconciliados.
-                        Recomenda-se verificar manualmente estes itens.
+                        Recomenda-se verificar manualmente estes itens ou usar a resolução autônoma.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -426,6 +430,13 @@ export function ReconciliacaoBancaria() {
                   </AlertDescription>
                 </Alert>
               )}
+              
+              {/* Nova seção de resolução autônoma */}
+              <ResolucaoAutonoma 
+                resultadoReconciliacao={resultadoReconciliacao}
+                onResultadoResolvido={handleResultadoResolvido}
+                isLoading={isLoading}
+              />
             </TabsContent>
             
             <TabsContent value="transacoes">

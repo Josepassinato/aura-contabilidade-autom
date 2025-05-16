@@ -1,4 +1,3 @@
-
 /**
  * Serviço de classificação baseado em Machine Learning
  * Simula o comportamento de um modelo ML treinado para classificação de lançamentos
@@ -14,13 +13,10 @@ export interface Lancamento {
   descricao: string;
   tipo: 'receita' | 'despesa' | 'transferencia';
   categoria?: string;
-  subcategoria?: string;
   contraparte?: string;
-  documentoContraparte?: string;
-  notaFiscal?: string;
-  comprovante?: string;
-  status?: 'classificado' | 'nao_classificado' | 'reconciliado' | 'pendente';
+  status: 'pendente' | 'classificado' | 'revisado' | 'rejeitado';
   confianca?: number;
+  observacoes?: string;
 }
 
 // Configuração do modelo de ML
