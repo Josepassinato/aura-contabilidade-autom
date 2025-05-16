@@ -54,6 +54,7 @@ export const CalculoNotasFiscais: React.FC<CalculoNotasFiscaisProps> = ({
 
     try {
       setIsLoading(true);
+      // Pass regimeTributario instead of a string to avoid type error
       const result = await calcularImpostosPorNotasFiscais(cnpj, periodo, regimeTributario);
       setResultados(result);
       toast({

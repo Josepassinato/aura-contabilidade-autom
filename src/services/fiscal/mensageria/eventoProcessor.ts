@@ -1,87 +1,112 @@
 
 /**
- * Serviço de processamento de eventos fiscais
- * Sistema de mensagens que conecta diferentes partes do sistema fiscal
+ * Serviço de mensageria para eventos fiscais
+ * Implementa um sistema pub/sub para comunicação entre módulos
  */
 
-import { toast } from "@/hooks/use-toast";
+import { EventoFiscal, TipoEvento, EventoSubscriber } from "../types";
+import { v4 as uuidv4 } from "uuid";
 
-// Tipos de eventos fiscais
-export type TipoEvento = 
-  | 'fiscal.calculated' 
-  | 'fiscal.generated' 
-  | 'guia.generated'
-  | 'pagamento.scheduled'
-  | 'pagamento.executed'
-  | 'classificacao.completed';
+// Re-export types for components that need them
+export { EventoFiscal, TipoEvento, EventoSubscriber };
 
-// Interface de evento fiscal
-export interface EventoFiscal {
-  id: string;
-  tipo: TipoEvento;
-  timestamp: string;
-  origem: string;
-  dados: {
-    [key: string]: any;
-  };
-}
+// Armazenamento interno de subscribers por tipo de evento
+const subscribers: Map<TipoEvento, EventoSubscriber[]> = new Map();
 
-// Tipo para funções de subscriber
-export type EventoSubscriber = (evento: EventoFiscal) => Promise<void> | void;
-
-// Repositório de listeners
-const eventListeners: Record<string, EventoSubscriber[]> = {};
-const historicoEventos: EventoFiscal[] = [];
-const MAX_HISTORICO = 100;
+// Fila de eventos para simulação
+const eventosRecentes: EventoFiscal[] = [];
+const MAX_EVENTOS_GUARDADOS = 100;
 
 /**
- * Registra um subscriber para um tipo de evento
+ * Inicializa o sistema de eventos
  */
-export const subscribe = (tipo: TipoEvento, callback: EventoSubscriber): () => void => {
-  if (!eventListeners[tipo]) {
-    eventListeners[tipo] = [];
-  }
+export const inicializarSistemaEventos = () => {
+  console.log('Sistema de eventos fiscais inicializado');
   
-  eventListeners[tipo].push(callback);
-  console.log(`Novo subscriber registrado para eventos do tipo: ${tipo}`);
+  // Limpar subscribers existentes
+  subscribers.clear();
   
-  // Retorna função para cancelar a inscrição
-  return () => {
-    eventListeners[tipo] = eventListeners[tipo].filter(cb => cb !== callback);
-    console.log(`Subscriber removido para eventos do tipo: ${tipo}`);
+  // Registrar tipos de eventos suportados
+  const tiposEvento: TipoEvento[] = [
+    'fiscal.calculated',
+    'fiscal.generated',
+    'guia.generated',
+    'pagamento.scheduled',
+    'pagamento.executed',
+    'bank.transaction',
+    'entry.created',
+    'entry.classified',
+    'entry.reconciled',
+  ];
+  
+  tiposEvento.forEach(tipo => {
+    subscribers.set(tipo, []);
+  });
+  
+  return {
+    nomeServico: 'Sistema de Eventos Fiscais',
+    versao: '1.0.0',
+    tiposEventoSuportados: tiposEvento,
   };
 };
 
 /**
- * Publica um novo evento fiscal
+ * Assina um tipo de evento para receber notificações
  */
-export const publicarEvento = async (tipo: TipoEvento, dados: any, origem: string = 'sistema'): Promise<EventoFiscal> => {
-  const evento: EventoFiscal = {
-    id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-    tipo,
-    timestamp: new Date().toISOString(),
-    origem,
-    dados
-  };
-  
-  console.log(`Evento publicado: ${tipo}`, evento);
-  
-  // Adicionar ao histórico
-  historicoEventos.unshift(evento);
-  
-  // Limitar tamanho do histórico
-  if (historicoEventos.length > MAX_HISTORICO) {
-    historicoEventos.length = MAX_HISTORICO;
+export const subscribe = (tipo: TipoEvento, callback: EventoSubscriber): () => void => {
+  // Verificar se o tipo de evento é suportado
+  if (!subscribers.has(tipo)) {
+    console.warn(`Tipo de evento não suportado: ${tipo}. Criando dinamicamente.`);
+    subscribers.set(tipo, []);
   }
   
-  // Processar subscribers
-  if (eventListeners[tipo]) {
+  // Adicionar o callback à lista de subscribers
+  subscribers.get(tipo)!.push(callback);
+  
+  // Retornar função para cancelar a assinatura
+  return () => {
+    const eventoSubscribers = subscribers.get(tipo);
+    if (eventoSubscribers) {
+      const index = eventoSubscribers.indexOf(callback);
+      if (index !== -1) {
+        eventoSubscribers.splice(index, 1);
+      }
+    }
+  };
+};
+
+/**
+ * Publica um evento para todos os subscribers
+ */
+export const publicarEvento = async (tipo: TipoEvento, dados: Record<string, any>): Promise<EventoFiscal> => {
+  const evento: EventoFiscal = {
+    id: uuidv4(),
+    tipo,
+    timestamp: new Date().toISOString(),
+    origem: 'sistema-fiscal',
+    dados,
+  };
+  
+  // Guardar evento na lista recente
+  eventosRecentes.push(evento);
+  
+  // Manter apenas os MAX_EVENTOS_GUARDADOS mais recentes
+  if (eventosRecentes.length > MAX_EVENTOS_GUARDADOS) {
+    eventosRecentes.shift();
+  }
+  
+  console.log(`Evento publicado: ${tipo}`, dados);
+  
+  // Notificar todos os subscribers de forma assíncrona
+  const eventoSubscribers = subscribers.get(tipo);
+  if (eventoSubscribers && eventoSubscribers.length > 0) {
+    // Usar Promise.all para esperar que todos os handlers completem
     await Promise.all(
-      eventListeners[tipo].map(async (callback) => {
+      eventoSubscribers.map(async (callback) => {
         try {
           await callback(evento);
         } catch (error) {
-          console.error(`Erro ao processar evento ${tipo} em um subscriber:`, error);
+          console.error(`Erro ao processar evento ${tipo} por subscriber:`, error);
         }
       })
     );
@@ -91,110 +116,46 @@ export const publicarEvento = async (tipo: TipoEvento, dados: any, origem: strin
 };
 
 /**
- * Obtém o histórico de eventos
+ * Retorna os eventos recentes para fins de debug
  */
-export const obterHistoricoEventos = (): EventoFiscal[] => {
-  return [...historicoEventos];
+export const obterEventosRecentes = (): EventoFiscal[] => {
+  return [...eventosRecentes];
 };
 
 /**
- * Limpa o histórico de eventos
+ * Limpa a lista de eventos recentes
  */
-export const limparHistoricoEventos = (): void => {
-  historicoEventos.length = 0;
+export const limparEventosRecentes = (): void => {
+  eventosRecentes.length = 0;
 };
 
 /**
- * Simulador de eventos para teste
+ * Adiciona função para simulação de fluxo de processamento 
+ * necessário para ReconciliacaoBancaria.tsx
  */
-export const simularEvento = async (tipo: TipoEvento): Promise<EventoFiscal> => {
-  let dadosSimulados: any = {};
-  
-  switch (tipo) {
-    case 'fiscal.calculated':
-      dadosSimulados = {
-        cnpj: '12345678000190',
-        periodo: '2023-05',
-        impostos: {
-          irpj: 1200.50,
-          csll: 720.30,
-          pis: 195.45,
-          cofins: 900.20
-        }
-      };
-      break;
-    case 'fiscal.generated':
-      dadosSimulados = {
-        cnpj: '12345678000190',
-        tipoImposto: 'IRPJ',
-        valor: 1250.75,
-        dataVencimento: new Date(new Date().getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        periodo: '2023-05',
-        contribuinte: 'Empresa Teste LTDA'
-      };
-      break;
-    case 'guia.generated':
-      dadosSimulados = {
-        cnpj: '12345678000190',
-        tipoImposto: 'DAS',
-        valor: 580.32,
-        dataVencimento: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        periodo: '2023-05',
-        codigoBarras: '85800000008-6 58032073801-4 24062023030-6 67890123456-7',
-        contribuinte: 'Empresa Teste LTDA'
-      };
-      break;
-    case 'pagamento.scheduled':
-      dadosSimulados = {
-        jobId: `PAG-${Date.now()}`,
-        tipoImposto: 'DARF',
-        valor: 1250.75,
-        dataAgendamento: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      };
-      break;
-    case 'pagamento.executed':
-      dadosSimulados = {
-        jobId: `PAG-${Date.now() - 10000}`,
-        tipoImposto: 'DAS',
-        valor: 580.32,
-        sucesso: Math.random() > 0.2,
-        mensagem: Math.random() > 0.2 ? 'Pagamento realizado com sucesso' : 'Falha ao processar pagamento'
-      };
-      break;
-    case 'classificacao.completed':
-      dadosSimulados = {
-        totalLancamentos: 45,
-        lancamentosClassificados: 38,
-        precisao: 0.84
-      };
-      break;
-    default:
-      dadosSimulados = { mensagem: 'Evento simulado genérico' };
-  }
-  
-  const evento = await publicarEvento(tipo, dadosSimulados, 'simulador');
-  
-  toast({
-    title: `Evento ${tipo} simulado`,
-    description: `Um evento do tipo ${tipo} foi simulado para fins de teste.`
-  });
-  
-  return evento;
-};
-
-/**
- * Inicializa o sistema de eventos, registrando os manipuladores padrão
- */
-export const inicializarSistemaEventos = (): void => {
-  console.log('Inicializando sistema de eventos fiscais...');
-  
-  // Registrar manipulador de log para todos os eventos
-  for (const tipo of [
-    'fiscal.calculated', 'fiscal.generated', 'guia.generated',
-    'pagamento.scheduled', 'pagamento.executed', 'classificacao.completed'
-  ] as TipoEvento[]) {
-    subscribe(tipo, (evento) => {
-      console.log(`[EventLog] Evento ${tipo} processado:`, evento);
-    });
+export const simularFluxoProcessamento = async (
+  tipo: string, 
+  quantidadeEventos: number = 5, 
+  intervalMs: number = 1000
+): Promise<void> => {
+  for (let i = 0; i < quantidadeEventos; i++) {
+    const tipoEvento = tipo as TipoEvento;
+    const dados = {
+      simulacao: true,
+      indice: i + 1,
+      total: quantidadeEventos,
+      timestamp: new Date().toISOString(),
+      detalhes: {
+        descricao: `Evento simulado ${i + 1} de ${quantidadeEventos}`,
+        progresso: ((i + 1) / quantidadeEventos) * 100
+      }
+    };
+    
+    await publicarEvento(tipoEvento, dados);
+    
+    // Esperar intervalo antes de próximo evento
+    if (i < quantidadeEventos - 1) {
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
   }
 };

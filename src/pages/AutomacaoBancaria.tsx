@@ -33,10 +33,12 @@ const AutomacaoBancaria = () => {
     // Registrar handlers para eventos fiscais
     const unsubscribe = subscribe('fiscal.generated', async (evento) => {
       await processarEventoFiscal(evento);
+      return;
     });
     
     const unsubscribe2 = subscribe('guia.generated', async (evento) => {
       await processarEventoFiscal(evento);
+      return;
     });
     
     return () => {

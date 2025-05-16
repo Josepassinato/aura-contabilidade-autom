@@ -54,6 +54,7 @@ export const CalculoLancamentos: React.FC<CalculoLancamentosProps> = ({
 
     try {
       setIsLoading(true);
+      // Pass regimeTributario instead of a string to avoid type error
       const result = await calcularImpostosPorLancamentos(cnpj, periodo, regimeTributario);
       setResultados(result);
       toast({

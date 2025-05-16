@@ -3,167 +3,93 @@
  * Serviço para geração de DARFs e outros documentos de arrecadação
  */
 
-import { toast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
 import { publicarEvento } from "./mensageria/eventoProcessor";
 
-// Interface para documentos de arrecadação
-export interface DocumentoArrecadacao {
+interface DocumentoArrecadacao {
   id: string;
-  tipoDocumento: 'DARF' | 'DARF SIMPLES' | 'GPS' | 'DAS' | 'GARE' | 'FGTS';
-  periodo: string;
+  tipo: "DARF" | "GPS" | "DAS" | "GARE";
   cnpj: string;
+  periodo: string;
   codigoReceita: string;
   valorPrincipal: number;
-  valorMulta?: number;
   valorJuros?: number;
+  valorMulta?: number;
   valorTotal: number;
   dataVencimento: string;
-  dataEmissao: string;
-  status: 'emitido' | 'pago' | 'cancelado' | 'vencido';
+  referencia: string;
   codigoBarras?: string;
-  referencia?: string;
+  linhaDigitavel?: string;
+  geradoEm: string;
 }
 
-// Repositório simulado de documentos
-const documentosGerados: DocumentoArrecadacao[] = [];
+interface GeracaoDocumentoParams {
+  cnpj: string;
+  periodo: string;
+  codigoReceita: string;
+  valorPrincipal: number;
+  valorJuros?: number;
+  valorMulta?: number;
+  valorTotal: number;
+  dataVencimento: string;
+  referencia: string;
+}
 
 /**
- * Gera um novo documento de arrecadação 
+ * Gera um documento de arrecadação (DARF, GPS, DAS, etc)
  */
 export const gerarDocumentoArrecadacao = async (
-  tipo: DocumentoArrecadacao['tipoDocumento'],
-  dados: Omit<DocumentoArrecadacao, 'id' | 'tipoDocumento' | 'dataEmissao' | 'status' | 'codigoBarras'>
+  tipo: "DARF" | "GPS" | "DAS" | "GARE",
+  params: GeracaoDocumentoParams
 ): Promise<DocumentoArrecadacao> => {
   try {
-    const id = `${tipo}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    console.log(`Gerando ${tipo} para ${params.cnpj} - período ${params.periodo}`);
     
-    // Gera código de barras simulado
-    const codigoBarras = gerarCodigoBarras(tipo, dados.valorTotal, dados.dataVencimento);
+    // Gerar código de barras simulado
+    const randomCode = Math.floor(10000000000 + Math.random() * 90000000000);
+    const codigoBarras = `85810000${randomCode}-5 ${randomCode % 1000}0065${randomCode % 1000}-1 ${params.dataVencimento.replace(/-/g, "")}2-6 ${params.cnpj.substring(0,8)}55-9`;
+    
+    // Linha digitável é uma versão formatada do código de barras
+    const linhaDigitavel = codigoBarras.replace(/-/g, '');
     
     const documento: DocumentoArrecadacao = {
-      id,
-      tipoDocumento: tipo,
-      periodo: dados.periodo,
-      cnpj: dados.cnpj,
-      codigoReceita: dados.codigoReceita,
-      valorPrincipal: dados.valorPrincipal,
-      valorMulta: dados.valorMulta,
-      valorJuros: dados.valorJuros,
-      valorTotal: dados.valorTotal,
-      dataVencimento: dados.dataVencimento,
-      dataEmissao: new Date().toISOString().split('T')[0],
-      status: 'emitido',
+      id: uuidv4(),
+      tipo,
+      cnpj: params.cnpj,
+      periodo: params.periodo,
+      codigoReceita: params.codigoReceita,
+      valorPrincipal: params.valorPrincipal,
+      valorJuros: params.valorJuros || 0,
+      valorMulta: params.valorMulta || 0,
+      valorTotal: params.valorTotal,
+      dataVencimento: params.dataVencimento,
+      referencia: params.referencia,
       codigoBarras,
-      referencia: dados.referencia
+      linhaDigitavel,
+      geradoEm: new Date().toISOString()
     };
     
-    // Adicionar ao repositório
-    documentosGerados.push(documento);
-    
-    console.log(`Documento de arrecadação ${tipo} gerado:`, documento);
-    
-    // Notificar sobre o documento
-    toast({
-      title: `${tipo} Gerado`,
-      description: `Documento de arrecadação no valor de R$ ${dados.valorTotal.toFixed(2)}.`
-    });
-    
-    // Publicar evento fiscal.generated
-    publicarEvento('fiscal.generated', {
-      tipoImposto: tipo,
-      codigoReceita: dados.codigoReceita,
-      valor: dados.valorTotal,
-      dataVencimento: dados.dataVencimento,
-      periodo: dados.periodo,
-      cnpj: dados.cnpj,
-      codigoBarras: codigoBarras,
-      contribuinte: "Empresa " + dados.cnpj
-    });
-    
-    // Publicar evento guia.generated
-    publicarEvento('guia.generated', {
-      tipoImposto: tipo,
-      valor: dados.valorTotal,
-      dataVencimento: dados.dataVencimento,
-      periodo: dados.periodo,
-      cnpj: dados.cnpj,
-      codigoBarras: codigoBarras
+    // Publicar evento de guia gerada
+    await publicarEvento('guia.generated', {
+      tipoDocumento: tipo,
+      cnpj: params.cnpj,
+      periodo: params.periodo,
+      codigoReceita: params.codigoReceita,
+      valor: params.valorTotal,
+      dataVencimento: params.dataVencimento,
+      codigoBarras
     });
     
     return documento;
   } catch (error) {
-    console.error('Erro ao gerar documento de arrecadação:', error);
-    throw error;
+    console.error(`Erro ao gerar ${tipo}:`, error);
+    throw new Error(`Falha ao gerar ${tipo}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 };
 
 /**
- * Busca documentos de arrecadação
+ * Alias para gerarDocumentoArrecadacao com tipo DARF
  */
-export const buscarDocumentos = (
-  cnpj?: string,
-  periodo?: string,
-  tipo?: DocumentoArrecadacao['tipoDocumento']
-): DocumentoArrecadacao[] => {
-  let resultado = [...documentosGerados];
-  
-  if (cnpj) {
-    resultado = resultado.filter(doc => doc.cnpj === cnpj);
-  }
-  
-  if (periodo) {
-    resultado = resultado.filter(doc => doc.periodo === periodo);
-  }
-  
-  if (tipo) {
-    resultado = resultado.filter(doc => doc.tipoDocumento === tipo);
-  }
-  
-  return resultado;
-};
-
-/**
- * Gera código de barras simulado
- */
-const gerarCodigoBarras = (
-  tipoDocumento: DocumentoArrecadacao['tipoDocumento'],
-  valor: number,
-  dataVencimento: string
-): string => {
-  // Simulação de código de barras
-  const valorFormatado = Math.floor(valor * 100)
-    .toString()
-    .padStart(8, '0');
-  
-  const dataVenc = dataVencimento.replace(/-/g, '');
-  const randomNum = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
-  
-  switch (tipoDocumento) {
-    case 'DARF':
-    case 'DARF SIMPLES':
-      return `85800000000-0 ${valorFormatado}-1 ${dataVenc.slice(0, 8)}-2 ${randomNum}-3`;
-    case 'GPS':
-      return `85900000000-9 ${valorFormatado}-2 ${dataVenc.slice(0, 8)}-3 ${randomNum}-4`;
-    case 'DAS':
-      return `85600000000-2 ${valorFormatado}-3 ${dataVenc.slice(0, 8)}-4 ${randomNum}-5`;
-    default:
-      return `84700000000-5 ${valorFormatado}-6 ${dataVenc.slice(0, 8)}-7 ${randomNum}-8`;
-  }
-};
-
-/**
- * Atualiza status de um documento
- */
-export const atualizarStatusDocumento = (
-  documentoId: string,
-  novoStatus: DocumentoArrecadacao['status']
-): DocumentoArrecadacao | null => {
-  const index = documentosGerados.findIndex(doc => doc.id === documentoId);
-  
-  if (index === -1) {
-    return null;
-  }
-  
-  documentosGerados[index].status = novoStatus;
-  return documentosGerados[index];
+export const gerarDARF = async (params: GeracaoDocumentoParams): Promise<DocumentoArrecadacao> => {
+  return gerarDocumentoArrecadacao("DARF", params);
 };

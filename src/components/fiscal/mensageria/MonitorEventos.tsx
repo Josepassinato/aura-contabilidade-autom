@@ -11,8 +11,8 @@ import {
   EventoFiscal
 } from "@/services/fiscal/mensageria/eventoProcessor";
 
-// Adicionar tipos bancários e contábeis à lista de tipos de eventos
-type AllEventTypes = TipoEvento | 'bank.transaction' | 'entry.created' | 'entry.classified' | 'entry.reconciled';
+// Define AllEventTypes to include all the event types we need to handle
+type AllEventTypes = TipoEvento;
 
 export function MonitorEventos() {
   const [eventos, setEventos] = useState<EventoFiscal[]>([]);
@@ -22,7 +22,7 @@ export function MonitorEventos() {
   useEffect(() => {
     const canceladores: (() => void)[] = [];
     
-    const tiposEvento: AllEventTypes[] = [
+    const tiposEvento: TipoEvento[] = [
       'bank.transaction',
       'entry.created',
       'entry.classified',
@@ -37,9 +37,7 @@ export function MonitorEventos() {
     // Assina cada tipo de evento
     tiposEvento.forEach(tipo => {
       try {
-        // Converta tipos bancários não suportados para TipoEvento conhecido
-        const eventoTipo = tipo as TipoEvento;
-        const cancelar = subscribe(eventoTipo, (evento) => {
+        const cancelar = subscribe(tipo, (evento) => {
           setEventos(prev => [evento, ...prev].slice(0, 100));
         });
         canceladores.push(cancelar);
@@ -57,18 +55,18 @@ export function MonitorEventos() {
   // Filtra eventos por tipo
   const eventosFiltrados = filtroTipo === 'todos'
     ? eventos
-    : eventos.filter(evento => evento.tipo === filtroTipo as TipoEvento);
+    : eventos.filter(evento => evento.tipo === filtroTipo);
   
   // Determina a cor do badge com base no tipo de evento
   const getBadgeVariant = (tipo: TipoEvento) => {
     switch (tipo) {
-      case 'bank.transaction' as TipoEvento:
+      case 'bank.transaction':
         return 'default';
-      case 'entry.created' as TipoEvento:
+      case 'entry.created':
         return 'outline';
-      case 'entry.classified' as TipoEvento:
+      case 'entry.classified':
         return 'secondary';
-      case 'entry.reconciled' as TipoEvento:
+      case 'entry.reconciled':
         return 'default';
       case 'fiscal.calculated':
         return 'destructive';

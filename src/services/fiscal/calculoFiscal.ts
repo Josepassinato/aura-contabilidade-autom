@@ -10,6 +10,9 @@ import { publicarEvento } from "./mensageria/eventoProcessor";
 import { gerarDocumentoArrecadacao } from "./darfService";
 import { TipoImposto, ResultadoCalculo, ParametrosCalculo, RegimeTributario } from "./types";
 
+// Re-export types so components can import them from this file
+export { TipoImposto, ResultadoCalculo, ParametrosCalculo, RegimeTributario } from "./types";
+
 /**
  * Função para calcular obrigações fiscais
  */
@@ -26,6 +29,7 @@ export const calcularObrigacaoFiscal = async (
     receitaBruta12Meses?: number;
     anexoSimples?: number;
     fator?: number;
+    deducoes?: number;  // Added to match the expected type
     informacoesAdicionais?: Record<string, any>;
   }
 ): Promise<ResultadoCalculo> => {
@@ -115,6 +119,9 @@ export const calcularObrigacaoFiscal = async (
         throw new Error(`Tipo de imposto não suportado: ${tipo}`);
     }
     
+    // Para compatibilidade com código existente
+    resultado.valorImposto = resultado.valorFinal;
+    
     // Arredondar valores
     resultado.valorFinal = Number(resultado.valorFinal.toFixed(2));
     resultado.baseCalculo = Number(resultado.baseCalculo.toFixed(2));
@@ -166,7 +173,8 @@ export const calcularImposto = async (tipo: TipoImposto, params: ParametrosCalcu
     periodo: params.periodo,
     baseCalculo: params.valor,
     receita: params.valor,
-    deducoes: params.deducoes
+    deducoes: params.deducoes,
+    aliquota: params.aliquota
   });
 };
 
@@ -213,11 +221,16 @@ export const calcularImpostoPorNotasFiscais = async (
 export const calcularImpostosPorLancamentos = async (
   cnpj: string,
   periodo: string,
-  tiposImposto: TipoImposto[]
+  tiposImposto: TipoImposto[] | RegimeTributario
 ): Promise<Record<TipoImposto, ResultadoCalculo>> => {
   const resultado: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
   
-  for (const tipo of tiposImposto) {
+  // Convert regimeTributario to array of TipoImposto if needed
+  const impostos: TipoImposto[] = Array.isArray(tiposImposto) ? 
+    tiposImposto : 
+    ['IRPJ', 'CSLL', 'PIS', 'COFINS'];
+  
+  for (const tipo of impostos) {
     resultado[tipo] = await calcularObrigacaoFiscal(tipo, {
       cnpj,
       periodo,
@@ -239,11 +252,16 @@ export const calcularImpostosPorLancamentos = async (
 export const calcularImpostosPorNotasFiscais = async (
   cnpj: string,
   periodo: string,
-  tiposImposto: TipoImposto[]
+  tiposImposto: TipoImposto[] | RegimeTributario
 ): Promise<Record<TipoImposto, ResultadoCalculo>> => {
   const resultado: Partial<Record<TipoImposto, ResultadoCalculo>> = {};
   
-  for (const tipo of tiposImposto) {
+  // Convert regimeTributario to array of TipoImposto if needed
+  const impostos: TipoImposto[] = Array.isArray(tiposImposto) ? 
+    tiposImposto : 
+    ['IRPJ', 'CSLL', 'PIS', 'COFINS'];
+  
+  for (const tipo of impostos) {
     resultado[tipo] = await calcularImpostoPorNotasFiscais(cnpj, periodo, tipo, 'LucroPresumido');
   }
   

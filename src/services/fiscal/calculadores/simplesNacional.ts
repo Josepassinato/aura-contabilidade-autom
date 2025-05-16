@@ -14,19 +14,25 @@ export const calcularSimples = (params: ParametrosCalculo): ResultadoCalculo => 
   const aliquota = 0.06; // Exemplo: 6% (varia conforme anexo e faixa)
   const deducao = 0;     // Valor de dedução conforme faixa
   
-  const valorImposto = valor * aliquota - deducao;
+  const valorFinal = valor * aliquota - deducao;
 
   // Data de vencimento (dia 20 do mês seguinte)
   const dataPeriodo = new Date(params.periodo + '-01');
   const dataVencimento = new Date(dataPeriodo.getFullYear(), dataPeriodo.getMonth() + 1, 20);
   
   return {
+    tipoImposto: 'Simples',
+    periodo: params.periodo,
+    cnpj: params.cnpj,
     valorBase: valor,
-    valorImposto,
-    aliquotaEfetiva: valorImposto / valor,
-    deducoes: deducao,
-    valorFinal: valorImposto,
+    baseCalculo: valor,
+    aliquotaEfetiva: aliquota,
+    aliquota: aliquota,
+    valorFinal: valorFinal,
     dataVencimento: dataVencimento.toISOString().split('T')[0],
-    codigoReceita: 'DAS'
+    calculadoEm: new Date().toISOString(),
+    status: 'ativo',
+    codigoReceita: 'DAS',
+    deducoes: deducao
   };
 };

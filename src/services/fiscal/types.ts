@@ -12,7 +12,8 @@ export type TipoImposto =
   | 'INSS'
   | 'ICMS'
   | 'DAS'
-  | 'Simples';
+  | 'Simples'
+  | 'FGTS'; // Added FGTS as a valid type
 
 export type RegimeTributario = 'Simples' | 'LucroPresumido' | 'LucroReal';
 
@@ -34,9 +35,11 @@ export interface ResultadoCalculo {
   deducoes?: number;
   detalhes?: Record<string, any>;
   dadosOrigem?: {
-    fonte: 'notasFiscais' | 'contabilidade' | 'lancamentos';
+    fonte: 'notasFiscais' | 'contabilidade' | 'lancamentos' | 'microservice-simulator';
     totalRegistros?: number;
+    documentos?: any[];
   };
+  valorImposto?: number; // Added for legacy support
 }
 
 export interface ParametrosCalculo {
@@ -45,4 +48,27 @@ export interface ParametrosCalculo {
   cnpj: string;
   regimeTributario: RegimeTributario;
   deducoes?: number;
+  aliquota?: number; // Added for certain calculators that need it
 }
+
+// Define the event types needed for the MonitorEventos component
+export type TipoEvento = 
+  | 'fiscal.calculated'
+  | 'fiscal.generated'
+  | 'guia.generated'
+  | 'pagamento.scheduled'
+  | 'pagamento.executed'
+  | 'bank.transaction'    // Added to support banking events
+  | 'entry.created'       // Added to support accounting entries
+  | 'entry.classified'    // Added for classification events
+  | 'entry.reconciled';   // Added for reconciliation events
+
+export interface EventoFiscal {
+  id: string;
+  tipo: TipoEvento;
+  timestamp: string;
+  origem: string;
+  dados: Record<string, any>;
+}
+
+export type EventoSubscriber = (evento: EventoFiscal) => void | Promise<void>;
