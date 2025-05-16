@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -242,7 +242,6 @@ const Colaboradores = () => {
           </TabsContent>
         </div>
       </Tabs>
-    </div>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
@@ -262,7 +261,7 @@ const Colaboradores = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </div>
   );
 };
 
