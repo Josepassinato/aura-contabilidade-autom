@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route } from 'react-router-dom';
 import { ProtectedRoute } from './routeComponents';
@@ -20,109 +21,101 @@ import AutomacaoBancaria from '../pages/AutomacaoBancaria';
 import Notifications from '../pages/Notifications';
 import ClassificacaoReconciliacao from '../pages/ClassificacaoReconciliacao';
 
-export const ProtectedRoutes = () => {
-  return (
-    <>
-      {/* Dashboard routes */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      } />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Index />
-        </ProtectedRoute>
-      } />
-      
-      {/* Reports routes */}
-      <Route path="/relatorios" element={
-        <ProtectedRoute>
-          <RelatoriosFinanceiros />
-        </ProtectedRoute>
-      } />
-      <Route path="/relatorios-ia" element={
-        <ProtectedRoute>
-          <RelatoriosIA />
-        </ProtectedRoute>
-      } />
-      
-      {/* Other protected routes */}
-      <Route path="/obrigacoes-fiscais" element={
-        <ProtectedRoute>
-          <ObrigacoesFiscais />
-        </ProtectedRoute>
-      } />
-      <Route path="/guias-fiscais" element={
-        <ProtectedRoute>
-          <GuiasFiscais />
-        </ProtectedRoute>
-      } />
-      <Route path="/integracoes-gov" element={
-        <ProtectedRoute>
-          <IntegracoesGov />
-        </ProtectedRoute>
-      } />
-      <Route path="/integracoes-estaduais" element={
-        <ProtectedRoute>
-          <IntegracoesEstaduais />
-        </ProtectedRoute>
-      } />
-      <Route path="/email-service" element={
-        <ProtectedRoute>
-          <EmailService />
-        </ProtectedRoute>
-      } />
-      <Route path="/documentos" element={
-        <ProtectedRoute>
-          <ClientDocuments />
-        </ProtectedRoute>
-      } />
-      <Route path="/folha-pagamento" element={
-        <ProtectedRoute>
-          <FolhaPagamento />
-        </ProtectedRoute>
-      } />
-      <Route path="/regime-fiscal" element={
-        <ProtectedRoute>
-          <RegimeFiscal />
-        </ProtectedRoute>
-      } />
-      <Route path="/apuracao-automatica" element={
-        <ProtectedRoute>
-          <ApuracaoAutomatica />
-        </ProtectedRoute>
-      } />
-      <Route path="/analises-preditivas" element={
-        <ProtectedRoute>
-          <AnalisesPreditivas />
-        </ProtectedRoute>
-      } />
-      <Route path="/colaboradores" element={
-        <ProtectedRoute>
-          <Colaboradores />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
-      } />
-      <Route path="/automacao-bancaria" element={
-        <ProtectedRoute>
-          <AutomacaoBancaria />
-        </ProtectedRoute>
-      } />
-      <Route path="/notifications" element={
-        <ProtectedRoute>
-          <Notifications />
-        </ProtectedRoute>
-      } />
-      <Route path="/classificacao-reconciliacao" element={
-        <ProtectedRoute>
-          <ClassificacaoReconciliacao />
-        </ProtectedRoute>
-      } />
-    </>
-  );
-};
+// Export an array of Route elements
+export const protectedRoutes = [
+  <Route key="home" path="/" element={
+    <ProtectedRoute>
+      <Index />
+    </ProtectedRoute>
+  } />,
+  <Route key="dashboard" path="/dashboard" element={
+    <ProtectedRoute>
+      <Index />
+    </ProtectedRoute>
+  } />,
+  <Route key="relatorios" path="/relatorios" element={
+    <ProtectedRoute>
+      <RelatoriosFinanceiros />
+    </ProtectedRoute>
+  } />,
+  <Route key="relatorios-ia" path="/relatorios-ia" element={
+    <ProtectedRoute>
+      <RelatoriosIA />
+    </ProtectedRoute>
+  } />,
+  <Route key="obrigacoes-fiscais" path="/obrigacoes-fiscais" element={
+    <ProtectedRoute>
+      <ObrigacoesFiscais />
+    </ProtectedRoute>
+  } />,
+  <Route key="guias-fiscais" path="/guias-fiscais" element={
+    <ProtectedRoute>
+      <GuiasFiscais />
+    </ProtectedRoute>
+  } />,
+  <Route key="integracoes-gov" path="/integracoes-gov" element={
+    <ProtectedRoute>
+      <IntegracoesGov />
+    </ProtectedRoute>
+  } />,
+  <Route key="integracoes-estaduais" path="/integracoes-estaduais" element={
+    <ProtectedRoute>
+      <IntegracoesEstaduais />
+    </ProtectedRoute>
+  } />,
+  <Route key="email-service" path="/email-service" element={
+    <ProtectedRoute>
+      <EmailService />
+    </ProtectedRoute>
+  } />,
+  <Route key="documentos" path="/documentos" element={
+    <ProtectedRoute>
+      <ClientDocuments />
+    </ProtectedRoute>
+  } />,
+  <Route key="folha-pagamento" path="/folha-pagamento" element={
+    <ProtectedRoute>
+      <FolhaPagamento />
+    </ProtectedRoute>
+  } />,
+  <Route key="regime-fiscal" path="/regime-fiscal" element={
+    <ProtectedRoute>
+      <RegimeFiscal />
+    </ProtectedRoute>
+  } />,
+  <Route key="apuracao-automatica" path="/apuracao-automatica" element={
+    <ProtectedRoute>
+      <ApuracaoAutomatica />
+    </ProtectedRoute>
+  } />,
+  <Route key="analises-preditivas" path="/analises-preditivas" element={
+    <ProtectedRoute>
+      <AnalisesPreditivas />
+    </ProtectedRoute>
+  } />,
+  <Route key="colaboradores" path="/colaboradores" element={
+    <ProtectedRoute>
+      <Colaboradores />
+    </ProtectedRoute>
+  } />,
+  <Route key="settings" path="/settings" element={
+    <ProtectedRoute>
+      <Settings />
+    </ProtectedRoute>
+  } />,
+  <Route key="automacao-bancaria" path="/automacao-bancaria" element={
+    <ProtectedRoute>
+      <AutomacaoBancaria />
+    </ProtectedRoute>
+  } />,
+  <Route key="notifications" path="/notifications" element={
+    <ProtectedRoute>
+      <Notifications />
+    </ProtectedRoute>
+  } />,
+  <Route key="classificacao-reconciliacao" path="/classificacao-reconciliacao" element={
+    <ProtectedRoute>
+      <ClassificacaoReconciliacao />
+    </ProtectedRoute>
+  } />,
+];

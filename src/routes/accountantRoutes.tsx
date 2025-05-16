@@ -6,25 +6,21 @@ import GerenciarClientes from '../pages/GerenciarClientes';
 import CalculosFiscais from '../pages/CalculosFiscais';
 import GerenciarParametrosFiscais from '../pages/GerenciarParametrosFiscais';
 
-export const AccountantRoutes = () => {
-  return (
-    <>
-      {/* Routes requiring accountant privileges */}
-      <Route path="/clientes" element={
-        <AccountantRoute>
-          <GerenciarClientes />
-        </AccountantRoute>
-      } />
-      <Route path="/calculos-fiscais" element={
-        <AccountantRoute>
-          <CalculosFiscais />
-        </AccountantRoute>
-      } />
-      <Route path="/parametros-fiscais" element={
-        <AccountantRoute>
-          <GerenciarParametrosFiscais />
-        </AccountantRoute>
-      } />
-    </>
-  );
-};
+// Export an array of Route elements
+export const accountantRoutes = [
+  <Route key="clientes" path="/clientes" element={
+    <AccountantRoute>
+      <GerenciarClientes />
+    </AccountantRoute>
+  } />,
+  <Route key="calculos-fiscais" path="/calculos-fiscais" element={
+    <AccountantRoute>
+      <CalculosFiscais />
+    </AccountantRoute>
+  } />,
+  <Route key="parametros-fiscais" path="/parametros-fiscais" element={
+    <AccountantRoute>
+      <GerenciarParametrosFiscais />
+    </AccountantRoute>
+  } />,
+];

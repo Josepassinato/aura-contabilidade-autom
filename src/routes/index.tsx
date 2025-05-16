@@ -1,20 +1,18 @@
 
 import React from 'react';
-import { Routes } from 'react-router-dom';
-import { PublicRoutes } from './publicRoutes';
-import { ProtectedRoutes } from './protectedRoutes';
-import { AdminRoutes } from './adminRoutes';
-import { AccountantRoutes } from './accountantRoutes';
+import { Route, Routes } from 'react-router-dom';
+import { publicRoutes } from './publicRoutes';
+import { protectedRoutes } from './protectedRoutes';
+import { adminRoutes } from './adminRoutes';
+import { accountantRoutes } from './accountantRoutes';
 
 const AppRoutes = () => {
   console.log("AppRoutes - Rendering routes");
   
   return (
     <Routes>
-      <PublicRoutes />
-      <ProtectedRoutes />
-      <AccountantRoutes />
-      <AdminRoutes />
+      {/* Render all route arrays by spreading them */}
+      {[...publicRoutes, ...protectedRoutes, ...accountantRoutes, ...adminRoutes]}
     </Routes>
   );
 };
