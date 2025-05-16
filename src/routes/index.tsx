@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes } from 'react-router-dom';
 import { PublicRoutes } from './publicRoutes';
 import { ProtectedRoutes } from './protectedRoutes';
 import { AdminRoutes } from './adminRoutes';
@@ -11,7 +11,6 @@ const AppRoutes = () => {
   
   return (
     <Routes>
-      {/* Spread the routes from each route collection */}
       <PublicRoutes />
       <ProtectedRoutes />
       <AccountantRoutes />
