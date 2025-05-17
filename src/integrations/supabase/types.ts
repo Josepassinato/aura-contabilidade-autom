@@ -609,6 +609,59 @@ export type Database = {
           },
         ]
       }
+      pix_payments: {
+        Row: {
+          amount: string
+          client_id: string
+          completed_at: string | null
+          created_at: string
+          description: string
+          end_to_end_id: string
+          error_message: string | null
+          id: string
+          initiated_at: string
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: string
+          client_id: string
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          end_to_end_id: string
+          error_message?: string | null
+          id?: string
+          initiated_at: string
+          status: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: string
+          client_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          end_to_end_id?: string
+          error_message?: string | null
+          id?: string
+          initiated_at?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pix_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sefaz_sp_scrapes: {
         Row: {
           client_id: string
@@ -694,6 +747,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      initiate_pix_payment: {
+        Args: {
+          p_client_id: string
+          p_pix_key: string
+          p_amount: string
+          p_description: string
+        }
+        Returns: Json
+      }
       invoke_sefaz_scraper: {
         Args: Record<PropertyKey, never>
         Returns: Json
