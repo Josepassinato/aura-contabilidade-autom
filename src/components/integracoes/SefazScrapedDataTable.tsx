@@ -66,10 +66,11 @@ export function SefazScrapedDataTable({
     }
   }, [clientId]);
 
+  // Fix: Updated to use only valid Badge variant values
   const getStatusBadgeVariant = (status: string) => {
     status = status.toLowerCase();
-    if (status.includes("pendente")) return "warning";
-    if (status.includes("pago")) return "success";
+    if (status.includes("pendente")) return "outline";
+    if (status.includes("pago")) return "default";
     return "secondary";
   };
 

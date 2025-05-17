@@ -23,7 +23,8 @@ const EmailService = () => {
       },
       {
         to: 'cliente@exemplo.com',
-        subject: 'Bem-vindo ao Contaflix'
+        subject: 'Bem-vindo ao Contaflix',
+        body: '' // Fix: Added empty body to satisfy the EmailOptions type
       }
     );
     

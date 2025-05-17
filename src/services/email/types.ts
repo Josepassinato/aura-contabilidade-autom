@@ -19,7 +19,7 @@ export interface EmailData {
 }
 
 export interface EmailOptions extends EmailData {
-  // Extensão da interface EmailData para futuras adições
+  // EmailOptions must include all EmailData properties including body
 }
 
 export interface TemplateParams {

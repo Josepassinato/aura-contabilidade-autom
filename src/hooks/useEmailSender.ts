@@ -103,12 +103,14 @@ export function useEmailSender({
           return;
         }
         
+        // Fix: Added empty body property to satisfy the EmailOptions type
         const result = await sendTemplateEmail(
           selectedTemplate,
           templateData,
           {
             to: to.split(',').map(email => email.trim()),
             subject,
+            body: "", // Add empty body to satisfy the type
             cc: cc ? cc.split(',').map(email => email.trim()) : undefined,
             bcc: bcc ? bcc.split(',').map(email => email.trim()) : undefined,
           }
