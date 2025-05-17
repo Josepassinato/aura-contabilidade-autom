@@ -9,11 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getSefazScrapedData } from "@/services/governamental/sefazScraperService";
 import { Badge } from "@/components/ui/badge";
 import { SefazScraperButton } from "./SefazScraperButton";
 import { UF } from "@/services/governamental/estadualIntegration";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 
 interface SefazScrapedData {
   id: string;
@@ -77,7 +78,13 @@ export function SefazScrapedDataTable({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Obrigações SEFAZ-{uf}</CardTitle>
+        <div>
+          <CardTitle>Obrigações SEFAZ-{uf}</CardTitle>
+          <CardDescription className="flex items-center mt-1 text-sm text-muted-foreground">
+            <InfoCircledIcon className="h-4 w-4 mr-1" />
+            Atualização automática diária às 3:00 UTC
+          </CardDescription>
+        </div>
         <SefazScraperButton
           clientId={clientId}
           clientName={clientName}
@@ -122,7 +129,7 @@ export function SefazScrapedDataTable({
           </Table>
         ) : (
           <div className="text-center py-4 text-gray-500">
-            Nenhum dado encontrado. Clique no botão para coletar dados da SEFAZ.
+            Nenhum dado encontrado. Clique no botão para coletar dados da SEFAZ ou aguarde a coleta automática diária.
           </div>
         )}
       </CardContent>
