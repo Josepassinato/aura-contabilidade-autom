@@ -1,39 +1,47 @@
 
-import { EmailData, EmailResult, ScheduleEmailResult } from './types';
-import { toast } from "@/hooks/use-toast";
+import { EmailData, ScheduleEmailResult } from './types';
+import { sendEmail } from './sendEmail';
 
-// Função para agendar emails
+// Function to schedule an email for future delivery
 export async function scheduleEmail(
   emailData: EmailData,
   scheduledDate: Date
 ): Promise<ScheduleEmailResult> {
   try {
-    // Validar data agendada
-    if (scheduledDate <= new Date()) {
-      throw new Error("A data de agendamento deve ser futura");
+    // For now, we'll implement a simple scheduling mechanism
+    // In a real application, this would use a more robust solution like a queue or scheduled tasks
+    const now = new Date();
+    const delayMs = scheduledDate.getTime() - now.getTime();
+    
+    if (delayMs <= 0) {
+      // If the scheduled time is in the past or now, send immediately
+      const result = await sendEmail(emailData);
+      return {
+        ...result,
+        scheduledDate: new Date().toISOString()
+      };
     }
     
-    console.log(`Email agendado para: ${scheduledDate.toISOString()}`);
-    console.log("Dados do email:", emailData);
+    // Schedule the email to be sent at the future time
+    // In a real implementation, this would be handled by a backend queue system
+    console.log(`Scheduling email to be sent in ${delayMs / 1000} seconds`);
     
-    // Aqui seria integrado com um sistema de agendamento real
-    // Na implementação com Supabase, poderia ser armazenado em uma tabela
-    // e processado por uma função cron
+    setTimeout(async () => {
+      try {
+        await sendEmail(emailData);
+        console.log("Scheduled email sent successfully");
+      } catch (err) {
+        console.error("Error sending scheduled email:", err);
+      }
+    }, delayMs);
     
-    return { 
-      success: true, 
-      message: `Email agendado para ${scheduledDate.toLocaleString()}`,
+    return {
+      success: true,
+      message: `Email scheduled for ${scheduledDate.toISOString()}`,
       scheduledDate: scheduledDate.toISOString()
     };
   } catch (error: any) {
-    console.error("Erro ao agendar email:", error);
-    
-    toast({
-      title: "Erro ao agendar email",
-      description: error.message || "Não foi possível agendar o email",
-      variant: "destructive"
-    });
-    
+    console.error("Error scheduling email:", error);
     return { success: false, error };
   }
 }

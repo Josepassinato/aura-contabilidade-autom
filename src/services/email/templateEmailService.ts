@@ -1,52 +1,47 @@
 
-import { TemplateParams, EmailResult } from './types';
-import { getEmailTemplate, processTemplate } from './templateService';
+import { EmailOptions, EmailResult, TemplateParams } from './types';
 import { sendEmail } from './sendEmail';
-import { toast } from "@/hooks/use-toast";
+import { getEmailTemplate } from './templateService';
 
-// Função para enviar email usando template
+// Function to send an email using a template
 export async function sendTemplateEmail(
-  templateName: string,
-  params: TemplateParams,
-  emailConfig: {
-    to: string | string[];
-    subject?: string;
-    cc?: string | string[];
-    bcc?: string | string[];
-  }
+  templateId: string,
+  templateParams: TemplateParams,
+  options: EmailOptions
 ): Promise<EmailResult> {
   try {
-    // Buscar o template do banco de dados
-    const template = await getEmailTemplate(templateName);
+    // Get the template content
+    const template = getEmailTemplate(templateId);
     
     if (!template) {
-      throw new Error(`Template '${templateName}' não encontrado`);
+      throw new Error(`Template ${templateId} not found`);
     }
     
-    // Aplicar parâmetros ao template
-    const processedContent = processTemplate(template, params);
+    // Replace template variables with actual values
+    let parsedContent = template.content;
     
-    // Configurar email
-    const emailData = {
-      to: emailConfig.to,
-      subject: emailConfig.subject || template.subject,
-      body: processedContent,
-      isHtml: true,
-      cc: emailConfig.cc,
-      bcc: emailConfig.bcc
-    };
-    
-    // Enviar o email
-    return await sendEmail(emailData);
-  } catch (error: any) {
-    console.error("Erro ao enviar email com template:", error);
-    
-    toast({
-      title: "Erro ao enviar email",
-      description: error.message || "Não foi possível enviar o email com template",
-      variant: "destructive"
+    // Process each template variable
+    template.variables.forEach(variable => {
+      const value = templateParams[variable] || '';
+      const placeholder = `{{${variable}}}`;
+      
+      // Replace all occurrences of the placeholder with the actual value
+      while (parsedContent.includes(placeholder)) {
+        parsedContent = parsedContent.replace(placeholder, value);
+      }
     });
     
+    // Create email data for sending
+    const emailData = {
+      ...options,
+      body: parsedContent,
+      isHtml: true
+    };
+    
+    // Send the email using the updated sendEmail function
+    return await sendEmail(emailData);
+  } catch (error: any) {
+    console.error(`Error sending template email (${templateId}):`, error);
     return { success: false, error };
   }
 }

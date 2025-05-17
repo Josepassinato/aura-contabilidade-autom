@@ -1,26 +1,60 @@
 
+import { supabase } from '@/lib/supabase/client';
 import { EmailData, EmailResult } from './types';
 import { toast } from "@/hooks/use-toast";
 
-// Função base para enviar emails
-// Esta seria substituída pela integração com Supabase Edge Function
+// Function to send emails using the Supabase Edge Function
 export async function sendEmail(emailData: EmailData): Promise<EmailResult> {
   try {
-    console.log("Enviando email:", emailData);
+    const { to, subject, body, isHtml = false, cc, bcc } = emailData;
     
-    // Simular envio de email
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Prepare the payload for the Edge Function
+    const payload = {
+      to: Array.isArray(to) ? to.join(', ') : to,
+      subject,
+      from: undefined, // Use default from email configured in the Edge Function
+      text: isHtml ? undefined : body,
+      html: isHtml ? body : undefined,
+    };
     
-    console.log("Email enviado com sucesso");
+    // Add optional fields if they exist
+    if (cc) {
+      payload.cc = Array.isArray(cc) ? cc.join(', ') : cc;
+    }
     
-    return { success: true, message: "Email enviado com sucesso" };
-  } catch (error) {
-    console.error("Erro ao enviar email:", error);
-    throw error;
+    if (bcc) {
+      payload.bcc = Array.isArray(bcc) ? bcc.join(', ') : bcc;
+    }
+    
+    console.log("Calling send-email Edge Function with payload:", payload);
+    
+    // Call the Edge Function
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: payload
+    });
+    
+    if (error) {
+      console.error("Error calling send-email function:", error);
+      throw new Error(error.message || "Failed to send email");
+    }
+    
+    console.log("Email sent successfully:", data);
+    return { success: true, message: "Email sent successfully" };
+  } catch (error: any) {
+    console.error("Error sending email:", error);
+    
+    // Show toast notification for UI feedback
+    toast({
+      title: "Erro ao enviar email",
+      description: error.message || "Não foi possível enviar o email",
+      variant: "destructive"
+    });
+    
+    return { success: false, error };
   }
 }
 
-// Função para enviar notificações simples
+// Function to send notification emails (maintains the same API)
 export async function sendNotificationEmail(
   to: string | string[],
   subject: string,
@@ -36,7 +70,7 @@ export async function sendNotificationEmail(
     
     return await sendEmail(emailData);
   } catch (error: any) {
-    console.error("Erro ao enviar notificação por email:", error);
+    console.error("Error sending notification email:", error);
     
     toast({
       title: "Erro ao enviar notificação",
