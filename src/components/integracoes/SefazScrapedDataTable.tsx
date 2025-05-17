@@ -14,7 +14,7 @@ import { getSefazScrapedData } from "@/services/governamental/sefazScraperServic
 import { Badge } from "@/components/ui/badge";
 import { SefazScraperButton } from "./SefazScraperButton";
 import { UF } from "@/services/governamental/estadualIntegration";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { Info } from "lucide-react";
 
 interface SefazScrapedData {
   id: string;
@@ -81,7 +81,7 @@ export function SefazScrapedDataTable({
         <div>
           <CardTitle>Obrigações SEFAZ-{uf}</CardTitle>
           <CardDescription className="flex items-center mt-1 text-sm text-muted-foreground">
-            <InfoCircledIcon className="h-4 w-4 mr-1" />
+            <Info className="h-4 w-4 mr-1" />
             Atualização automática diária às 3:00 UTC
           </CardDescription>
         </div>
