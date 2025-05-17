@@ -609,6 +609,50 @@ export type Database = {
           },
         ]
       }
+      sefaz_sp_scrapes: {
+        Row: {
+          client_id: string
+          competencia: string | null
+          created_at: string | null
+          data_vencimento: string | null
+          id: string
+          numero_guia: string | null
+          scraped_at: string | null
+          status: string | null
+          valor: string | null
+        }
+        Insert: {
+          client_id: string
+          competencia?: string | null
+          created_at?: string | null
+          data_vencimento?: string | null
+          id?: string
+          numero_guia?: string | null
+          scraped_at?: string | null
+          status?: string | null
+          valor?: string | null
+        }
+        Update: {
+          client_id?: string
+          competencia?: string | null
+          created_at?: string | null
+          data_vencimento?: string | null
+          id?: string
+          numero_guia?: string | null
+          scraped_at?: string | null
+          status?: string | null
+          valor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sefaz_sp_scrapes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null

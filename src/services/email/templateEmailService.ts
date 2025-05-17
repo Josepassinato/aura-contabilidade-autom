@@ -11,7 +11,7 @@ export async function sendTemplateEmail(
 ): Promise<EmailResult> {
   try {
     // Get the template content
-    const template = getEmailTemplate(templateId);
+    const template = await getEmailTemplate(templateId);
     
     if (!template) {
       throw new Error(`Template ${templateId} not found`);

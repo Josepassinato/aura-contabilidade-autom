@@ -9,7 +9,7 @@ export async function sendEmail(emailData: EmailData): Promise<EmailResult> {
     const { to, subject, body, isHtml = false, cc, bcc } = emailData;
     
     // Prepare the payload for the Edge Function
-    const payload = {
+    const payload: any = {
       to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       from: undefined, // Use default from email configured in the Edge Function

@@ -15,16 +15,9 @@ export const createEmailFunctionClient = () => {
           subject,
           text: isHtml ? undefined : body,
           html: isHtml ? body : undefined,
+          cc: cc ? (Array.isArray(cc) ? cc.join(', ') : cc) : undefined,
+          bcc: bcc ? (Array.isArray(bcc) ? bcc.join(', ') : bcc) : undefined
         };
-        
-        // Add optional fields if they exist
-        if (cc) {
-          payload.cc = Array.isArray(cc) ? cc.join(', ') : cc;
-        }
-        
-        if (bcc) {
-          payload.bcc = Array.isArray(bcc) ? bcc.join(', ') : bcc;
-        }
         
         // Call the Edge Function
         const { data, error } = await supabase.functions.invoke('send-email', {
