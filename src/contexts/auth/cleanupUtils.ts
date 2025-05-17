@@ -1,26 +1,27 @@
 
 /**
- * Utilities for cleaning up authentication state
- * to prevent auth limbo states and token conflicts
+ * Utilitários para limpeza e verificação de estado de autenticação
  */
 
 /**
- * Clean up all authentication state from local storage and session storage
- * to ensure a fresh authentication state
+ * Limpa todo o estado de autenticação do localStorage e sessionStorage
+ * para garantir que não haja conflitos em novas tentativas de login
  */
 export const cleanupAuthState = () => {
   try {
-    // Clear standard auth tokens
+    console.log('Limpando estado de autenticação');
+    
+    // Limpar tokens de autenticação do Supabase
     localStorage.removeItem('supabase.auth.token');
     
-    // Clear all Supabase auth related items from localStorage
+    // Limpar todas as chaves relacionadas a autenticação do Supabase
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         localStorage.removeItem(key);
       }
     });
     
-    // Clear from sessionStorage if available
+    // Limpar do sessionStorage se estiver em uso
     if (typeof sessionStorage !== 'undefined') {
       Object.keys(sessionStorage).forEach((key) => {
         if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
@@ -29,44 +30,71 @@ export const cleanupAuthState = () => {
       });
     }
     
-    console.log('Auth state cleaned successfully');
+    // Limpar variáveis de controle de sessão mock
+    localStorage.removeItem('mock_session');
+    localStorage.removeItem('user_role');
+    
+    // Limpar outras variáveis de estado que podem interferir
+    localStorage.removeItem('current_user');
+    localStorage.removeItem('active_profile');
+    
+    console.log('Estado de autenticação limpo com sucesso');
+    return true;
   } catch (error) {
-    console.error('Error cleaning auth state:', error);
+    console.error('Erro ao limpar estado de autenticação:', error);
+    return false;
   }
 };
 
 /**
- * Check for potential auth limbo states where tokens might be
- * expired but still present, causing authentication issues
- * @returns {boolean} true if a limbo state was detected and fixed
+ * Verifica se há um estado de "limbo" na autenticação
+ * onde o usuário não está completamente autenticado nem desautenticado
+ * @returns {boolean} true se um estado de limbo foi detectado e corrigido
  */
 export const checkForAuthLimboState = () => {
-  // Check for inconsistent auth state
-  const hasSession = localStorage.getItem('supabase.auth.token') !== null;
-  const hasSessionExpiry = localStorage.getItem('supabase.auth.expires_at') !== null;
-  const hasMockSession = localStorage.getItem('mock_session') === 'true';
-  
-  // Check if session is expired
-  let isExpired = false;
-  if (hasSessionExpiry) {
-    try {
-      const expiresAt = parseInt(localStorage.getItem('supabase.auth.expires_at') || '0');
-      isExpired = expiresAt > 0 && Date.now() > expiresAt;
-    } catch (e) {
-      // If we can't parse the expiry, assume it's corrupted
-      isExpired = true;
+  // Verificar tokens expirados ou corrompidos no localStorage
+  try {
+    let limboDetected = false;
+    
+    // Verificar token do Supabase
+    const storedSession = localStorage.getItem('supabase.auth.token');
+    if (storedSession) {
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        const expiresAt = parsedSession?.expiresAt;
+        
+        if (expiresAt && new Date(expiresAt * 1000) < new Date()) {
+          // Sessão expirada, limpar
+          console.warn('Sessão expirada detectada, limpando');
+          limboDetected = true;
+        }
+      } catch (e) {
+        // Token corrompido, limpar
+        console.warn('Token de autenticação corrompido, limpando');
+        limboDetected = true;
+      }
     }
-  }
-  
-  // Detect mock session without proper role
-  const hasMockWithoutRole = hasMockSession && !localStorage.getItem('user_role');
-  
-  // If we have a session that's expired or corrupted, clean up
-  if ((hasSession && isExpired) || hasMockWithoutRole) {
-    console.warn('Detected auth limbo state, cleaning up');
+    
+    // Verificar estado inconsistente (mock_session sem user_role ou vice-versa)
+    const mockSession = localStorage.getItem('mock_session');
+    const userRole = localStorage.getItem('user_role');
+    
+    if ((mockSession && !userRole) || (!mockSession && userRole)) {
+      console.warn('Estado inconsistente de mock_session/user_role detectado');
+      limboDetected = true;
+    }
+    
+    // Se qualquer estado de limbo foi detectado, limpar tudo
+    if (limboDetected) {
+      cleanupAuthState();
+      return true;
+    }
+    
+    return false;
+  } catch (err) {
+    console.error('Erro ao verificar estado de limbo da autenticação:', err);
+    // Em caso de erro, limpar tudo por segurança
     cleanupAuthState();
     return true;
   }
-  
-  return false;
 };
