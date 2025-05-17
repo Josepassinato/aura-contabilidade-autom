@@ -25,6 +25,7 @@ const AutomacaoBancaria = () => {
   const [bancoSelecionado, setBancoSelecionado] = useState(
     localStorage.getItem("banco-selecionado") || ""
   );
+  const [selectedClientId, setSelectedClientId] = useState("");
 
   // Inicializar sistema de eventos quando o componente é montado
   useEffect(() => {
@@ -47,6 +48,11 @@ const AutomacaoBancaria = () => {
     };
   }, []);
 
+  // Handle client selection
+  const handleClientSelect = (client: { id: string; name: string }) => {
+    setSelectedClientId(client.id);
+  };
+
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -66,7 +72,7 @@ const AutomacaoBancaria = () => {
             Realize pagamentos e consultas bancárias automáticas via Open Banking
           </p>
         </div>
-        <ClientSelector />
+        <ClientSelector onClientSelect={handleClientSelect} />
       </div>
 
       <BancoHeader bancoSelecionado={bancoSelecionado} />
@@ -82,7 +88,7 @@ const AutomacaoBancaria = () => {
         </TabsList>
 
         <TabsContent value="pagamentos">
-          <PagamentosPix bancoSelecionado={bancoSelecionado} />
+          <PagamentosPix bancoSelecionado={bancoSelecionado} clientId={selectedClientId} />
         </TabsContent>
 
         <TabsContent value="tributos">
