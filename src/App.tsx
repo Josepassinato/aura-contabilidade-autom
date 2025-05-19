@@ -14,6 +14,10 @@ const cleanupOnLoad = () => {
   if (checkForAuthLimboState()) {
     console.log("Estado de autenticação inconsistente detectado ao carregar App, limpando");
     cleanupAuthState();
+    // Force cache control to prevent stale authentication states
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('last_auth_cleanup', Date.now().toString());
+    }
   }
 };
 
@@ -29,6 +33,21 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  // Add an effect to check auth state on every app load
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    
+    // If we're on the root path and not coming from login, redirect to login
+    if (currentPath === '/' && !sessionStorage.getItem('from_login')) {
+      window.location.href = '/login';
+    }
+    
+    return () => {
+      // Clean up the flag when component unmounts
+      sessionStorage.removeItem('from_login');
+    };
+  }, []);
+
   return (
     <QueryProvider>
       <AuthProvider>

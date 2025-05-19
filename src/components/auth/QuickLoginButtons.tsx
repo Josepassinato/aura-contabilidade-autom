@@ -26,6 +26,10 @@ export const QuickLoginButtons = () => {
       // Limpar qualquer estado de autenticação anterior
       cleanupAuthState();
       
+      // Set navigation flag
+      sessionStorage.setItem('from_login', 'true');
+      sessionStorage.setItem('last_auth_cleanup', Date.now().toString());
+      
       let email, password;
       
       if (type === 'contador') {
@@ -39,17 +43,21 @@ export const QuickLoginButtons = () => {
         password = 'senha123';
       }
       
-      // Usar setTimeout para garantir que a limpeza seja concluída antes do login
+      // Tentar login com tempo de espera para garantir limpeza de estado
       setTimeout(async () => {
         try {
           const result = await enhancedLogin(email, password);
           
-          if (!result?.success) {
+          if (result?.success) {
+            // A navegação será tratada pelo enhancedLogin
+            console.log(`Login rápido como ${type} bem-sucedido, redirecionando...`);
+          } else {
             toast({
               title: "Falha no login rápido",
               description: `Erro ao acessar como ${type}: ${result?.error || 'Credenciais inválidas'}`,
               variant: "destructive",
             });
+            setIsLoading(prev => ({ ...prev, [type]: false }));
           }
         } catch (error) {
           console.error(`Erro no login rápido como ${type}:`, error);
@@ -58,7 +66,6 @@ export const QuickLoginButtons = () => {
             description: `Não foi possível fazer login como ${type}`,
             variant: "destructive",
           });
-        } finally {
           setIsLoading(prev => ({ ...prev, [type]: false }));
         }
       }, 300);

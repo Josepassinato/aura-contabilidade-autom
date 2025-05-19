@@ -28,6 +28,10 @@ export const cleanupAuthState = () => {
           sessionStorage.removeItem(key);
         }
       });
+      
+      // Limpar sinalizadores de navegação
+      sessionStorage.removeItem('from_login');
+      sessionStorage.removeItem('redirect_after_login');
     }
     
     // Limpar variáveis de controle de sessão mock
@@ -42,6 +46,16 @@ export const cleanupAuthState = () => {
     sessionStorage.removeItem('client_name');
     sessionStorage.removeItem('client_cnpj');
     sessionStorage.removeItem('client_access_token');
+    
+    // Limpar cache de navegação para evitar problemas com estados salvos
+    if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+      try {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState(null, '', cleanUrl);
+      } catch (e) {
+        console.error('Erro ao limpar histórico:', e);
+      }
+    }
     
     console.log('Estado de autenticação limpo com sucesso');
     return true;
@@ -96,6 +110,20 @@ export const checkForAuthLimboState = () => {
     if ((clientAuthenticated && !clientId) || (!clientAuthenticated && clientId)) {
       console.warn('Estado inconsistente de sessão de cliente detectado');
       limboDetected = true;
+    }
+    
+    // Verificar flags de navegação inconsistentes
+    const fromLogin = sessionStorage.getItem('from_login');
+    const lastCleanup = sessionStorage.getItem('last_auth_cleanup');
+    
+    // Se tivermos um from_login antigo (mais de 1 minuto), considerar isso um problema
+    if (fromLogin && lastCleanup) {
+      const cleanupTime = parseInt(lastCleanup, 10);
+      const now = Date.now();
+      if ((now - cleanupTime) > 60000) { // 60 segundos
+        console.warn('Flag de navegação antiga detectada, possível problema de redirecionamento');
+        limboDetected = true;
+      }
     }
     
     // Se qualquer estado de limbo foi detectado, limpar tudo

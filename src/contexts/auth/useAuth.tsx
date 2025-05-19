@@ -16,10 +16,13 @@ export const useAuth = () => {
   // Navegação consistente para página de login
   const navigateToLogin = () => {
     try {
-      // Tentar usar o hook navigate do React Router para transições suaves
-      navigate("/login", { replace: true });
+      // Limpar estado de autenticação e flags de navegação
+      cleanupAuthState();
+      
+      // Usar window.location para navegação direta e garantir recarga completa
+      window.location.href = "/login";
     } catch (error) {
-      console.error("Erro na navegação com useNavigate:", error);
+      console.error("Erro na navegação para login:", error);
       // Fallback para window.location se navigate falhar
       window.location.href = "/login";
     }
@@ -39,8 +42,8 @@ export const useAuth = () => {
       // Usar a função logout do contexto
       await context.logout?.();
       
-      // Redirecionar para página de login
-      navigate("/login", { replace: true });
+      // Redirecionar para página de login com recarga completa
+      window.location.href = "/login";
       
       toast({
         title: "Sessão encerrada",
@@ -66,7 +69,7 @@ export const useAuth = () => {
       // Limpar possíveis estados de autenticação anteriores
       cleanupAuthState();
       
-      // Check for and clean any limbo states
+      // Verificar e limpar estados de limbo
       checkForAuthLimboState();
       
       const result = await context.login?.(email, password);
@@ -77,18 +80,22 @@ export const useAuth = () => {
           description: "Bem-vindo de volta!",
         });
         
+        // Definir flag de login bem-sucedido
+        sessionStorage.setItem('from_login', 'true');
+        sessionStorage.setItem('last_auth_cleanup', Date.now().toString());
+        
         // Navegação apropriada com base no perfil
         const role = localStorage.getItem('user_role');
         
         if (role === 'admin') {
-          navigate('/admin/analytics', { replace: true });
+          window.location.href = '/admin/analytics';
         } else if (role === 'client') {
-          navigate('/client-portal', { replace: true });
+          window.location.href = '/client-portal';
         } else if (role === 'accountant') {
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
         } else {
           // Fallback
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
         }
         
         return { success: true, error: null };
@@ -113,11 +120,11 @@ export const useAuth = () => {
 
   // Verificação de autenticação com feedback
   const requireAuth = (redirectPath = '/login') => {
-    // Check for auth limbo state and clean it up if found
+    // Verificar e limpar estado de limbo
     if (checkForAuthLimboState()) {
       console.warn("Auth limbo state detected in requireAuth, cleaning up");
       cleanupAuthState();
-      navigate(redirectPath, { replace: true });
+      window.location.href = redirectPath;
       return { authenticated: false };
     }
     
@@ -133,7 +140,8 @@ export const useAuth = () => {
         variant: "destructive",
       });
       
-      navigate(redirectPath, { replace: true });
+      // Usar window.location para navegação direta
+      window.location.href = redirectPath;
       return { authenticated: false, loading: false };
     }
     
@@ -160,7 +168,8 @@ export const useAuth = () => {
         variant: "destructive",
       });
       
-      navigate(redirectPath, { replace: true });
+      // Usar window.location para navegação direta
+      window.location.href = redirectPath;
     }
     
     return { hasRole, loading: false };

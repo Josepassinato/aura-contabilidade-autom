@@ -21,6 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { isAuthenticated, isLoading, navigateToLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [initialCheckCompleted, setInitialCheckCompleted] = useState(false);
   
   // Verificar possíveis problemas de estado de autenticação inconsistente no carregamento inicial
   useEffect(() => {
@@ -35,17 +36,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
         variant: "destructive",
       });
-      navigateToLogin();
+      window.location.href = '/login';
       return;
     }
 
     // Log da rota atual para ajudar na depuração
     console.log("Rota atual:", location.pathname);
     
-    if (!isLoading && !isAuthenticated) {
-      console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
-      // Força redirecionamento para login página de login quando não autenticado
-      window.location.href = '/login';
+    if (!isLoading) {
+      setInitialCheckCompleted(true);
+      if (!isAuthenticated) {
+        console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
+        // Força redirecionamento para login página de login quando não autenticado
+        window.location.href = '/login';
+      }
     }
   }, [location, navigateToLogin, isAuthenticated, isLoading]);
   
@@ -54,7 +58,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   // Mostrar um indicador de carregamento enquanto verifica a autenticação
-  if (isLoading) {
+  if (isLoading || !initialCheckCompleted) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center p-8">

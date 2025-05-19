@@ -33,15 +33,18 @@ const Login = () => {
     if (isAuthenticated) {
       console.log("User authenticated, redirecting based on role");
       
+      // Set a flag that we're coming from login to prevent redirect loops
+      sessionStorage.setItem('from_login', 'true');
+      
       if (isAdmin) {
-        navigate('/admin/analytics', { replace: true });
+        window.location.href = '/admin/analytics';
       } else if (isAccountant) {
-        navigate('/dashboard', { replace: true });
+        window.location.href = '/dashboard';
       } else if (isClient) {
-        navigate('/client-portal', { replace: true });
+        window.location.href = '/client-portal';
       } else {
         // Fallback if no specific role is detected but user is authenticated
-        navigate('/dashboard', { replace: true });
+        window.location.href = '/dashboard';
       }
     }
   }, [isAuthenticated, isAccountant, isAdmin, isClient, navigate]);
