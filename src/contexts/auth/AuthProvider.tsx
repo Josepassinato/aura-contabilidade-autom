@@ -127,6 +127,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Setup mock session for test/demo environment
   const setupMockSession = (role: string) => {
+    console.log(`Setting up mock session for role: ${role}`);
+    
     const mockUser: MockUser = {
       id: '123',
       aud: 'authenticated',
@@ -145,7 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       id: '123',
       email: mockUser.email || '',
       name: mockUser.user_metadata.name,
-      role: role as UserRole,
+      role: role as UserRole, // Use string value instead of enum reference
       full_name: mockUser.user_metadata.name,
       company_id: role === 'client' ? 'client-123' : 'contaflix-001'
     };
@@ -183,6 +185,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           role = 'admin';
           name = 'Admin Contaflix';
         }
+        
+        console.log(`Login with email ${email}, assigning role: ${role}`);
         
         // Clear previous auth state
         cleanupAuthState();

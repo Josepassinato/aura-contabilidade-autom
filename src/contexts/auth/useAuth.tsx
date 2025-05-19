@@ -20,11 +20,11 @@ export const useAuth = () => {
       cleanupAuthState();
       
       // Usar window.location para navegação direta e garantir recarga completa
-      window.location.href = "/login";
+      window.location.replace("/login");
     } catch (error) {
       console.error("Erro na navegação para login:", error);
       // Fallback para window.location se navigate falhar
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
   };
 
@@ -43,7 +43,7 @@ export const useAuth = () => {
       await context.logout?.();
       
       // Redirecionar para página de login com recarga completa
-      window.location.href = "/login";
+      window.location.replace("/login");
       
       toast({
         title: "Sessão encerrada",
@@ -59,7 +59,7 @@ export const useAuth = () => {
       
       // Forçar logout em caso de erro
       cleanupAuthState();
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
   };
 
@@ -72,6 +72,7 @@ export const useAuth = () => {
       // Verificar e limpar estados de limbo
       checkForAuthLimboState();
       
+      console.log(`Attempting login for: ${email}`);
       const result = await context.login?.(email, password);
       
       if (result?.success) {
@@ -86,16 +87,21 @@ export const useAuth = () => {
         
         // Navegação apropriada com base no perfil
         const role = localStorage.getItem('user_role');
+        console.log(`Login successful, role detected: ${role}`);
         
         if (role === 'admin') {
-          window.location.href = '/admin/analytics';
+          console.log("Redirecting to admin dashboard");
+          window.location.replace('/admin/analytics');
         } else if (role === 'client') {
-          window.location.href = '/client-portal';
+          console.log("Redirecting to client portal");
+          window.location.replace('/client-portal');
         } else if (role === 'accountant') {
-          window.location.href = '/dashboard';
+          console.log("Redirecting to accountant dashboard");
+          window.location.replace('/dashboard');
         } else {
           // Fallback
-          window.location.href = '/dashboard';
+          console.log("No specific role detected, using fallback redirect");
+          window.location.replace('/dashboard');
         }
         
         return { success: true, error: null };

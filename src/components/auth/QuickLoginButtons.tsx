@@ -43,14 +43,24 @@ export const QuickLoginButtons = () => {
         password = 'senha123';
       }
       
+      console.log(`Tentando login como ${type} com email: ${email}`);
+      
       // Tentar login com tempo de espera para garantir limpeza de estado
       setTimeout(async () => {
         try {
           const result = await enhancedLogin(email, password);
           
           if (result?.success) {
-            // A navegação será tratada pelo enhancedLogin
             console.log(`Login rápido como ${type} bem-sucedido, redirecionando...`);
+            
+            // Forçar redirecionamento após login bem-sucedido
+            if (type === 'contador') {
+              window.location.replace('/dashboard');
+            } else if (type === 'cliente') {
+              window.location.replace('/client-portal');
+            } else if (type === 'admin') {
+              window.location.replace('/admin/analytics');
+            }
           } else {
             toast({
               title: "Falha no login rápido",
