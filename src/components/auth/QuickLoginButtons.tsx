@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth';
 import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 import { Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 export const QuickLoginButtons = () => {
   const { enhancedLogin } = useAuth();
@@ -41,16 +42,34 @@ export const QuickLoginButtons = () => {
       // Usar setTimeout para garantir que a limpeza seja concluída antes do login
       setTimeout(async () => {
         try {
-          await enhancedLogin(email, password);
+          const result = await enhancedLogin(email, password);
+          
+          if (!result?.success) {
+            toast({
+              title: "Falha no login rápido",
+              description: `Erro ao acessar como ${type}: ${result?.error || 'Credenciais inválidas'}`,
+              variant: "destructive",
+            });
+          }
         } catch (error) {
           console.error(`Erro no login rápido como ${type}:`, error);
+          toast({
+            title: "Erro no sistema",
+            description: `Não foi possível fazer login como ${type}`,
+            variant: "destructive",
+          });
         } finally {
           setIsLoading(prev => ({ ...prev, [type]: false }));
         }
-      }, 100);
+      }, 300);
     } catch (error) {
       console.error(`Erro ao preparar login rápido como ${type}:`, error);
       setIsLoading(prev => ({ ...prev, [type]: false }));
+      toast({
+        title: "Erro no sistema",
+        description: "Não foi possível preparar o login rápido",
+        variant: "destructive",
+      });
     }
   };
 
@@ -65,7 +84,7 @@ export const QuickLoginButtons = () => {
           variant="outline" 
           onClick={() => quickLogin('contador')}
           className="justify-start"
-          disabled={isLoading.contador}
+          disabled={isLoading.contador || isLoading.cliente || isLoading.admin}
         >
           {isLoading.contador ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -80,7 +99,7 @@ export const QuickLoginButtons = () => {
           variant="outline" 
           onClick={() => quickLogin('cliente')}
           className="justify-start"
-          disabled={isLoading.cliente}
+          disabled={isLoading.contador || isLoading.cliente || isLoading.admin}
         >
           {isLoading.cliente ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -95,7 +114,7 @@ export const QuickLoginButtons = () => {
           variant="outline" 
           onClick={() => quickLogin('admin')}
           className="justify-start"
-          disabled={isLoading.admin}
+          disabled={isLoading.contador || isLoading.cliente || isLoading.admin}
         >
           {isLoading.admin ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

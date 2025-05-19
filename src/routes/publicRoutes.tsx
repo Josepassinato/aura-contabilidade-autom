@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route, Navigate } from 'react-router-dom';
 import Login from '../pages/Login';
 import PlansAndPricing from '../pages/PlansAndPricing';
 import PaymentSuccess from '../pages/PaymentSuccess';
@@ -13,6 +13,8 @@ import NotFound from '../pages/NotFound';
 
 // Export an array of Route elements instead of a component
 export const publicRoutes = [
+  // Rota raiz redireciona para login
+  <Route key="root" path="/" element={<Navigate to="/login" replace />} />,
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="plans" path="/plans" element={<PlansAndPricing />} />,
   <Route key="payment-success" path="/payment/success" element={<PaymentSuccess />} />,
