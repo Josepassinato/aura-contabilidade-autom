@@ -5,7 +5,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -18,12 +18,11 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { isAuthenticated, isLoading, navigateToLogin } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const [initialCheckCompleted, setInitialCheckCompleted] = useState(false);
   
-  // Verificar possíveis problemas de estado de autenticação inconsistente no carregamento inicial
+  // Verificar imediatamente se o usuário está autenticado
   useEffect(() => {
     console.log("DashboardLayout - Verificando estado de autenticação");
     
@@ -51,7 +50,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         window.location.href = '/login';
       }
     }
-  }, [location, navigateToLogin, isAuthenticated, isLoading]);
+  }, [location, isAuthenticated, isLoading]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
@@ -63,7 +62,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center p-8">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-muted-foreground">Carregando...</p>
+          <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
         </div>
       </div>
     );
@@ -87,6 +86,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
+  // Se estiver autenticado, renderiza o layout do dashboard
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background">

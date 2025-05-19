@@ -33,17 +33,20 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  // Add an effect to check auth state on every app load
+  // Forçar redirecionamento para login no carregamento inicial
   useEffect(() => {
+    // Verificar se estamos na raiz do site '/' sem vir do login
     const currentPath = window.location.pathname;
+    console.log("App.tsx - Caminho atual:", currentPath);
     
-    // If we're on the root path and not coming from login, redirect to login
-    if (currentPath === '/' && !sessionStorage.getItem('from_login')) {
+    if (currentPath === '/' || currentPath === '') {
+      console.log("App.tsx - Redirecionando para login da raiz");
       window.location.href = '/login';
+      return;
     }
     
+    // Limpar sinalizador quando o componente for desmontado
     return () => {
-      // Clean up the flag when component unmounts
       sessionStorage.removeItem('from_login');
     };
   }, []);
