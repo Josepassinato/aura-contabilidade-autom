@@ -13,7 +13,7 @@ import NotFound from '../pages/NotFound';
 
 // Export an array of Route elements instead of a component
 export const publicRoutes = [
-  // Rota raiz redireciona para login - substituição de qualquer outra configuração
+  // Redirecionamentos forçados para a página de login em diferentes cenários
   <Route 
     key="root" 
     path="/" 

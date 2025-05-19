@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
         variant: "destructive",
       });
-      window.location.href = '/login';
+      window.location.replace('/login');
       return;
     }
 
@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       if (!isAuthenticated) {
         console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
         // Força redirecionamento para login página de login quando não autenticado
-        window.location.href = '/login';
+        window.location.replace('/login');
       }
     }
   }, [location, isAuthenticated, isLoading]);

@@ -7,6 +7,13 @@ import { QueryProvider } from "./hooks/useSupabaseQuery";
 import AppRoutes from "./routes";
 import { checkForAuthLimboState, cleanupAuthState } from "@/contexts/auth/cleanupUtils";
 
+// Redirecionar para o login imediatamente se estiver na raiz
+if (typeof window !== 'undefined' && 
+    (window.location.pathname === '/' || window.location.pathname === '')) {
+  console.log("Redirecionamento imediato da raiz para /login");
+  window.location.replace('/login');
+}
+
 // Limpar qualquer estado de autenticação inconsistente no carregamento inicial
 const cleanupOnLoad = () => {
   console.log("App.tsx - Verificando e limpando estados de autenticação inconsistentes");
@@ -41,7 +48,7 @@ function App() {
     
     if (currentPath === '/' || currentPath === '') {
       console.log("App.tsx - Redirecionando para login da raiz");
-      window.location.href = '/login';
+      window.location.replace('/login');
       return;
     }
     

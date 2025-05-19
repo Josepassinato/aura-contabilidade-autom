@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contaflix - Redirecionando</title>
+  <!-- Forçar redirecionamento imediato de três formas diferentes para garantir -->
+  <meta http-equiv="refresh" content="0;url=/login">
+  <script>
+    // Verificar se a URL atual é a raiz
+    if (window.location.pathname === '/' || 
+        window.location.pathname === '' || 
+        window.location.pathname === '/index.html') {
+      console.log('Redirecionamento via index.html para /login');
+      window.location.replace('/login');
+    }
+  </script>
+  <script src="auth-redirect.js"></script>
+</head>
+<body>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=/login">
+    <p>Redirecionando para a página de login... Clique <a href="/login">aqui</a> se não for redirecionado automaticamente.</p>
+  </noscript>
+  <div id="redirect-message" style="text-align:center; margin-top:50px; font-family:sans-serif;">
+    <p>Redirecionando para o login...</p>
+    <p><a href="/login">Clique aqui se não for redirecionado automaticamente</a></p>
+  </div>
+</body>
+</html>
