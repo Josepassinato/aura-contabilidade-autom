@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Filter, RefreshCcw } from "lucide-react";
+import { Filter, RefreshCcw, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomersList } from "@/components/admin/customers/CustomersList";
 import { SupportTicketsList } from "@/components/admin/customers/SupportTicketsList";
 import { BulkEmailForm } from "@/components/admin/customers/BulkEmailForm";
+import { BackButton } from "@/components/navigation/BackButton";
 import { 
   fetchCustomersWithSubscriptions,
   fetchSupportTickets,
@@ -20,7 +21,7 @@ import {
 } from "@/services/supabase/customerManagementService";
 
 const CustomerManagement = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, enhancedLogout } = useAuth();
   const [activeTab, setActiveTab] = useState("customers");
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,6 +86,18 @@ const CustomerManagement = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BackButton />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={enhancedLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
             <h1 className="text-2xl font-bold tracking-tight">Gestão de Clientes</h1>
             <p className="text-muted-foreground">
               Gerencie assinaturas, tickets de suporte e comunicação com clientes

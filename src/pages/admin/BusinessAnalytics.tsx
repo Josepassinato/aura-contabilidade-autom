@@ -17,12 +17,13 @@ import {
   PlanDistribution
 } from "@/services/supabase/businessAnalyticsService";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Download } from "lucide-react";
+import { RefreshCcw, Download, ArrowLeft, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 import { AccessRestriction } from "@/components/settings/AccessRestriction";
+import { BackButton } from "@/components/navigation/BackButton";
 
 const BusinessAnalytics = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, enhancedLogout } = useAuth();
   const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
   const [monthlyGrowth, setMonthlyGrowth] = useState<MonthlyGrowth[]>([]);
   const [revenueTrends, setRevenueTrends] = useState<RevenueTrend[]>([]);
@@ -113,6 +114,18 @@ const BusinessAnalytics = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BackButton />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={enhancedLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
             <h1 className="text-2xl font-bold tracking-tight">Indicadores de Negócio</h1>
             <p className="text-muted-foreground">
               Acompanhe os principais indicadores de desempenho do seu SaaS

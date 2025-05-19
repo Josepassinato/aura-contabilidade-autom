@@ -10,10 +10,11 @@ import { AIAssistantMetrics } from "@/components/admin/metrics/AIAssistantMetric
 import { DocumentMetrics } from "@/components/admin/metrics/DocumentMetrics";
 import { FeaturesUsageMetrics } from "@/components/admin/metrics/FeaturesUsageMetrics";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCcw } from "lucide-react";
+import { Download, RefreshCcw, LogOut } from "lucide-react";
+import { BackButton } from "@/components/navigation/BackButton";
 
 const UsageMetrics = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, enhancedLogout } = useAuth();
   const [activeTab, setActiveTab] = useState("users");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +45,18 @@ const UsageMetrics = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BackButton />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={enhancedLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
             <h1 className="text-2xl font-bold tracking-tight">Métricas de Uso</h1>
             <p className="text-muted-foreground">
               Analise o uso do sistema e identifique padrões e tendências
