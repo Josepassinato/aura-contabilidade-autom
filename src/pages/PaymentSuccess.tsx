@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { BackButton } from "@/components/navigation/BackButton";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
