@@ -19,7 +19,6 @@ const Login = () => {
   // Clean any stale auth state when the login page loads
   useEffect(() => {
     console.log("Cleaning up auth state on Login page mount");
-    // Forçar limpeza do estado de autenticação ao entrar na página de login
     cleanupAuthState();
     
     // Check if we have an auth limbo state and clean it up
@@ -33,18 +32,15 @@ const Login = () => {
     if (isAuthenticated) {
       console.log("User authenticated, redirecting based on role");
       
-      // Set a flag that we're coming from login to prevent redirect loops
-      sessionStorage.setItem('from_login', 'true');
-      
       if (isAdmin) {
-        window.location.href = '/admin/analytics';
+        navigate('/admin/analytics', { replace: true });
       } else if (isAccountant) {
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
       } else if (isClient) {
-        window.location.href = '/client-portal';
+        navigate('/client-portal', { replace: true });
       } else {
         // Fallback if no specific role is detected but user is authenticated
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [isAuthenticated, isAccountant, isAdmin, isClient, navigate]);

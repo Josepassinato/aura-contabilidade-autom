@@ -26,10 +26,6 @@ export const QuickLoginButtons = () => {
       // Limpar qualquer estado de autenticação anterior
       cleanupAuthState();
       
-      // Set navigation flag
-      sessionStorage.setItem('from_login', 'true');
-      sessionStorage.setItem('last_auth_cleanup', Date.now().toString());
-      
       let email, password;
       
       if (type === 'contador') {
@@ -43,31 +39,17 @@ export const QuickLoginButtons = () => {
         password = 'senha123';
       }
       
-      console.log(`Tentando login como ${type} com email: ${email}`);
-      
-      // Tentar login com tempo de espera para garantir limpeza de estado
+      // Usar setTimeout para garantir que a limpeza seja concluída antes do login
       setTimeout(async () => {
         try {
           const result = await enhancedLogin(email, password);
           
-          if (result?.success) {
-            console.log(`Login rápido como ${type} bem-sucedido, redirecionando...`);
-            
-            // Forçar redirecionamento após login bem-sucedido
-            if (type === 'contador') {
-              window.location.replace('/dashboard');
-            } else if (type === 'cliente') {
-              window.location.replace('/client-portal');
-            } else if (type === 'admin') {
-              window.location.replace('/admin/analytics');
-            }
-          } else {
+          if (!result?.success) {
             toast({
               title: "Falha no login rápido",
               description: `Erro ao acessar como ${type}: ${result?.error || 'Credenciais inválidas'}`,
               variant: "destructive",
             });
-            setIsLoading(prev => ({ ...prev, [type]: false }));
           }
         } catch (error) {
           console.error(`Erro no login rápido como ${type}:`, error);
@@ -76,6 +58,7 @@ export const QuickLoginButtons = () => {
             description: `Não foi possível fazer login como ${type}`,
             variant: "destructive",
           });
+        } finally {
           setIsLoading(prev => ({ ...prev, [type]: false }));
         }
       }, 300);

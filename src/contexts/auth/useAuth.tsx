@@ -16,15 +16,12 @@ export const useAuth = () => {
   // Navegação consistente para página de login
   const navigateToLogin = () => {
     try {
-      // Limpar estado de autenticação e flags de navegação
-      cleanupAuthState();
-      
-      // Usar window.location para navegação direta e garantir recarga completa
-      window.location.replace("/login");
+      // Tentar usar o hook navigate do React Router para transições suaves
+      navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Erro na navegação para login:", error);
+      console.error("Erro na navegação com useNavigate:", error);
       // Fallback para window.location se navigate falhar
-      window.location.replace("/login");
+      window.location.href = "/login";
     }
   };
 
@@ -42,8 +39,8 @@ export const useAuth = () => {
       // Usar a função logout do contexto
       await context.logout?.();
       
-      // Redirecionar para página de login com recarga completa
-      window.location.replace("/login");
+      // Redirecionar para página de login
+      navigate("/login", { replace: true });
       
       toast({
         title: "Sessão encerrada",
@@ -59,7 +56,7 @@ export const useAuth = () => {
       
       // Forçar logout em caso de erro
       cleanupAuthState();
-      window.location.replace("/login");
+      window.location.href = "/login";
     }
   };
 
@@ -69,10 +66,9 @@ export const useAuth = () => {
       // Limpar possíveis estados de autenticação anteriores
       cleanupAuthState();
       
-      // Verificar e limpar estados de limbo
+      // Check for and clean any limbo states
       checkForAuthLimboState();
       
-      console.log(`Attempting login for: ${email}`);
       const result = await context.login?.(email, password);
       
       if (result?.success) {
@@ -81,27 +77,18 @@ export const useAuth = () => {
           description: "Bem-vindo de volta!",
         });
         
-        // Definir flag de login bem-sucedido
-        sessionStorage.setItem('from_login', 'true');
-        sessionStorage.setItem('last_auth_cleanup', Date.now().toString());
-        
         // Navegação apropriada com base no perfil
         const role = localStorage.getItem('user_role');
-        console.log(`Login successful, role detected: ${role}`);
         
         if (role === 'admin') {
-          console.log("Redirecting to admin dashboard");
-          window.location.replace('/admin/analytics');
+          navigate('/admin/analytics', { replace: true });
         } else if (role === 'client') {
-          console.log("Redirecting to client portal");
-          window.location.replace('/client-portal');
+          navigate('/client-portal', { replace: true });
         } else if (role === 'accountant') {
-          console.log("Redirecting to accountant dashboard");
-          window.location.replace('/dashboard');
+          navigate('/dashboard', { replace: true });
         } else {
           // Fallback
-          console.log("No specific role detected, using fallback redirect");
-          window.location.replace('/dashboard');
+          navigate('/dashboard', { replace: true });
         }
         
         return { success: true, error: null };
@@ -126,11 +113,11 @@ export const useAuth = () => {
 
   // Verificação de autenticação com feedback
   const requireAuth = (redirectPath = '/login') => {
-    // Verificar e limpar estado de limbo
+    // Check for auth limbo state and clean it up if found
     if (checkForAuthLimboState()) {
       console.warn("Auth limbo state detected in requireAuth, cleaning up");
       cleanupAuthState();
-      window.location.href = redirectPath;
+      navigate(redirectPath, { replace: true });
       return { authenticated: false };
     }
     
@@ -146,8 +133,7 @@ export const useAuth = () => {
         variant: "destructive",
       });
       
-      // Usar window.location para navegação direta
-      window.location.href = redirectPath;
+      navigate(redirectPath, { replace: true });
       return { authenticated: false, loading: false };
     }
     
@@ -174,8 +160,7 @@ export const useAuth = () => {
         variant: "destructive",
       });
       
-      // Usar window.location para navegação direta
-      window.location.href = redirectPath;
+      navigate(redirectPath, { replace: true });
     }
     
     return { hasRole, loading: false };

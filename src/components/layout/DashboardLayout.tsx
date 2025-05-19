@@ -5,7 +5,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -18,11 +18,11 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, navigateToLogin } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [initialCheckCompleted, setInitialCheckCompleted] = useState(false);
   
-  // Verificar imediatamente se o usuário está autenticado
+  // Verificar possíveis problemas de estado de autenticação inconsistente
   useEffect(() => {
     console.log("DashboardLayout - Verificando estado de autenticação");
     
@@ -35,34 +35,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         description: "O sistema resolveu um conflito de sessão. Por favor, faça login novamente.",
         variant: "destructive",
       });
-      window.location.replace('/login');
+      navigateToLogin();
       return;
     }
 
     // Log da rota atual para ajudar na depuração
     console.log("Rota atual:", location.pathname);
     
-    if (!isLoading) {
-      setInitialCheckCompleted(true);
-      if (!isAuthenticated) {
-        console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
-        // Força redirecionamento para login página de login quando não autenticado
-        window.location.replace('/login');
-      }
+    if (!isLoading && !isAuthenticated) {
+      console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
+      navigateToLogin();
     }
-  }, [location, isAuthenticated, isLoading]);
+  }, [location, navigateToLogin, isAuthenticated, isLoading]);
   
   const toggleVoiceAssistant = () => {
     setIsVoiceActive(!isVoiceActive);
   };
 
   // Mostrar um indicador de carregamento enquanto verifica a autenticação
-  if (isLoading || !initialCheckCompleted) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="text-center p-8">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-muted-foreground">Verificando autenticação...</p>
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -76,7 +72,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6 text-muted-foreground">Você precisa fazer login para acessar esta página</p>
           <Button 
-            onClick={() => window.location.href = '/login'}
+            onClick={() => navigateToLogin()}
             size="lg"
           >
             Ir para o Login
@@ -86,7 +82,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // Se estiver autenticado, renderiza o layout do dashboard
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background">
