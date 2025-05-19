@@ -19,6 +19,7 @@ const Login = () => {
   // Clean any stale auth state when the login page loads
   useEffect(() => {
     console.log("Cleaning up auth state on Login page mount");
+    // Forçar limpeza do estado de autenticação ao entrar na página de login
     cleanupAuthState();
     
     // Check if we have an auth limbo state and clean it up

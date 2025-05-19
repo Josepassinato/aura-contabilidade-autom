@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Verificar possíveis problemas de estado de autenticação inconsistente
+  // Verificar possíveis problemas de estado de autenticação inconsistente no carregamento inicial
   useEffect(() => {
     console.log("DashboardLayout - Verificando estado de autenticação");
     
@@ -44,7 +44,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     
     if (!isLoading && !isAuthenticated) {
       console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
-      navigateToLogin();
+      // Força redirecionamento para login página de login quando não autenticado
+      window.location.href = '/login';
     }
   }, [location, navigateToLogin, isAuthenticated, isLoading]);
   
@@ -72,7 +73,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="mb-6 text-muted-foreground">Você precisa fazer login para acessar esta página</p>
           <Button 
-            onClick={() => navigateToLogin()}
+            onClick={() => window.location.href = '/login'}
             size="lg"
           >
             Ir para o Login

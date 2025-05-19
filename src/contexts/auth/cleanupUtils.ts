@@ -37,6 +37,11 @@ export const cleanupAuthState = () => {
     // Limpar outras variáveis de estado que podem interferir
     localStorage.removeItem('current_user');
     localStorage.removeItem('active_profile');
+    sessionStorage.removeItem('client_authenticated');
+    sessionStorage.removeItem('client_id');
+    sessionStorage.removeItem('client_name');
+    sessionStorage.removeItem('client_cnpj');
+    sessionStorage.removeItem('client_access_token');
     
     console.log('Estado de autenticação limpo com sucesso');
     return true;
@@ -81,6 +86,15 @@ export const checkForAuthLimboState = () => {
     
     if ((mockSession && !userRole) || (!mockSession && userRole)) {
       console.warn('Estado inconsistente de mock_session/user_role detectado');
+      limboDetected = true;
+    }
+    
+    // Verificar sessão de cliente em estado inconsistente
+    const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
+    const clientId = sessionStorage.getItem('client_id');
+    
+    if ((clientAuthenticated && !clientId) || (!clientAuthenticated && clientId)) {
+      console.warn('Estado inconsistente de sessão de cliente detectado');
       limboDetected = true;
     }
     

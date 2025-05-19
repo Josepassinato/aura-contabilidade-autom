@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { ClientAccessForm } from "@/components/client-access/ClientAccessForm";
 import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
@@ -9,6 +8,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { cleanupAuthState } from "@/contexts/auth/cleanupUtils";
 
 const ClientAccess = () => {
   const { isAuthenticated, isAccountant, isAdmin } = useAuth();
@@ -16,11 +16,21 @@ const ClientAccess = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Se o usuário logado for um contador ou administrador, mostrar a página de gerenciamento de tokens
-  // Caso contrário, mostrar o formulário de acesso para clientes
+  // Verificar se já existe uma sessão de cliente ativa
+  useEffect(() => {
+    const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
+    const clientId = sessionStorage.getItem('client_id');
+    
+    if (clientAuthenticated && clientId) {
+      navigate('/client-portal');
+    }
+  }, [navigate]);
   
   const accessTestAccount = () => {
     try {
+      // Limpar qualquer sessão existente primeiro
+      cleanupAuthState();
+      
       // Configurar cliente de exemplo para teste com dados mais completos
       sessionStorage.setItem('client_id', 'test-client-123');
       sessionStorage.setItem('client_name', 'Empresa Teste');
@@ -47,19 +57,9 @@ const ClientAccess = () => {
     }
   };
   
-  // Verificar se já existe uma sessão de cliente ativa
-  useEffect(() => {
-    const clientAuthenticated = sessionStorage.getItem('client_authenticated') === 'true';
-    const clientId = sessionStorage.getItem('client_id');
-    
-    if (clientAuthenticated && clientId) {
-      navigate('/client-portal');
-    }
-  }, [navigate]);
-  
   const handleBackToMain = () => {
-    // Navegação direta para o dashboard principal
-    navigate('/');
+    // Navegação direta para a página de login
+    navigate('/login');
   };
   
   if (isAuthenticated && isAccountantOrAdmin) {
