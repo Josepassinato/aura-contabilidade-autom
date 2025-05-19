@@ -1,42 +1,9 @@
 
 project_id = "watophocqlcyimirzrpe"
 
-[api]
-enabled = true
-port = 54321
-schemas = ["public", "storage", "graphql_public"]
-
-[db]
-port = 54322
-shadow_port = 54320
-major_version = 15
-
-[studio]
-enabled = true
-port = 54323
-api_url = "http://127.0.0.1"
-
-[inbucket]
-enabled = true
-port = 54324
-
-[storage]
-enabled = true
-file_size_limit = "50MiB"
-
-[auth]
-enabled = true
-site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://127.0.0.1:5173", "http://localhost:5173", "https://localhost:5173", "https://127.0.0.1:5173", "https://id-preview--e70f8038-29c2-4a71-9941-5c0ea55d7369.lovable.app"]
-jwt_expiry = 3600
-enable_refresh_token_rotation = true
-refresh_token_reuse_interval = 10
-
-[auth.email]
-enable_signup = true
-double_confirm_changes = false
-enable_confirmations = false
-
-[functions]
-[functions.document-classifier]
+[functions.send-email]
 verify_jwt = true
+
+[functions.scrape-sefaz]
+verify_jwt = true
+

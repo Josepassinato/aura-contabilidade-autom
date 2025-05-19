@@ -276,44 +276,6 @@ export type Database = {
         }
         Relationships: []
       }
-      document_classifications: {
-        Row: {
-          category: string
-          classified_at: string
-          confidence: number | null
-          created_at: string
-          document_id: string
-          id: string
-          metadata: Json | null
-        }
-        Insert: {
-          category: string
-          classified_at?: string
-          confidence?: number | null
-          created_at?: string
-          document_id: string
-          id?: string
-          metadata?: Json | null
-        }
-        Update: {
-          category?: string
-          classified_at?: string
-          confidence?: number | null
-          created_at?: string
-          document_id?: string
-          id?: string
-          metadata?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_classifications_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "client_documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       employees: {
         Row: {
           base_salary: number

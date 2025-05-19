@@ -68,7 +68,7 @@ export const DocumentUpload = ({ clientId, onUploadComplete }: DocumentUploadPro
                 className="rounded border-gray-300 text-primary focus:ring-primary"
               />
               <label htmlFor="auto-classify" className="text-sm text-muted-foreground">
-                Classificar e processar automaticamente com IA
+                Classificar e processar automaticamente
               </label>
             </div>
             
