@@ -5,7 +5,7 @@ export interface ProcuracaoEletronica {
   procurador_cpf: string;
   procurador_nome: string;
   data_emissao?: string;
-  data_validade: string; // Changed from optional to required
+  data_validade: string;
   status: 'pendente' | 'emitida' | 'expirada' | 'cancelada' | 'erro';
   servicos_autorizados: string[];
   certificado_id?: string;

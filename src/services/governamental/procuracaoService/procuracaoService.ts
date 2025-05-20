@@ -1,15 +1,24 @@
 
-import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { 
   ProcuracaoEletronica, 
   ProcuracaoResponse, 
-  EmissaoProcuracaoParams,
-  ValidacaoProcuracaoResponse,
-  LogProcuracao
+  EmissaoProcuracaoParams
 } from "./types";
 import { fetchCertificadosDigitais } from "../certificadosDigitaisService";
 import { v4 as uuidv4 } from 'uuid';
+import { 
+  fetchProcuracoesFromDb, 
+  fetchProcuracaoPorIdFromDb, 
+  insertProcuracaoToDb,
+  updateProcuracaoStatusInDb,
+  invocarProcessamentoProcuracao
+} from "./procuracaoRepository";
+import { adicionarLogProcuracao, criarLogProcuracao } from "./procuracaoLogger";
+import { validarProcuracao } from "./procuracaoValidador";
+
+// Re-exporte o validador para manter compatibilidade com código existente
+export { validarProcuracao };
 
 /**
  * Busca procurações eletrônicas de um cliente
@@ -18,10 +27,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export async function fetchProcuracoes(clientId: string): Promise<ProcuracaoResponse> {
   try {
-    const { data, error } = await supabase
-      .from('procuracoes_eletronicas')
-      .select('*')
-      .eq('client_id', clientId);
+    const { data, error } = await fetchProcuracoesFromDb(clientId);
 
     if (error) {
       throw error;
@@ -47,11 +53,7 @@ export async function fetchProcuracoes(clientId: string): Promise<ProcuracaoResp
  */
 export async function fetchProcuracaoPorId(procuracaoId: string): Promise<ProcuracaoResponse> {
   try {
-    const { data, error } = await supabase
-      .from('procuracoes_eletronicas')
-      .select('*')
-      .eq('id', procuracaoId)
-      .single();
+    const { data, error } = await fetchProcuracaoPorIdFromDb(procuracaoId);
 
     if (error) {
       throw error;
@@ -107,43 +109,36 @@ export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise
       data_emissao: dataEmissao,
       data_validade: dataValidade.toISOString(),
       log_processamento: [
-        JSON.stringify({
-          timestamp: dataEmissao,
-          acao: 'INICIADO',
-          resultado: 'Processo de emissão iniciado',
-          detalhes: { validade_dias: params.validade_dias }
-        } as LogProcuracao)
+        JSON.stringify(criarLogProcuracao(
+          'INICIADO',
+          'Processo de emissão iniciado',
+          { validade_dias: params.validade_dias }
+        ))
       ]
     };
     
     // Salvar no banco de dados
-    const { data, error } = await supabase
-      .from('procuracoes_eletronicas')
-      .insert(novaProcuracao)
-      .select()
-      .single();
+    const { data, error } = await insertProcuracaoToDb(novaProcuracao);
       
     if (error) {
       throw error;
     }
     
     // Enfileirar processo de emissão (em um ambiente real, chamaria uma função edge)
-    // Simulação de processamento para protótipo
     try {
-      await supabase.functions.invoke('processar-procuracao', {
-        body: { procuracaoId: novaProcuracao.id }
-      });
+      await invocarProcessamentoProcuracao(novaProcuracao.id!);
     } catch (funcError) {
       // Adicionar log de erro mas não falhar completamente
       console.warn("Erro ao enfileirar processamento da procuração:", funcError);
       
       // Adicionar log de erro à procuração
-      await adicionarLogProcuracao(novaProcuracao.id!, {
-        timestamp: new Date().toISOString(),
-        acao: 'ENFILEIRAMENTO',
-        resultado: 'ERRO',
-        detalhes: { erro: (funcError as Error).message }
-      });
+      await adicionarLogProcuracao(novaProcuracao.id!, 
+        criarLogProcuracao(
+          'ENFILEIRAMENTO',
+          'ERRO',
+          { erro: (funcError as Error).message }
+        )
+      );
     }
     
     toast({
@@ -173,48 +168,6 @@ export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise
 }
 
 /**
- * Adiciona uma entrada ao log de processamento da procuração
- * @param procuracaoId ID da procuração
- * @param logEntry Entrada de log a ser adicionada
- */
-export async function adicionarLogProcuracao(
-  procuracaoId: string, 
-  logEntry: LogProcuracao
-): Promise<boolean> {
-  try {
-    // Buscar procuração atual
-    const { data: procuracao, error: fetchError } = await supabase
-      .from('procuracoes_eletronicas')
-      .select('log_processamento')
-      .eq('id', procuracaoId)
-      .single();
-      
-    if (fetchError) {
-      throw fetchError;
-    }
-    
-    // Adicionar nova entrada ao log
-    const logs = procuracao.log_processamento || [];
-    logs.push(JSON.stringify(logEntry));
-    
-    // Atualizar procuração
-    const { error: updateError } = await supabase
-      .from('procuracoes_eletronicas')
-      .update({ log_processamento: logs })
-      .eq('id', procuracaoId);
-      
-    if (updateError) {
-      throw updateError;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Erro ao adicionar log à procuração:', error);
-    return false;
-  }
-}
-
-/**
  * Atualiza o status de uma procuração
  * @param procuracaoId ID da procuração
  * @param status Novo status
@@ -227,96 +180,26 @@ export async function atualizarStatusProcuracao(
 ): Promise<boolean> {
   try {
     // Atualizar status
-    const { error } = await supabase
-      .from('procuracoes_eletronicas')
-      .update({ status })
-      .eq('id', procuracaoId);
+    const { error } = await updateProcuracaoStatusInDb(procuracaoId, status);
       
     if (error) {
       throw error;
     }
     
     // Adicionar log de atualização
-    await adicionarLogProcuracao(procuracaoId, {
-      timestamp: new Date().toISOString(),
-      acao: 'ATUALIZAR_STATUS',
-      resultado: `Status atualizado para ${status}`,
-      detalhes
-    });
+    await adicionarLogProcuracao(
+      procuracaoId, 
+      criarLogProcuracao(
+        'ATUALIZAR_STATUS',
+        `Status atualizado para ${status}`,
+        detalhes
+      )
+    );
     
     return true;
   } catch (error) {
     console.error('Erro ao atualizar status da procuração:', error);
     return false;
-  }
-}
-
-/**
- * Valida uma procuração existente
- * @param procuracaoId ID da procuração a ser validada
- * @returns Informações sobre a validade da procuração
- */
-export async function validarProcuracao(procuracaoId: string): Promise<ValidacaoProcuracaoResponse> {
-  try {
-    const { data, error } = await supabase
-      .from('procuracoes_eletronicas')
-      .select('*')
-      .eq('id', procuracaoId)
-      .single();
-      
-    if (error) {
-      throw error;
-    }
-    
-    const procuracao = data as ProcuracaoEletronica;
-    
-    if (!procuracao) {
-      return {
-        status: 'nao_encontrada',
-        message: 'Procuração não encontrada'
-      };
-    }
-    
-    // Verificar se expirou
-    const hoje = new Date();
-    const dataValidade = new Date(procuracao.data_validade || '');
-    
-    if (procuracao.status === 'cancelada') {
-      return {
-        status: 'invalida',
-        message: 'Procuração foi cancelada'
-      };
-    }
-    
-    if (hoje > dataValidade || procuracao.status === 'expirada') {
-      // Atualizar status se necessário
-      if (procuracao.status !== 'expirada') {
-        await atualizarStatusProcuracao(procuracaoId, 'expirada');
-      }
-      
-      return {
-        status: 'expirada',
-        data_validade: procuracao.data_validade,
-        message: 'Procuração expirada'
-      };
-    }
-    
-    // Calcular dias restantes
-    const diasRestantes = Math.ceil((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return {
-      status: 'valida',
-      data_validade: procuracao.data_validade,
-      dias_restantes: diasRestantes,
-      servicos_autorizados: procuracao.servicos_autorizados,
-      message: `Procuração válida por mais ${diasRestantes} dias`
-    };
-  } catch (error: any) {
-    console.error('Erro ao validar procuração:', error);
-    return {
-      status: 'nao_encontrada',
-      message: error.message || 'Erro ao validar procuração'
-    };
   }
 }
 
@@ -331,22 +214,21 @@ export async function cancelarProcuracao(
 ): Promise<ProcuracaoResponse> {
   try {
     // Atualizar status para cancelada
-    const { error } = await supabase
-      .from('procuracoes_eletronicas')
-      .update({ status: 'cancelada' })
-      .eq('id', procuracaoId);
+    const { error } = await updateProcuracaoStatusInDb(procuracaoId, 'cancelada');
       
     if (error) {
       throw error;
     }
     
     // Adicionar log de cancelamento
-    await adicionarLogProcuracao(procuracaoId, {
-      timestamp: new Date().toISOString(),
-      acao: 'CANCELAR',
-      resultado: 'Procuração cancelada',
-      detalhes: { motivo: motivoCancelamento }
-    });
+    await adicionarLogProcuracao(
+      procuracaoId,
+      criarLogProcuracao(
+        'CANCELAR',
+        'Procuração cancelada',
+        { motivo: motivoCancelamento }
+      )
+    );
     
     toast({
       title: "Procuração cancelada",
