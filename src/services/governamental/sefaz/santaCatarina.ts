@@ -1,6 +1,8 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ScrapeResult, SerproIntegraContadorConfig, NfceScConfig } from "./types";
+import { uploadProcuracaoDocument } from "../procuracaoService/procuracaoStorage";
 
 /**
  * Verifica e configura integração com Integra Contador do Serpro para SC
@@ -62,10 +64,47 @@ export async function configurarIntegraContadorSC(
       throw new Error(`Erro ao salvar configuração: ${error.message}`);
     }
     
-    // Se tiver arquivo de procuração, salvar na storage (simulado aqui)
+    // Processar arquivo de procuração quando fornecido
+    let procuracaoUrl = null;
+    
     if (config.procuracaoArquivo) {
       console.log(`Salvando comprovante de procuração para cliente ${clientId}`);
-      // Aqui teria o upload do arquivo para o storage
+      
+      // Gerar ID único para a procuração
+      const procuracaoId = `proc-${Date.now()}`;
+      
+      // Fazer upload do arquivo para o storage
+      procuracaoUrl = await uploadProcuracaoDocument(
+        clientId,
+        procuracaoId,
+        config.procuracaoArquivo
+      );
+      
+      if (procuracaoUrl) {
+        // Se tiver validade da procuração, calcular data de expiração
+        let dataValidade = null;
+        if (config.procuracaoValidade) {
+          const hoje = new Date();
+          dataValidade = new Date();
+          dataValidade.setMonth(hoje.getMonth() + parseInt(config.procuracaoValidade));
+        }
+        
+        // Salvar na tabela de procurações
+        await supabase.from('procuracoes_eletronicas').insert({
+          client_id: clientId,
+          procurador_cpf: "00000000000", // Simulado, na implementação real viria do certificado
+          procurador_nome: "Serpro Integra Contador",
+          data_validade: dataValidade || new Date(Date.now() + 365*24*60*60*1000), // Default 1 ano
+          status: 'emitida',
+          servicos_autorizados: ['CONSULTAR_NFE', 'CONSULTAR_CERTIDOES'],
+          comprovante_url: procuracaoUrl,
+          log_processamento: [JSON.stringify({
+            timestamp: new Date().toISOString(),
+            acao: 'UPLOAD',
+            resultado: 'Comprovante de procuração salvo com sucesso'
+          })]
+        });
+      }
     }
     
     toast({
@@ -78,7 +117,8 @@ export async function configurarIntegraContadorSC(
       data: {
         message: "Integração com Serpro Integra Contador configurada",
         integraContador: true,
-        procuracaoNumero: config.procuracaoNumero || null
+        procuracaoNumero: config.procuracaoNumero || null,
+        procuracaoUrl: procuracaoUrl
       }
     };
     

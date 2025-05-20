@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { 
   ProcuracaoEletronica, 
@@ -16,6 +15,7 @@ import {
 } from "./procuracaoRepository";
 import { adicionarLogProcuracao, criarLogProcuracao } from "./procuracaoLogger";
 import { validarProcuracao } from "./procuracaoValidador";
+import { uploadProcuracaoDocument } from "./procuracaoStorage";
 
 // Re-exporte o validador para manter compatibilidade com código existente
 export { validarProcuracao };
@@ -124,7 +124,7 @@ export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise
       throw error;
     }
     
-    // Enfileirar processo de emissão (em um ambiente real, chamaria uma função edge)
+    // Enfileirar processo de emissão
     try {
       await invocarProcessamentoProcuracao(novaProcuracao.id!);
     } catch (funcError) {
@@ -251,6 +251,79 @@ export async function cancelarProcuracao(
     return {
       success: false,
       error: error.message || "Erro ao cancelar procuração"
+    };
+  }
+}
+
+/**
+ * Anexa um comprovante à procuração eletrônica
+ * @param procuracaoId ID da procuração
+ * @param comprovante Arquivo de comprovante
+ */
+export async function anexarComprovanteProcuracao(
+  procuracaoId: string,
+  comprovante: File
+): Promise<ProcuracaoResponse> {
+  try {
+    // Obter dados da procuração
+    const { data, error } = await fetchProcuracaoPorIdFromDb(procuracaoId);
+    
+    if (error || !data) {
+      throw new Error("Procuração não encontrada");
+    }
+    
+    // Upload do arquivo
+    const comprovanteUrl = await uploadProcuracaoDocument(
+      data.client_id, 
+      procuracaoId, 
+      comprovante
+    );
+    
+    if (!comprovanteUrl) {
+      throw new Error("Não foi possível fazer upload do comprovante");
+    }
+    
+    // Atualizar registro com URL do comprovante
+    const { error: updateError } = await supabase
+      .from('procuracoes_eletronicas')
+      .update({ comprovante_url: comprovanteUrl })
+      .eq('id', procuracaoId);
+      
+    if (updateError) {
+      throw updateError;
+    }
+    
+    // Adicionar log
+    await adicionarLogProcuracao(
+      procuracaoId,
+      criarLogProcuracao(
+        'ANEXAR_COMPROVANTE',
+        'Comprovante anexado com sucesso',
+        { arquivo: comprovante.name, tamanho: comprovante.size }
+      )
+    );
+    
+    toast({
+      title: "Comprovante anexado",
+      description: "O comprovante foi anexado à procuração com sucesso"
+    });
+    
+    return {
+      success: true,
+      message: "Comprovante anexado com sucesso"
+    };
+  } catch (error: any) {
+    console.error('Erro ao anexar comprovante:', error);
+    
+    toast({
+      title: "Erro ao anexar comprovante",
+      description: error.message || "Não foi possível anexar o comprovante à procuração",
+      variant: "destructive"
+    });
+    
+    return {
+      success: false,
+      error: error.message || "Erro ao anexar comprovante"
     };
   }
 }
