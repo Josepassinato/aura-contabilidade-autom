@@ -62,22 +62,29 @@ export async function triggerSefazScrape(
   }
 }
 
-// Define a more specific type for the scraped data to avoid recursive type references
-interface SefazScrapedData {
+/**
+ * Interface for the SEFAZ scraped data structure
+ */
+export interface SefazScrapedData {
   id: string;
   client_id: string;
-  competencia?: string;
-  numero_guia?: string;
-  valor?: string;
-  data_vencimento?: string;
-  status?: string;
+  competencia: string;
+  numero_guia: string;
+  valor: string;
+  data_vencimento: string;
+  status: string;
   scraped_at: string;
   uf?: string;
 }
 
-// Define a specific return type for the getSefazScrapedData function 
-interface SefazScrapedResult extends ScrapeResult {
+/**
+ * Interface for the result returned by getSefazScrapedData function
+ */
+export interface SefazScrapedResult {
+  success: boolean;
   data?: SefazScrapedData[];
+  error?: string;
+  count?: number;
 }
 
 /**
@@ -118,7 +125,7 @@ export async function getSefazScrapedData(
 
     return { 
       success: true, 
-      data 
+      data: data as SefazScrapedData[]
     };
   } catch (error: any) {
     console.error("Error fetching SEFAZ scraped data:", error);

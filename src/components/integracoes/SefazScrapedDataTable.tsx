@@ -10,22 +10,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getSefazScrapedData } from "@/services/governamental/sefazScraperService";
+import { 
+  getSefazScrapedData, 
+  SefazScrapedData 
+} from "@/services/governamental/sefazScraperService";
 import { Badge } from "@/components/ui/badge";
 import { SefazScraperButton } from "./SefazScraperButton";
 import { UF } from "@/services/governamental/estadualIntegration";
 import { Info } from "lucide-react";
-
-interface SefazScrapedData {
-  id: string;
-  competencia: string;
-  numero_guia: string;
-  valor: string;
-  data_vencimento: string;
-  status: string;
-  scraped_at: string;
-  uf?: string;
-}
 
 interface SefazScrapedDataTableProps {
   clientId: string;
