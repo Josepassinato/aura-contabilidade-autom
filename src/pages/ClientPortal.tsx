@@ -10,6 +10,8 @@ import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { VoiceAssistantButton } from "@/components/layout/VoiceAssistantButton";
 import { ClientDocumentUpload } from "@/components/client-portal/ClientDocumentUpload";
 import { ExternalIntegrations } from "@/components/client-portal/ExternalIntegrations";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { BackButton } from "@/components/navigation/BackButton";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -91,12 +93,14 @@ const ClientPortal = () => {
   
   if (loading) {
     return (
-      <div className="container flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando dados do cliente...</p>
+      <DashboardLayout>
+        <div className="container flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando dados do cliente...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
   
@@ -108,26 +112,37 @@ const ClientPortal = () => {
   };
   
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="border-b sticky top-0 z-10 bg-background">
-        <div className="container flex items-center justify-between py-3">
-          <ClientHeader clientName={clientName} clientCNPJ={clientCNPJ} />
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BackButton />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight">Portal do Cliente</h1>
+            <p className="text-muted-foreground">
+              Acesse suas informações e documentos em um só lugar
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <VoiceAssistantButton 
               isActive={isAssistantActive}
               onClick={toggleAssistant}
               className="md:flex hidden"
             />
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
           </div>
         </div>
-      </header>
-      
-      <main className="flex-1 container py-6">
-        {/* Add new document upload component above the tabs */}
+
+        {/* Add new document upload component */}
         <div className="mb-6">
           <ClientDocumentUpload clientId={clientId || ''} />
         </div>
@@ -139,30 +154,15 @@ const ClientPortal = () => {
         <div className="mt-8">
           <ExternalIntegrations clientId={clientId || ''} />
         </div>
-      </main>
-      
-      <footer className="border-t py-4">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>Portal do Cliente © {new Date().getFullYear()} - ContaFlix</p>
-        </div>
-      </footer>
 
-      {/* Botão para ativar o assistente de IA (visível apenas em mobile) */}
-      <div className="fixed bottom-6 right-6 md:hidden">
-        <VoiceAssistantButton 
+        {/* Voice assistant (now managed by DashboardLayout) */}
+        <VoiceAssistant 
           isActive={isAssistantActive}
-          onClick={toggleAssistant}
-          className="shadow-lg"
+          onToggle={toggleAssistant}
+          clientInfo={clientInfo}
         />
       </div>
-
-      {/* Componente do assistente de IA para clientes */}
-      <VoiceAssistant 
-        isActive={isAssistantActive}
-        onToggle={toggleAssistant}
-        clientInfo={clientInfo}
-      />
-    </div>
+    </DashboardLayout>
   );
 };
 

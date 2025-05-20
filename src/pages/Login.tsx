@@ -10,6 +10,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { QuickLoginButtons } from '@/components/auth/QuickLoginButtons';
 import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
+import { BackButton } from '@/components/navigation/BackButton';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -52,6 +53,10 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="max-w-md w-full">
+        <div className="mb-4">
+          <BackButton />
+        </div>
+        
         <AuthHeader />
         
         <Card>

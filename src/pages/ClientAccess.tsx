@@ -8,10 +8,11 @@ import { useAuth } from "@/contexts/auth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { BackButton } from "@/components/navigation/BackButton";
 
 const ClientAccess = () => {
-  const { isAuthenticated, isAccountant, isAdmin } = useAuth();
+  const { isAuthenticated, isAccountant, isAdmin, enhancedLogout } = useAuth();
   const isAccountantOrAdmin = isAccountant || isAdmin;
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -61,19 +62,25 @@ const ClientAccess = () => {
     // Navegação direta para o dashboard principal
     navigate('/');
   };
+
+  const handleLogout = () => {
+    // Utiliza o método enhancedLogout da autenticação
+    enhancedLogout();
+  };
   
   if (isAuthenticated && isAccountantOrAdmin) {
     return (
       <div className="container max-w-4xl py-8">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center gap-2">
+          <BackButton />
           <Button 
-            variant="ghost" 
+            variant="destructive" 
             size="sm" 
             className="flex items-center"
-            onClick={handleBackToMain}
+            onClick={handleLogout}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para o painel principal
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
           </Button>
         </div>
         
