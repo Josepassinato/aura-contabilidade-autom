@@ -49,14 +49,16 @@ const Settings = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full md:w-auto grid grid-cols-6 mb-6">
-            {isAdmin && <TabsTrigger value="supabase">Supabase</TabsTrigger>}
-            {isAdmin && <TabsTrigger value="openai">OpenAI API</TabsTrigger>}
-            <TabsTrigger value="database">Banco de Dados</TabsTrigger>
-            <TabsTrigger value="govapi">APIs Governamentais</TabsTrigger>
-            <TabsTrigger value="bancos">Integração Bancária</TabsTrigger>
-            <TabsTrigger value="legislacao">Legislação Contábil</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto mb-6">
+            <TabsList className="flex min-w-max">
+              {isAdmin && <TabsTrigger value="supabase">Supabase</TabsTrigger>}
+              {isAdmin && <TabsTrigger value="openai">OpenAI API</TabsTrigger>}
+              <TabsTrigger value="database">Banco de Dados</TabsTrigger>
+              <TabsTrigger value="govapi">APIs Governamentais</TabsTrigger>
+              <TabsTrigger value="bancos">Integração Bancária</TabsTrigger>
+              <TabsTrigger value="legislacao">Legislação Contábil</TabsTrigger>
+            </TabsList>
+          </div>
           <div className="p-4 border rounded-lg">
             {isAdmin && (
               <TabsContent value="supabase" className="space-y-4">
