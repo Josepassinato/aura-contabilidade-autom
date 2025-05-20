@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { 
   ProcuracaoEletronica, 
@@ -16,6 +17,7 @@ import {
 import { adicionarLogProcuracao, criarLogProcuracao } from "./procuracaoLogger";
 import { validarProcuracao } from "./procuracaoValidador";
 import { uploadProcuracaoDocument } from "./procuracaoStorage";
+import { supabase } from "@/lib/supabase/client"; // Add proper import for supabase
 
 // Re-exporte o validador para manter compatibilidade com código existente
 export { validarProcuracao };
