@@ -1,0 +1,374 @@
+
+import { supabase } from "@/lib/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { 
+  ProcuracaoEletronica, 
+  ProcuracaoResponse, 
+  EmissaoProcuracaoParams,
+  ValidacaoProcuracaoResponse,
+  LogProcuracao
+} from "./types";
+import { fetchCertificadosDigitais } from "../certificadosDigitaisService";
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Busca procurações eletrônicas de um cliente
+ * @param clientId ID do cliente
+ * @returns Promise com as procurações
+ */
+export async function fetchProcuracoes(clientId: string): Promise<ProcuracaoResponse> {
+  try {
+    const { data, error } = await supabase
+      .from('procuracoes_eletronicas')
+      .select('*')
+      .eq('client_id', clientId);
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      success: true,
+      data: data as ProcuracaoEletronica[]
+    };
+  } catch (error: any) {
+    console.error('Erro ao buscar procurações eletrônicas:', error);
+    return {
+      success: false,
+      error: error.message || "Não foi possível buscar as procurações eletrônicas"
+    };
+  }
+}
+
+/**
+ * Busca uma procuração eletrônica específica por ID
+ * @param procuracaoId ID da procuração
+ * @returns Promise com a procuração
+ */
+export async function fetchProcuracaoPorId(procuracaoId: string): Promise<ProcuracaoResponse> {
+  try {
+    const { data, error } = await supabase
+      .from('procuracoes_eletronicas')
+      .select('*')
+      .eq('id', procuracaoId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      success: true,
+      data: data as ProcuracaoEletronica
+    };
+  } catch (error: any) {
+    console.error('Erro ao buscar procuração eletrônica:', error);
+    return {
+      success: false,
+      error: error.message || "Não foi possível buscar a procuração eletrônica"
+    };
+  }
+}
+
+/**
+ * Inicia o processo de emissão de procuração eletrônica
+ * @param params Parâmetros para emissão da procuração
+ * @returns Promise com o resultado da operação
+ */
+export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise<ProcuracaoResponse> {
+  try {
+    // Verificar se o certificado existe
+    const certificadosResponse = await fetchCertificadosDigitais(params.client_id);
+    
+    if (!certificadosResponse.success || !certificadosResponse.data) {
+      throw new Error("Não foi possível encontrar certificados para o cliente");
+    }
+    
+    const certificado = certificadosResponse.data.find(c => c.id === params.certificado_id);
+    
+    if (!certificado) {
+      throw new Error("Certificado não encontrado");
+    }
+    
+    // Calcular data de validade (hoje + dias especificados)
+    const dataEmissao = new Date().toISOString();
+    const dataValidade = new Date();
+    dataValidade.setDate(dataValidade.getDate() + params.validade_dias);
+    
+    // Criar registro inicial da procuração
+    const novaProcuracao: ProcuracaoEletronica = {
+      id: uuidv4(),
+      client_id: params.client_id,
+      procurador_cpf: params.procurador_cpf,
+      procurador_nome: params.procurador_nome,
+      servicos_autorizados: params.servicos_autorizados,
+      certificado_id: params.certificado_id,
+      status: 'pendente',
+      data_emissao: dataEmissao,
+      data_validade: dataValidade.toISOString(),
+      log_processamento: [
+        JSON.stringify({
+          timestamp: dataEmissao,
+          acao: 'INICIADO',
+          resultado: 'Processo de emissão iniciado',
+          detalhes: { validade_dias: params.validade_dias }
+        } as LogProcuracao)
+      ]
+    };
+    
+    // Salvar no banco de dados
+    const { data, error } = await supabase
+      .from('procuracoes_eletronicas')
+      .insert([novaProcuracao])
+      .select()
+      .single();
+      
+    if (error) {
+      throw error;
+    }
+    
+    // Enfileirar processo de emissão (em um ambiente real, chamaria uma função edge)
+    // Simulação de processamento para protótipo
+    try {
+      await supabase.functions.invoke('processar-procuracao', {
+        body: { procuracaoId: novaProcuracao.id }
+      });
+    } catch (funcError) {
+      // Adicionar log de erro mas não falhar completamente
+      console.warn("Erro ao enfileirar processamento da procuração:", funcError);
+      
+      // Adicionar log de erro à procuração
+      await adicionarLogProcuracao(novaProcuracao.id!, {
+        timestamp: new Date().toISOString(),
+        acao: 'ENFILEIRAMENTO',
+        resultado: 'ERRO',
+        detalhes: { erro: (funcError as Error).message }
+      });
+    }
+    
+    toast({
+      title: "Procuração iniciada",
+      description: "A procuração foi iniciada e está em processamento",
+    });
+    
+    return {
+      success: true,
+      data: data as ProcuracaoEletronica,
+      message: "Procuração em processamento"
+    };
+  } catch (error: any) {
+    console.error('Erro ao emitir procuração eletrônica:', error);
+    
+    toast({
+      title: "Erro ao emitir procuração",
+      description: error.message || "Não foi possível emitir a procuração eletrônica",
+      variant: "destructive"
+    });
+    
+    return {
+      success: false,
+      error: error.message || "Erro ao emitir procuração eletrônica"
+    };
+  }
+}
+
+/**
+ * Adiciona uma entrada ao log de processamento da procuração
+ * @param procuracaoId ID da procuração
+ * @param logEntry Entrada de log a ser adicionada
+ */
+export async function adicionarLogProcuracao(
+  procuracaoId: string, 
+  logEntry: LogProcuracao
+): Promise<boolean> {
+  try {
+    // Buscar procuração atual
+    const { data: procuracao, error: fetchError } = await supabase
+      .from('procuracoes_eletronicas')
+      .select('log_processamento')
+      .eq('id', procuracaoId)
+      .single();
+      
+    if (fetchError) {
+      throw fetchError;
+    }
+    
+    // Adicionar nova entrada ao log
+    const logs = procuracao.log_processamento || [];
+    logs.push(JSON.stringify(logEntry));
+    
+    // Atualizar procuração
+    const { error: updateError } = await supabase
+      .from('procuracoes_eletronicas')
+      .update({ log_processamento: logs })
+      .eq('id', procuracaoId);
+      
+    if (updateError) {
+      throw updateError;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao adicionar log à procuração:', error);
+    return false;
+  }
+}
+
+/**
+ * Atualiza o status de uma procuração
+ * @param procuracaoId ID da procuração
+ * @param status Novo status
+ * @param detalhes Detalhes adicionais (opcional)
+ */
+export async function atualizarStatusProcuracao(
+  procuracaoId: string,
+  status: ProcuracaoEletronica['status'],
+  detalhes?: Record<string, any>
+): Promise<boolean> {
+  try {
+    // Atualizar status
+    const { error } = await supabase
+      .from('procuracoes_eletronicas')
+      .update({ status })
+      .eq('id', procuracaoId);
+      
+    if (error) {
+      throw error;
+    }
+    
+    // Adicionar log de atualização
+    await adicionarLogProcuracao(procuracaoId, {
+      timestamp: new Date().toISOString(),
+      acao: 'ATUALIZAR_STATUS',
+      resultado: `Status atualizado para ${status}`,
+      detalhes
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao atualizar status da procuração:', error);
+    return false;
+  }
+}
+
+/**
+ * Valida uma procuração existente
+ * @param procuracaoId ID da procuração a ser validada
+ * @returns Informações sobre a validade da procuração
+ */
+export async function validarProcuracao(procuracaoId: string): Promise<ValidacaoProcuracaoResponse> {
+  try {
+    const { data, error } = await supabase
+      .from('procuracoes_eletronicas')
+      .select('*')
+      .eq('id', procuracaoId)
+      .single();
+      
+    if (error) {
+      throw error;
+    }
+    
+    const procuracao = data as ProcuracaoEletronica;
+    
+    if (!procuracao) {
+      return {
+        status: 'nao_encontrada',
+        message: 'Procuração não encontrada'
+      };
+    }
+    
+    // Verificar se expirou
+    const hoje = new Date();
+    const dataValidade = new Date(procuracao.data_validade || '');
+    
+    if (procuracao.status === 'cancelada') {
+      return {
+        status: 'invalida',
+        message: 'Procuração foi cancelada'
+      };
+    }
+    
+    if (hoje > dataValidade || procuracao.status === 'expirada') {
+      // Atualizar status se necessário
+      if (procuracao.status !== 'expirada') {
+        await atualizarStatusProcuracao(procuracaoId, 'expirada');
+      }
+      
+      return {
+        status: 'expirada',
+        data_validade: procuracao.data_validade,
+        message: 'Procuração expirada'
+      };
+    }
+    
+    // Calcular dias restantes
+    const diasRestantes = Math.ceil((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return {
+      status: 'valida',
+      data_validade: procuracao.data_validade,
+      dias_restantes: diasRestantes,
+      servicos_autorizados: procuracao.servicos_autorizados,
+      message: `Procuração válida por mais ${diasRestantes} dias`
+    };
+  } catch (error: any) {
+    console.error('Erro ao validar procuração:', error);
+    return {
+      status: 'nao_encontrada',
+      message: error.message || 'Erro ao validar procuração'
+    };
+  }
+}
+
+/**
+ * Cancela uma procuração eletrônica
+ * @param procuracaoId ID da procuração
+ * @param motivoCancelamento Motivo do cancelamento
+ */
+export async function cancelarProcuracao(
+  procuracaoId: string,
+  motivoCancelamento: string
+): Promise<ProcuracaoResponse> {
+  try {
+    // Atualizar status para cancelada
+    const { error } = await supabase
+      .from('procuracoes_eletronicas')
+      .update({ status: 'cancelada' })
+      .eq('id', procuracaoId);
+      
+    if (error) {
+      throw error;
+    }
+    
+    // Adicionar log de cancelamento
+    await adicionarLogProcuracao(procuracaoId, {
+      timestamp: new Date().toISOString(),
+      acao: 'CANCELAR',
+      resultado: 'Procuração cancelada',
+      detalhes: { motivo: motivoCancelamento }
+    });
+    
+    toast({
+      title: "Procuração cancelada",
+      description: "A procuração foi cancelada com sucesso",
+    });
+    
+    return {
+      success: true,
+      message: "Procuração cancelada com sucesso"
+    };
+  } catch (error: any) {
+    console.error('Erro ao cancelar procuração:', error);
+    
+    toast({
+      title: "Erro ao cancelar procuração",
+      description: error.message || "Não foi possível cancelar a procuração",
+      variant: "destructive"
+    });
+    
+    return {
+      success: false,
+      error: error.message || "Erro ao cancelar procuração"
+    };
+  }
+}
