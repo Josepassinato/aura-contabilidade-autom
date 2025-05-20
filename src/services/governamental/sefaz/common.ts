@@ -73,43 +73,44 @@ export async function getSefazScrapedData(
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
     
-    // Use a simpler approach that avoids deep type instantiation
-    // Execute the query directly and handle the result without type inference
-    const result = await supabase
+    // Define the raw type structure to avoid deep inference
+    interface RawScrapeData {
+      id: string;
+      client_id: string;
+      competencia: string | null;
+      numero_guia: string | null;
+      valor: string | null;
+      data_vencimento: string | null;
+      status: string | null;
+      scraped_at: string | null;
+      created_at: string | null;
+      // The 'uf' field might not be in the database schema yet
+    }
+    
+    // Execute the query with a simple type annotation
+    const { data: rawData, error } = await supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
-      .order("scraped_at", { ascending: false })
-      .eq("uf", uf);
+      .order("scraped_at", { ascending: false });
     
-    // Handle errors from the query
-    if (result.error) {
-      console.error("Error fetching SEFAZ scraped data:", result.error);
-      throw result.error;
+    if (error) {
+      console.error("Error fetching SEFAZ scraped data:", error);
+      throw error;
     }
     
-    // Process the data with explicit type assignment
-    // This breaks the recursive type inference chain
-    const scrapedData: SefazScrapedData[] = [];
-    
-    // Only process if result.data exists
-    if (result.data) {
-      // Map each item individually to break type inference
-      for (const item of result.data) {
-        const typedItem: SefazScrapedData = {
-          id: item.id,
-          client_id: item.client_id,
-          competencia: item.competencia || "",
-          numero_guia: item.numero_guia || "",
-          valor: item.valor || "",
-          data_vencimento: item.data_vencimento || "",
-          status: item.status || "",
-          scraped_at: item.scraped_at || "",
-          uf: item.uf
-        };
-        scrapedData.push(typedItem);
-      }
-    }
+    // Process and map the raw data to our expected type
+    const scrapedData: SefazScrapedData[] = (rawData || []).map((item: RawScrapeData) => ({
+      id: item.id,
+      client_id: item.client_id,
+      competencia: item.competencia || "",
+      numero_guia: item.numero_guia || "",
+      valor: item.valor || "",
+      data_vencimento: item.data_vencimento || "",
+      status: item.status || "",
+      scraped_at: item.scraped_at || "",
+      uf: uf // Use the function parameter as the UF value
+    }));
     
     return { 
       success: true, 
