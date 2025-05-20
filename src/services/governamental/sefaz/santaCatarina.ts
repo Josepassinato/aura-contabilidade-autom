@@ -29,11 +29,22 @@ export async function configurarIntegraContadorSC(
       });
     }
     
+    // Verificar dados da procuração quando informada
+    if (config.procuracaoEletronica && !config.procuracaoNumero) {
+      toast({
+        title: "Atenção",
+        description: "É necessário informar o número da procuração eletrônica",
+        variant: "warning",
+      });
+    }
+    
     // Preparar dados para armazenamento
     const certificadoInfo = {
       integraContador: true,
       certificadoPresente: !!config.certificadoDigital,
-      procuracaoConfigurada: config.procuracaoEletronica
+      procuracaoConfigurada: config.procuracaoEletronica,
+      procuracaoNumero: config.procuracaoNumero || null,
+      procuracaoValidade: config.procuracaoValidade || null
     };
     
     // Salvar configuração na tabela de integrações estaduais
@@ -52,6 +63,12 @@ export async function configurarIntegraContadorSC(
       throw new Error(`Erro ao salvar configuração: ${error.message}`);
     }
     
+    // Se tiver arquivo de procuração, salvar na storage (simulado aqui)
+    if (config.procuracaoArquivo) {
+      console.log(`Salvando comprovante de procuração para cliente ${clientId}`);
+      // Aqui teria o upload do arquivo para o storage
+    }
+    
     toast({
       title: "Integração configurada",
       description: "Integração com Serpro Integra Contador configurada com sucesso",
@@ -61,7 +78,8 @@ export async function configurarIntegraContadorSC(
       success: true,
       data: {
         message: "Integração com Serpro Integra Contador configurada",
-        integraContador: true
+        integraContador: true,
+        procuracaoNumero: config.procuracaoNumero || null
       }
     };
     
