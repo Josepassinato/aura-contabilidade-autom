@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UF } from "./estadualIntegration";
@@ -179,7 +178,7 @@ export async function configurarIntegraContadorSC(
       toast({
         title: "Atenção",
         description: "É necessário obter a procuração eletrônica no portal e-CAC da Receita Federal",
-        variant: "warning",
+        variant: "destructive",
       });
     }
     

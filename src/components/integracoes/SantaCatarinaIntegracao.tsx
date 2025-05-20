@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { 
   configurarIntegraContadorSC,
@@ -273,11 +272,11 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
                   }))}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="706" id="ttd-706" />
+                    <RadioItem value="706" id="ttd-706" />
                     <Label htmlFor="ttd-706">TTD 706 - Emissão Normal</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="707" id="ttd-707" />
+                    <RadioItem value="707" id="ttd-707" />
                     <Label htmlFor="ttd-707">TTD 707 - Contingência</Label>
                   </div>
                 </RadioGroup>
