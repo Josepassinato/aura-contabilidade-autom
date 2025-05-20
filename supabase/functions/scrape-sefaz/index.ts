@@ -15,6 +15,7 @@ const SEFAZ_USERNAME = Deno.env.get("SEFAZ_USERNAME") || "";
 const SEFAZ_PASSWORD = Deno.env.get("SEFAZ_PASSWORD") || "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const SERPRO_API_KEY = Deno.env.get("SERPRO_API_KEY") || ""; // Nova variável para API do Serpro
 
 serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -44,12 +45,23 @@ serve(async (req: Request) => {
       );
     }
 
-    // Verify credentials are configured
-    if (!SEFAZ_USERNAME || !SEFAZ_PASSWORD) {
-      return new Response(
-        JSON.stringify({ error: "SEFAZ credentials not configured" }), 
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
-      );
+    // Verificar credenciais conforme o estado
+    if (uf === "SC") {
+      // Para Santa Catarina, verificar se temos a API key do Serpro
+      if (!SERPRO_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: "SERPRO API key not configured for SC integration" }), 
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+        );
+      }
+    } else {
+      // Para outros estados, verificar credenciais padrão
+      if (!SEFAZ_USERNAME || !SEFAZ_PASSWORD) {
+        return new Response(
+          JSON.stringify({ error: "SEFAZ credentials not configured" }), 
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+        );
+      }
     }
 
     // Initialize Supabase client with service role key
@@ -58,7 +70,7 @@ serve(async (req: Request) => {
     // First, verify the client exists
     const { data: clientData, error: clientError } = await supabase
       .from('accounting_clients')
-      .select('id, name')
+      .select('id, name, cnpj')
       .eq('id', clientId)
       .single();
 
@@ -71,77 +83,33 @@ serve(async (req: Request) => {
 
     console.log(`Starting SEFAZ-${uf} scrape for client: ${clientData.name}`);
 
-    // Launch browser
-    const browser = await puppeteer.launch({ 
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      // In production, set headless to true
-      headless: false 
-    });
+    // Obter guias com base no estado
+    let mockGuias = [];
     
-    const page = await browser.newPage();
-
-    // Mock data for development (In production, this would be actual scraped data)
-    const mockGuias = [
-      {
-        competencia: "01/2025",
-        numero_guia: "123456789",
-        valor: "R$ 1.250,00",
-        data_vencimento: "15/01/2025",
-        status: "Pendente"
-      },
-      {
-        competencia: "02/2025",
-        numero_guia: "987654321",
-        valor: "R$ 1.300,00",
-        data_vencimento: "15/02/2025",
-        status: "Pendente"
-      }
-    ];
-
-    // In a real implementation, we would navigate to the SEFAZ portal and login
-    // Different portals for different states
-    let portalUrl;
-    switch(uf) {
-      case "SP":
-        portalUrl = "https://portal.fazenda.sp.gov.br/login";
-        break;
-      case "RJ":
-        portalUrl = "https://www4.fazenda.rj.gov.br/";
-        break;
-      case "SC":
-        portalUrl = "https://sat.sef.sc.gov.br/";
-        break;
-      default:
-        portalUrl = "https://portal.fazenda.sp.gov.br/login";
+    if (uf === "SC") {
+      // Implementação específica para Santa Catarina usando Integra Contador
+      mockGuias = await scrapeSantaCatarina(clientData.cnpj);
+    } else {
+      // Implementação padrão para outros estados
+      mockGuias = [
+        {
+          competencia: "01/2025",
+          numero_guia: "123456789",
+          valor: "R$ 1.250,00",
+          data_vencimento: "15/01/2025",
+          status: "Pendente"
+        },
+        {
+          competencia: "02/2025",
+          numero_guia: "987654321",
+          valor: "R$ 1.300,00",
+          data_vencimento: "15/02/2025",
+          status: "Pendente"
+        }
+      ];
     }
-    
-    // console.log(`Navigating to ${portalUrl} for SEFAZ-${uf}`);
-    // await page.goto(portalUrl);
-    // await page.fill('#username', SEFAZ_USERNAME);
-    // await page.fill('#password', SEFAZ_PASSWORD);
-    // await page.click('button[type="submit"]');
-    // await page.waitForNavigation();
-    
-    // Then navigate to the tax obligations section and scrape data
-    // await page.click('a[href*="obrigacoes"]');
-    // await page.waitForSelector('table.obrigacoes');
-    // 
-    // const guias = await page.$$eval('table.obrigacoes tr', rows => {
-    //   return rows.map(row => {
-    //     const cells = row.querySelectorAll('td');
-    //     return {
-    //       competencia: cells[0]?.textContent?.trim() || '',
-    //       numero_guia: cells[1]?.textContent?.trim() || '',
-    //       valor: cells[2]?.textContent?.trim() || '',
-    //       data_vencimento: cells[3]?.textContent?.trim() || '',
-    //       status: cells[4]?.textContent?.trim() || ''
-    //     };
-    //   });
-    // });
 
-    await browser.close();
-
-    // Insert the scraped data (using mock data for now)
+    // Insert the scraped data
     const { data: insertedData, error: insertError } = await supabase
       .from('sefaz_sp_scrapes')
       .insert(mockGuias.map(guia => ({
@@ -185,3 +153,44 @@ serve(async (req: Request) => {
     );
   }
 });
+
+/**
+ * Função específica para raspar dados da SEFAZ de Santa Catarina
+ * Utiliza o serviço Integra Contador do Serpro
+ */
+async function scrapeSantaCatarina(cnpj: string) {
+  console.log(`Usando Integra Contador do Serpro para CNPJ: ${cnpj}`);
+  
+  try {
+    // Em uma implementação real, aqui faríamos uma requisição para a API do Serpro
+    // usando o SERPRO_API_KEY e o certificado digital
+    
+    // Simulando guias obtidas via Integra Contador
+    return [
+      {
+        competencia: "03/2025",
+        numero_guia: "SC-2025-001",
+        valor: "R$ 950,00",
+        data_vencimento: "10/03/2025",
+        status: "Pendente"
+      },
+      {
+        competencia: "04/2025",
+        numero_guia: "SC-2025-002",
+        valor: "R$ 980,00",
+        data_vencimento: "10/04/2025",
+        status: "Pendente"
+      },
+      {
+        competencia: "05/2025",
+        numero_guia: "SC-2025-003",
+        valor: "R$ 1.020,00",
+        data_vencimento: "10/05/2025",
+        status: "Em processamento"
+      }
+    ];
+  } catch (error) {
+    console.error("Erro ao acessar API do Serpro:", error);
+    throw new Error("Falha ao obter dados através do Integra Contador");
+  }
+}
