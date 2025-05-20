@@ -137,6 +137,50 @@ export type Database = {
           },
         ]
       }
+      certificados_digitais: {
+        Row: {
+          arquivo: string
+          client_id: string
+          created_at: string
+          id: string
+          nome: string
+          senha: string
+          tipo: string
+          updated_at: string
+          valido_ate: string | null
+        }
+        Insert: {
+          arquivo: string
+          client_id: string
+          created_at?: string
+          id?: string
+          nome: string
+          senha: string
+          tipo?: string
+          updated_at?: string
+          valido_ate?: string | null
+        }
+        Update: {
+          arquivo?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          senha?: string
+          tipo?: string
+          updated_at?: string
+          valido_ate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificados_digitais_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_access_tokens: {
         Row: {
           client_id: string
@@ -275,6 +319,56 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      declaracoes_simples_nacional: {
+        Row: {
+          ano: number
+          client_id: string
+          cnpj: string
+          created_at: string
+          data_consulta: string
+          id: string
+          impostos: Json | null
+          mes: number | null
+          receita_bruta: number
+          situacao: string | null
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          client_id: string
+          cnpj: string
+          created_at?: string
+          data_consulta?: string
+          id?: string
+          impostos?: Json | null
+          mes?: number | null
+          receita_bruta: number
+          situacao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          client_id?: string
+          cnpj?: string
+          created_at?: string
+          data_consulta?: string
+          id?: string
+          impostos?: Json | null
+          mes?: number | null
+          receita_bruta?: number
+          situacao?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "declaracoes_simples_nacional_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       document_classifications: {
         Row: {
@@ -743,6 +837,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      serpro_api_credentials: {
+        Row: {
+          ambiente: string
+          client_id: string
+          client_secret: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          ambiente?: string
+          client_id: string
+          client_secret: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          ambiente?: string
+          client_id?: string
+          client_secret?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_profiles: {
         Row: {
