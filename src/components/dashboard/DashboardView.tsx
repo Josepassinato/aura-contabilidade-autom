@@ -12,6 +12,62 @@ import { BackButton } from '@/components/navigation/BackButton';
 export const DashboardView = () => {
   const { enhancedLogout } = useAuth();
   
+  // Mock data for events
+  const mockEvents = [
+    {
+      id: '1', 
+      title: 'Entrega SPED Fiscal', 
+      client: 'Tech Solutions Ltda',
+      dueDate: '25/05/2025',
+      status: 'pendente' as const,
+      priority: 'alta' as const,
+    },
+    {
+      id: '2', 
+      title: 'Pagamento ICMS', 
+      client: 'Comércio Online SA',
+      dueDate: '27/05/2025',
+      status: 'pendente' as const,
+      priority: 'média' as const,
+    },
+    {
+      id: '3', 
+      title: 'Declaração IR', 
+      client: 'Consultoria XYZ',
+      dueDate: '30/05/2025',
+      status: 'atrasado' as const,
+      priority: 'alta' as const,
+    }
+  ];
+
+  // Mock data for documents
+  const mockDocuments = [
+    {
+      id: '1',
+      name: 'Nota Fiscal #78923',
+      client: 'Comércio Online SA',
+      type: 'NF-e',
+      status: 'pendente' as const,
+      date: '19/05/2025',
+    },
+    {
+      id: '2',
+      name: 'Extrato Bancário',
+      client: 'Tech Solutions Ltda',
+      type: 'Financeiro',
+      status: 'recebido' as const,
+      date: '18/05/2025',
+    },
+    {
+      id: '3',
+      name: 'Folha de Pagamento',
+      client: 'Consultoria XYZ',
+      type: 'RH',
+      status: 'processado' as const,
+      date: '17/05/2025',
+    },
+  ];
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -37,32 +93,28 @@ export const DashboardView = () => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <ClientSummaryCard
-          title="Total de Clientes"
-          value="32"
-          description="+2 novos este mês"
-          trend="up"
-          trendValue="6.2%"
+          name="Total de Clientes"
+          status="regular"
+          documentsPending={2}
+          upcomingDeadlines={6}
         />
         <ClientSummaryCard
-          title="Obrigações Fiscais"
-          value="28"
-          description="12 pendentes este mês"
-          trend="down"
-          trendValue="3.1%"
+          name="Obrigações Fiscais"
+          status="pendente"
+          documentsPending={12}
+          upcomingDeadlines={3}
         />
         <ClientSummaryCard
-          title="Documentos"
-          value="143"
-          description="54 pendentes de análise"
-          trend="up"
-          trendValue="12.5%"
+          name="Documentos"
+          status="regular"
+          documentsPending={54}
+          upcomingDeadlines={0}
         />
         <ClientSummaryCard
-          title="Economias Fiscais"
-          value="R$ 28.300"
-          description="Nos últimos 30 dias"
-          trend="up"
-          trendValue="18.2%"
+          name="Economias Fiscais"
+          status="regular"
+          documentsPending={0}
+          upcomingDeadlines={18}
         />
       </div>
 
@@ -75,7 +127,7 @@ export const DashboardView = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <FiscalCalendar />
+            <FiscalCalendar events={mockEvents} />
           </CardContent>
         </Card>
         
@@ -87,7 +139,7 @@ export const DashboardView = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DocumentsTable />
+            <DocumentsTable documents={mockDocuments} />
           </CardContent>
         </Card>
       </div>

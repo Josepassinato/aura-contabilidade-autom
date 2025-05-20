@@ -11,8 +11,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, LogOut } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
 
-export const ClientPortalTabs = () => {
+interface ClientPortalTabsProps {
+  toggleAssistant?: () => void;
+}
+
+export const ClientPortalTabs = ({ toggleAssistant }: ClientPortalTabsProps) => {
   const { enhancedLogout } = useAuth();
+  // Get clientId from session storage
+  const clientId = sessionStorage.getItem('client_id') || '';
   
   return (
     <div className="space-y-6">
@@ -47,23 +53,23 @@ export const ClientPortalTabs = () => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <FinancialSummary />
+          <FinancialSummary clientId={clientId} />
         </TabsContent>
         
         <TabsContent value="documents" className="space-y-4">
-          <Documents />
+          <Documents clientId={clientId} />
         </TabsContent>
         
         <TabsContent value="upload" className="space-y-4">
-          <DocumentUpload />
+          <DocumentUpload clientId={clientId} />
         </TabsContent>
         
         <TabsContent value="obligations" className="space-y-4">
-          <TaxObligations />
+          <TaxObligations clientId={clientId} />
         </TabsContent>
         
         <TabsContent value="integrations" className="space-y-4">
-          <ExternalIntegrations />
+          <ExternalIntegrations clientId={clientId} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ClientHeader } from "@/components/client-portal/ClientHeader";
@@ -16,7 +17,7 @@ const ClientPortal = () => {
   const { toast } = useToast();
   const [clientName, setClientName] = useState<string>("");
   const [clientCNPJ, setClientCNPJ] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setIsLoading] = useState<boolean>(true);
   const [isAssistantActive, setIsAssistantActive] = useState<boolean>(false);
 
   useEffect(() => {
