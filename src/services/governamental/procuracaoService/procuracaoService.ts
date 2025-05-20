@@ -105,7 +105,7 @@ export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise
       certificado_id: params.certificado_id,
       status: 'pendente',
       data_emissao: dataEmissao,
-      data_validade: dataValidade.toISOString(),
+      data_validade: dataValidade.toISOString(), // This is now required
       log_processamento: [
         JSON.stringify({
           timestamp: dataEmissao,
@@ -119,7 +119,7 @@ export async function emitirProcuracao(params: EmissaoProcuracaoParams): Promise
     // Salvar no banco de dados
     const { data, error } = await supabase
       .from('procuracoes_eletronicas')
-      .insert([novaProcuracao])
+      .insert(novaProcuracao) // Fixed: inserting single object instead of array
       .select()
       .single();
       
