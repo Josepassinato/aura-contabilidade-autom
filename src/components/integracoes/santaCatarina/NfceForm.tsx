@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioItem } from "@/components/ui/radio-group";
 
 interface NfceFormProps {
   onSubmit: (config: any) => Promise<void>;
@@ -84,11 +84,11 @@ export function NfceForm({ onSubmit, loading }: NfceFormProps) {
             }))}
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="706" id="ttd-706" />
+              <RadioItem value="706" id="ttd-706" />
               <Label htmlFor="ttd-706">TTD 706 - Emissão Normal</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="707" id="ttd-707" />
+              <RadioItem value="707" id="ttd-707" />
               <Label htmlFor="ttd-707">TTD 707 - Contingência</Label>
             </div>
           </RadioGroup>
