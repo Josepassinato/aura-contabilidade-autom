@@ -1,5 +1,4 @@
 
-
 export interface ProcuracaoEletronica {
   id?: string;
   client_id: string;
@@ -47,4 +46,3 @@ export interface LogProcuracao {
   resultado: string;
   detalhes?: Record<string, any>;
 }
-
