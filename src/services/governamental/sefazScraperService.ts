@@ -20,6 +20,13 @@ export {
   emitirGuiaSefazComProcuracao
 } from './sefaz/procuracaoIntegracao';
 
+// Export autonomous services
+export {
+  consultarSefazAutomatico,
+  emitirGuiaSefazAutomatico,
+  verificarDisponibilidadeProcuracaoSefaz
+} from './sefazAutomaticService';
+
 // Export all type definitions
 export type {
   ScrapeResult,
