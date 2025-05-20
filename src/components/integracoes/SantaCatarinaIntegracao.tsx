@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioItem } from "@/components/ui/radio-group";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import { 
   configurarIntegraContadorSC,
@@ -130,7 +130,9 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
             <TabsTrigger value="dados">Dados Coletados</TabsTrigger>
           </TabsList>
           
+          {/* Tab content for Integra Contador */}
           <TabsContent value="integracao" className="space-y-6 pt-4">
+            {/* Information box */}
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
               <div className="flex items-start gap-3">
                 <Info className="h-5 w-5 text-blue-500 mt-0.5" />
@@ -150,6 +152,7 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
               </div>
             </div>
             
+            {/* Form fields */}
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="certificado">Certificado Digital e-CNPJ</Label>
@@ -209,6 +212,7 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
               </div>
             </div>
             
+            {/* Submit button */}
             <div className="pt-4 flex justify-end">
               <Button onClick={handleSerproSubmit} disabled={serproLoading}>
                 {serproLoading ? "Configurando..." : "Configurar Integração"}
@@ -216,7 +220,9 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
             </div>
           </TabsContent>
           
+          {/* Tab content for NFC-e */}
           <TabsContent value="nfce" className="space-y-6 pt-4">
+            {/* Information box */}
             <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -234,6 +240,7 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
               </div>
             </div>
             
+            {/* NFC-e form fields */}
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="dtecUsuario">Usuário DTEC</Label>
@@ -272,11 +279,11 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
                   }))}
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioItem value="706" id="ttd-706" />
+                    <RadioGroup.Item value="706" id="ttd-706" />
                     <Label htmlFor="ttd-706">TTD 706 - Emissão Normal</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioItem value="707" id="ttd-707" />
+                    <RadioGroup.Item value="707" id="ttd-707" />
                     <Label htmlFor="ttd-707">TTD 707 - Contingência</Label>
                   </div>
                 </RadioGroup>
@@ -309,6 +316,7 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
               </div>
             </div>
             
+            {/* Submit NFC-e configuration */}
             <div className="pt-4 flex justify-end">
               <Button onClick={handleNfceSubmit} disabled={nfceLoading}>
                 {nfceLoading ? "Configurando..." : "Configurar NFC-e"}
@@ -316,6 +324,7 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
             </div>
           </TabsContent>
           
+          {/* Tab content for data display */}
           <TabsContent value="dados">
             <SefazScrapedDataTable 
               clientId={clientId}
