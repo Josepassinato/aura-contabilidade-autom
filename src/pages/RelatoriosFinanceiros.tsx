@@ -8,9 +8,12 @@ import { BalancoPatrimonial } from '@/components/relatorios/BalancoPatrimonial';
 import { DRE } from '@/components/relatorios/DRE';
 import { FluxoCaixa } from '@/components/relatorios/FluxoCaixa';
 import { IndexesFinanceiros } from '@/components/relatorios/IndexesFinanceiros';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { BackButton } from '@/components/navigation/BackButton';
 
 const RelatoriosFinanceiros = () => {
-  const { isAuthenticated, isAccountant } = useAuth();
+  const { isAuthenticated, isAccountant, enhancedLogout } = useAuth();
   const [activeTab, setActiveTab] = useState("balanco");
   const [selectedClient, setSelectedClient] = useState<{ id: string; name: string } | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState(getCurrentPeriod());
@@ -70,6 +73,18 @@ const RelatoriosFinanceiros = () => {
   return (
     <div className="space-y-6">
       <div>
+        <div className="flex items-center gap-2 mb-2">
+          <BackButton />
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            className="flex items-center"
+            onClick={enhancedLogout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
+        </div>
         <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
         <p className="text-muted-foreground">Visualize e analise os dados financeiros dos seus clientes</p>
       </div>

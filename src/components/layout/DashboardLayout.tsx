@@ -5,7 +5,6 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
 import TourController from '@/components/dashboard/TourController';
-import { BackButton } from '@/components/navigation/BackButton';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
@@ -100,9 +99,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           />
           
           <div className="p-6">
-            <div className="mb-4">
-              <BackButton />
-            </div>
+            {/* We've removed the BackButton from here since it will be included in each page that needs it */}
             {children || <Outlet />}
           </div>
         </main>
