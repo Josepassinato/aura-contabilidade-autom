@@ -68,7 +68,10 @@ export async function triggerSefazScrape(
  * @param uf The state code (UF) to filter data by
  * @returns Promise with the scraped data
  */
-export async function getSefazScrapedData(clientId: string, uf: UF = "SP") {
+export async function getSefazScrapedData(
+  clientId: string, 
+  uf: UF = "SP"
+): Promise<ScrapeResult> {
   try {
     if (!clientId) {
       throw new Error("Client ID is required");

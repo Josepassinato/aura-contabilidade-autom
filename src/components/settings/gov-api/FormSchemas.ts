@@ -28,6 +28,12 @@ export const estadualFormSchema = z.object({
     password: z.string().optional(),
     certificate: z.string().optional(),
   }),
+  sc: z.object({
+    apiKey: z.string().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
+    certificate: z.string().optional(),
+  }),
   mg: z.object({
     apiKey: z.string().optional(),
     username: z.string().optional(),
