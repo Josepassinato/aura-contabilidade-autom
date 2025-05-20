@@ -73,32 +73,47 @@ export async function getSefazScrapedData(
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
     
-    // Avoid type inference issues by using a more direct approach without chaining
-    // Get data first, then handle the response separately
-    type ScrapesResponse = {
-      data: SefazScrapedData[] | null;
-      error: Error | null;
-    };
-    
-    // Use explicit typing to break the deep type instantiation
-    const { data, error }: ScrapesResponse = await supabase
+    // Use a simpler approach that avoids deep type instantiation
+    // Execute the query directly and handle the result without type inference
+    const result = await supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
       .order("scraped_at", { ascending: false })
       .eq("uf", uf);
-      
-    if (error) {
-      console.error("Error fetching SEFAZ scraped data:", error);
-      throw error;
+    
+    // Handle errors from the query
+    if (result.error) {
+      console.error("Error fetching SEFAZ scraped data:", result.error);
+      throw result.error;
     }
-
-    // Safely handle potentially null data
-    const scrapedData: SefazScrapedData[] = data || [];
+    
+    // Process the data with explicit type assignment
+    // This breaks the recursive type inference chain
+    const scrapedData: SefazScrapedData[] = [];
+    
+    // Only process if result.data exists
+    if (result.data) {
+      // Map each item individually to break type inference
+      for (const item of result.data) {
+        const typedItem: SefazScrapedData = {
+          id: item.id,
+          client_id: item.client_id,
+          competencia: item.competencia || "",
+          numero_guia: item.numero_guia || "",
+          valor: item.valor || "",
+          data_vencimento: item.data_vencimento || "",
+          status: item.status || "",
+          scraped_at: item.scraped_at || "",
+          uf: item.uf
+        };
+        scrapedData.push(typedItem);
+      }
+    }
     
     return { 
       success: true, 
-      data: scrapedData 
+      data: scrapedData
     };
   } catch (error: any) {
     console.error("Error fetching SEFAZ scraped data:", error);
