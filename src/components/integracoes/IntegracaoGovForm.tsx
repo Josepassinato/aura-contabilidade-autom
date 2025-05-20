@@ -16,7 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { KeyRound, Lock, ShieldCheck } from "lucide-react";
+import { KeyRound, Lock, ShieldCheck, FileText } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProcuracoesEletronicas } from "./ecac/ProcuracoesEletronicas";
 
 const formSchema = z.object({
   certificadoDigital: z.string().min(1, {
@@ -38,6 +40,7 @@ interface IntegracaoGovFormProps {
 export function IntegracaoGovForm({ clientId, clientName, onSave }: IntegracaoGovFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [activeTab, setActiveTab] = React.useState("acesso");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,109 +92,140 @@ export function IntegracaoGovForm({ clientId, clientName, onSave }: IntegracaoGo
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="certificadoDigital"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Certificado Digital</FormLabel>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Nenhum arquivo selecionado"
-                      readOnly
-                      value={field.value}
-                      className="flex-1"
-                    />
-                    <div className="relative">
-                      <Button type="button" variant="outline">
-                        <ShieldCheck className="h-4 w-4 mr-2" />
-                        Selecionar
-                      </Button>
-                      <Input
-                        type="file"
-                        accept=".pfx,.p12"
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                        onChange={handleFileChange}
-                      />
-                    </div>
-                  </div>
-                  <FormDescription>
-                    Selecione o arquivo de certificado digital (.pfx ou .p12)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="acesso">Configuração de Acesso</TabsTrigger>
+            <TabsTrigger value="procuracoes">
+              <FileText className="h-4 w-4 mr-2" />
+              Procurações Eletrônicas
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="acesso">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="certificadoDigital"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Certificado Digital</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Nenhum arquivo selecionado"
+                          readOnly
+                          value={field.value}
+                          className="flex-1"
+                        />
+                        <div className="relative">
+                          <Button type="button" variant="outline">
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            Selecionar
+                          </Button>
+                          <Input
+                            type="file"
+                            accept=".pfx,.p12"
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            onChange={handleFileChange}
+                          />
+                        </div>
+                      </div>
+                      <FormDescription>
+                        Selecione o arquivo de certificado digital (.pfx ou .p12)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="senha"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Senha do Certificado</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input type="password" placeholder="Digite a senha do certificado" {...field} />
-                      <Lock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    A senha do certificado ficará armazenada de forma segura
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="senha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha do Certificado</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type="password" placeholder="Digite a senha do certificado" {...field} />
+                          <Lock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        A senha do certificado ficará armazenada de forma segura
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="codigoAcesso"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Código de Acesso (opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite o código de acesso (opcional)" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Código de acesso alternativo ao certificado digital
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="codigoAcesso"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código de Acesso (opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Digite o código de acesso (opcional)" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Código de acesso alternativo ao certificado digital
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="renovarAutomaticamente"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      checked={field.value}
-                      onChange={field.onChange}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                  </FormControl>
-                  <FormLabel className="m-0">Renovar sessão automaticamente</FormLabel>
-                </FormItem>
-              )}
+                <FormField
+                  control={form.control}
+                  name="renovarAutomaticamente"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </FormControl>
+                      <FormLabel className="m-0">Renovar sessão automaticamente</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end">
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting || !form.formState.isValid}
+                  >
+                    {isSubmitting ? "Configurando..." : "Salvar Configuração"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+          
+          <TabsContent value="procuracoes">
+            <ProcuracoesEletronicas 
+              clientId={clientId} 
+              clientName={clientName} 
             />
-          </form>
-        </Form>
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={form.handleSubmit(handleSubmit)} 
-          disabled={isSubmitting || !form.formState.isValid}
-          className="ml-auto"
-        >
-          {isSubmitting ? "Configurando..." : "Salvar Configuração"}
-        </Button>
-      </CardFooter>
+      
+      {activeTab === "acesso" && (
+        <CardFooter>
+          <Button 
+            onClick={form.handleSubmit(handleSubmit)} 
+            disabled={isSubmitting || !form.formState.isValid}
+            className="ml-auto"
+          >
+            {isSubmitting ? "Configurando..." : "Salvar Configuração"}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
