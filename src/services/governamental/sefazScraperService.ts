@@ -75,6 +75,11 @@ interface SefazScrapedData {
   uf?: string;
 }
 
+// Define a specific return type for the getSefazScrapedData function 
+interface SefazScrapedResult extends ScrapeResult {
+  data?: SefazScrapedData[];
+}
+
 /**
  * Get scraped SEFAZ data for a specific client
  * @param clientId The ID of the client to get data for
@@ -84,7 +89,7 @@ interface SefazScrapedData {
 export async function getSefazScrapedData(
   clientId: string, 
   uf: UF = "SP"
-): Promise<ScrapeResult> {
+): Promise<SefazScrapedResult> {
   try {
     if (!clientId) {
       throw new Error("Client ID is required");
