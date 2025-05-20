@@ -62,6 +62,19 @@ export async function triggerSefazScrape(
   }
 }
 
+// Define a more specific type for the scraped data to avoid recursive type references
+interface SefazScrapedData {
+  id: string;
+  client_id: string;
+  competencia?: string;
+  numero_guia?: string;
+  valor?: string;
+  data_vencimento?: string;
+  status?: string;
+  scraped_at: string;
+  uf?: string;
+}
+
 /**
  * Get scraped SEFAZ data for a specific client
  * @param clientId The ID of the client to get data for
