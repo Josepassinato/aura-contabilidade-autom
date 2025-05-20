@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UF } from "./estadualIntegration";
@@ -182,6 +183,13 @@ export async function configurarIntegraContadorSC(
       });
     }
     
+    // Definir tipo de informação a ser armazenada para evitar recursão de tipos
+    type CertificadoInfo = {
+      integraContador: boolean;
+      certificadoPresente: boolean;
+      procuracaoConfigurada: boolean;
+    };
+    
     // Salvar configuração na tabela de integrações estaduais
     const { error } = await supabase
       .from('integracoes_estaduais')
@@ -195,7 +203,7 @@ export async function configurarIntegraContadorSC(
           integraContador: true,
           certificadoPresente: !!config.certificadoDigital,
           procuracaoConfigurada: config.procuracaoEletronica
-        }
+        } as CertificadoInfo
       });
       
     if (error) {
@@ -252,6 +260,14 @@ export async function configurarNfceSC(
       throw new Error("É necessário informar o tipo de TTD (706 ou 707)");
     }
     
+    // Definir tipo de informação a ser armazenada para evitar recursão de tipos
+    type NfceInfo = {
+      nfce: boolean;
+      dtecConfigurado: boolean;
+      tipoTTD: string;
+      cscConfigurado: boolean;
+    };
+    
     // Salvar configuração na base de dados
     const { error } = await supabase
       .from('integracoes_estaduais')
@@ -266,7 +282,7 @@ export async function configurarNfceSC(
           dtecConfigurado: true,
           tipoTTD: config.tipoTTD,
           cscConfigurado: !!config.cscCodigo
-        }
+        } as NfceInfo
       });
       
     if (error) {
