@@ -73,21 +73,14 @@ export async function getSefazScrapedData(
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
 
-    // Use explicit type for the query to avoid excessive recursion
-    const query = supabase
+    // Create a properly typed query variable to avoid type recursion
+    const { data, error } = await supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
-      .order("scraped_at", { ascending: false });
+      .order("scraped_at", { ascending: false })
+      .eq("uf", uf);
       
-    // Se tiver o campo UF na tabela, filtra por ele
-    // Como estamos usando uma tabela única para todos os estados por enquanto
-    if (uf) {
-      query.eq("uf", uf);
-    }
-
-    const { data, error } = await query;
-
     if (error) {
       console.error("Error fetching SEFAZ scraped data:", error);
       throw error;
