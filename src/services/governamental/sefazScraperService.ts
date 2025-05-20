@@ -13,6 +13,13 @@ export {
   configurarNfceSC
 } from './sefaz/santaCatarina';
 
+// Export procuração integration with SEFAZ
+export {
+  verificarProcuracaoParaSefaz,
+  consultarSefazComProcuracao,
+  emitirGuiaSefazComProcuracao
+} from './sefaz/procuracaoIntegracao';
+
 // Export all type definitions
 export type {
   ScrapeResult,

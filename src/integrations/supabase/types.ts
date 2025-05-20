@@ -804,6 +804,7 @@ export type Database = {
           data_validade: string
           id: string
           log_processamento: string[] | null
+          procuracao_numero: string | null
           procurador_cpf: string
           procurador_nome: string
           servicos_autorizados: string[]
@@ -819,6 +820,7 @@ export type Database = {
           data_validade: string
           id?: string
           log_processamento?: string[] | null
+          procuracao_numero?: string | null
           procurador_cpf: string
           procurador_nome: string
           servicos_autorizados: string[]
@@ -834,6 +836,7 @@ export type Database = {
           data_validade?: string
           id?: string
           log_processamento?: string[] | null
+          procuracao_numero?: string | null
           procurador_cpf?: string
           procurador_nome?: string
           servicos_autorizados?: string[]
