@@ -11,7 +11,7 @@ export async function validarProcuracao(
   procuracaoId: string
 ): Promise<ValidacaoProcuracaoResponse> {
   try {
-    // Buscar procuração pelo ID ou número
+    // Buscar procuração pelo ID, número ou outro identificador
     const { data, error } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
