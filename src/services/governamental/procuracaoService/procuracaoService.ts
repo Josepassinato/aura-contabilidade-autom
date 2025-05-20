@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { 
   ProcuracaoEletronica, 
@@ -326,6 +325,75 @@ export async function anexarComprovanteProcuracao(
     return {
       success: false,
       error: error.message || "Erro ao anexar comprovante"
+    };
+  }
+}
+
+/**
+ * Cadastra uma procuração eletrônica já existente (que o contador já possui)
+ * @param procuracao Dados da procuração existente
+ * @returns Promise com o resultado da operação
+ */
+export async function cadastrarProcuracaoExistente(
+  procuracao: ProcuracaoEletronica
+): Promise<ProcuracaoResponse> {
+  try {
+    // Verificar certificado se for informado
+    if (procuracao.certificado_id) {
+      const certificadosResponse = await fetchCertificadosDigitais(procuracao.client_id);
+      
+      if (certificadosResponse.success && certificadosResponse.data) {
+        const certificado = certificadosResponse.data.find(c => c.id === procuracao.certificado_id);
+        
+        if (!certificado) {
+          throw new Error("Certificado informado não foi encontrado");
+        }
+      }
+    }
+    
+    // Garantir que tenha um ID
+    const novaProcuracao: ProcuracaoEletronica = {
+      ...procuracao,
+      id: uuidv4(),
+      status: 'emitida', // Já está emitida pois é uma procuração existente
+      log_processamento: [
+        JSON.stringify(criarLogProcuracao(
+          'CADASTRO_MANUAL',
+          'Procuração cadastrada manualmente',
+          { procuracao_numero: procuracao.procuracao_numero }
+        ))
+      ]
+    };
+    
+    // Salvar no banco de dados
+    const { data, error } = await insertProcuracaoToDb(novaProcuracao);
+      
+    if (error) {
+      throw error;
+    }
+    
+    toast({
+      title: "Procuração cadastrada",
+      description: "A procuração foi cadastrada com sucesso",
+    });
+    
+    return {
+      success: true,
+      data: data as ProcuracaoEletronica,
+      message: "Procuração cadastrada com sucesso"
+    };
+  } catch (error: any) {
+    console.error('Erro ao cadastrar procuração eletrônica:', error);
+    
+    toast({
+      title: "Erro ao cadastrar procuração",
+      description: error.message || "Não foi possível cadastrar a procuração eletrônica",
+      variant: "destructive"
+    });
+    
+    return {
+      success: false,
+      error: error.message || "Erro ao cadastrar procuração eletrônica"
     };
   }
 }

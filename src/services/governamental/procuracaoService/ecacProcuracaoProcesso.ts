@@ -72,11 +72,11 @@ export async function realizarProcessoEmissao(
   
   // 8. Registrar número da procuração gerada pelo sistema
   const numeroProcuracao = `PROC${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
+  
+  // Atualiza o campo procuracao_numero na tabela
   await supabase
     .from('procuracoes_eletronicas')
-    .update({ 
-      procuracao_numero: numeroProcuracao 
-    })
+    .update({ procuracao_numero: numeroProcuracao })
     .eq('id', procuracao.id);
     
   await adicionarLogProcuracao(procuracao.id!, {

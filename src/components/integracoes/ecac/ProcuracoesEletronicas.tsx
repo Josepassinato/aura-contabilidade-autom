@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,13 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { FileText, FilePlus2, RefreshCcw, CheckCircle, AlertCircle, Clock, Shield } from "lucide-react";
+import { FileText, FilePlus2, RefreshCcw, CheckCircle, AlertCircle, Clock, Shield, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
   fetchProcuracoes, 
   emitirProcuracao, 
   validarProcuracao,
-  cancelarProcuracao
+  cancelarProcuracao,
+  cadastrarProcuracaoExistente
 } from "@/services/governamental/procuracaoService/procuracaoService";
 import { ProcuracaoEletronica } from "@/services/governamental/procuracaoService/types";
 import { fetchCertificadosDigitais } from "@/services/governamental/certificadosDigitaisService";
@@ -39,6 +39,17 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
     procuradorCpf: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Novo estado para o formulário de cadastro manual
+  const [cadastroManualForm, setCadastroManualForm] = useState({
+    procuradorNome: '',
+    procuradorCpf: '',
+    procuracaoNumero: '',
+    dataEmissao: format(new Date(), 'yyyy-MM-dd'),
+    dataValidade: format(new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+    servicos: [] as string[],
+    certificadoId: ''
+  });
 
   // Carregar procurações do cliente
   useEffect(() => {
@@ -232,6 +243,86 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
     }
   };
 
+  const handleCadastrarProcuracaoExistente = async () => {
+    if (!cadastroManualForm.procuradorNome || !cadastroManualForm.procuradorCpf || !cadastroManualForm.procuracaoNumero) {
+      toast({
+        title: "Dados incompletos",
+        description: "Preencha os dados obrigatórios da procuração",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Mapear os serviços selecionados
+      let servicosAutorizados: string[] = [];
+      
+      if (cadastroManualForm.servicos.includes('completa')) {
+        servicosAutorizados = ['declaracoes', 'arrecadacao', 'certidoes', 'parcelamentos', 'processos', 'pagamentos', 'esocial', 'consultas'];
+      } else {
+        if (cadastroManualForm.servicos.includes('declaracoes')) servicosAutorizados.push('declaracoes');
+        if (cadastroManualForm.servicos.includes('arrecadacao')) servicosAutorizados.push('arrecadacao');
+        if (cadastroManualForm.servicos.includes('certidoes')) servicosAutorizados.push('certidoes');
+        if (cadastroManualForm.servicos.includes('parcelamentos')) servicosAutorizados.push('parcelamentos');
+        if (cadastroManualForm.servicos.includes('processos')) servicosAutorizados.push('processos');
+        if (cadastroManualForm.servicos.includes('pagamentos')) servicosAutorizados.push('pagamentos');
+        if (cadastroManualForm.servicos.includes('esocial')) servicosAutorizados.push('esocial');
+        if (cadastroManualForm.servicos.includes('consultas')) servicosAutorizados.push('consultas');
+      }
+
+      const response = await cadastrarProcuracaoExistente({
+        client_id: clientId,
+        procurador_cpf: cadastroManualForm.procuradorCpf,
+        procurador_nome: cadastroManualForm.procuradorNome,
+        procuracao_numero: cadastroManualForm.procuracaoNumero,
+        data_emissao: new Date(cadastroManualForm.dataEmissao).toISOString(),
+        data_validade: new Date(cadastroManualForm.dataValidade).toISOString(),
+        servicos_autorizados: servicosAutorizados,
+        certificado_id: cadastroManualForm.certificadoId || undefined,
+        status: 'emitida'
+      });
+      
+      if (response.success) {
+        toast({
+          title: "Procuração cadastrada",
+          description: "A procuração existente foi cadastrada com sucesso."
+        });
+        
+        // Alternar para a guia de procurações e recarregar a lista
+        setActiveTab("procuracoes");
+        loadProcuracoes();
+        
+        // Resetar o formulário
+        setCadastroManualForm({
+          procuradorNome: '',
+          procuradorCpf: '',
+          procuracaoNumero: '',
+          dataEmissao: format(new Date(), 'yyyy-MM-dd'),
+          dataValidade: format(new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+          servicos: [],
+          certificadoId: ''
+        });
+      } else {
+        toast({
+          title: "Erro ao cadastrar procuração",
+          description: response.error || "Não foi possível cadastrar a procuração eletrônica",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      console.error("Erro ao cadastrar procuração:", error);
+      toast({
+        title: "Erro ao cadastrar procuração",
+        description: error.message || "Ocorreu um erro ao cadastrar a procuração",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'emitida':
@@ -306,14 +397,18 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
       
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-3">
             <TabsTrigger value="procuracoes">
               <FileText className="h-4 w-4 mr-2" />
               Procurações Existentes
             </TabsTrigger>
             <TabsTrigger value="nova">
               <FilePlus2 className="h-4 w-4 mr-2" />
-              Nova Procuração
+              Solicitar Nova
+            </TabsTrigger>
+            <TabsTrigger value="manual">
+              <FileCheck className="h-4 w-4 mr-2" />
+              Cadastrar Existente
             </TabsTrigger>
           </TabsList>
           
@@ -507,6 +602,177 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
               </div>
             </div>
           </TabsContent>
+          
+          <TabsContent value="manual" className="space-y-6 mt-4">
+            <div className="grid gap-4">
+              <div>
+                <h3 className="text-lg font-medium">Cadastrar Procuração Existente</h3>
+                <p className="text-sm text-muted-foreground">
+                  Cadastre uma procuração eletrônica que já foi emitida e está em sua posse
+                </p>
+              </div>
+              
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Número da Procuração</label>
+                  <Input 
+                    type="text" 
+                    placeholder="Digite o número da procuração" 
+                    value={cadastroManualForm.procuracaoNumero}
+                    onChange={(e) => setCadastroManualForm({...cadastroManualForm, procuracaoNumero: e.target.value})}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Número oficial da procuração emitida pelo sistema e-CAC
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Data de Emissão</label>
+                    <Input 
+                      type="date" 
+                      value={cadastroManualForm.dataEmissao}
+                      onChange={(e) => setCadastroManualForm({...cadastroManualForm, dataEmissao: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Data de Validade</label>
+                    <Input 
+                      type="date" 
+                      value={cadastroManualForm.dataValidade}
+                      onChange={(e) => setCadastroManualForm({...cadastroManualForm, dataValidade: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">Nome do Procurador</label>
+                    <Input 
+                      type="text" 
+                      placeholder="Nome completo do procurador" 
+                      value={cadastroManualForm.procuradorNome}
+                      onChange={(e) => setCadastroManualForm({...cadastroManualForm, procuradorNome: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium">CPF do Procurador</label>
+                    <Input 
+                      type="text" 
+                      placeholder="CPF do procurador (somente números)" 
+                      value={cadastroManualForm.procuradorCpf}
+                      onChange={(e) => {
+                        // Aceitar apenas números
+                        const value = e.target.value.replace(/\D/g, "");
+                        setCadastroManualForm({...cadastroManualForm, procuradorCpf: value});
+                      }}
+                      maxLength={11}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite apenas números (sem pontos ou traços)
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Certificado Digital (Opcional)</label>
+                  {loadingCertificados ? (
+                    <div className="flex items-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span>Carregando certificados...</span>
+                    </div>
+                  ) : certificados.length > 0 ? (
+                    <select 
+                      className="w-full p-2 border rounded-md"
+                      value={cadastroManualForm.certificadoId}
+                      onChange={(e) => setCadastroManualForm({...cadastroManualForm, certificadoId: e.target.value})}
+                    >
+                      <option value="">Selecione um certificado (opcional)</option>
+                      {certificados.map(cert => (
+                        <option key={cert.id} value={cert.id}>
+                          {cert.nome} ({cert.tipo}) - Válido até: {formatDate(cert.valido_ate)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="p-2 border rounded-md bg-yellow-50 text-yellow-700">
+                      Nenhum certificado digital cadastrado para este cliente.
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Selecione o certificado digital associado à procuração (opcional)
+                  </p>
+                </div>
+                
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Serviços Autorizados</label>
+                  
+                  <div className="grid gap-2">
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="servico-completa"
+                        checked={cadastroManualForm.servicos.includes('completa')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCadastroManualForm({
+                              ...cadastroManualForm, 
+                              servicos: ['completa']
+                            });
+                          } else {
+                            setCadastroManualForm({
+                              ...cadastroManualForm, 
+                              servicos: []
+                            });
+                          }
+                        }}
+                      />
+                      <label htmlFor="servico-completa">Acesso Completo (todos os serviços)</label>
+                    </div>
+                    
+                    {!cadastroManualForm.servicos.includes('completa') && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4 mt-2">
+                        {[
+                          { id: 'declaracoes', label: 'Consulta a Declarações' },
+                          { id: 'arrecadacao', label: 'Acompanhamento da Arrecadação' },
+                          { id: 'certidoes', label: 'Solicitação de Certidões' },
+                          { id: 'parcelamentos', label: 'Parcelamentos' },
+                          { id: 'processos', label: 'Consulta a Processos' },
+                          { id: 'pagamentos', label: 'Consulta a Pagamentos' },
+                          { id: 'esocial', label: 'eSocial' },
+                          { id: 'consultas', label: 'Consultas Básicas' }
+                        ].map(servico => (
+                          <div key={servico.id} className="flex items-center space-x-2">
+                            <input 
+                              type="checkbox" 
+                              id={`servico-${servico.id}`}
+                              checked={cadastroManualForm.servicos.includes(servico.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setCadastroManualForm({
+                                    ...cadastroManualForm, 
+                                    servicos: [...cadastroManualForm.servicos, servico.id]
+                                  });
+                                } else {
+                                  setCadastroManualForm({
+                                    ...cadastroManualForm, 
+                                    servicos: cadastroManualForm.servicos.filter(s => s !== servico.id)
+                                  });
+                                }
+                              }}
+                            />
+                            <label htmlFor={`servico-${servico.id}`}>{servico.label}</label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </CardContent>
       
@@ -530,10 +796,32 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
               )}
             </Button>
           </div>
+        ) : activeTab === "manual" ? (
+          <div className="flex justify-end w-full">
+            <Button variant="outline" className="mr-2" onClick={() => setActiveTab("procuracoes")}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCadastrarProcuracaoExistente} 
+              disabled={isSubmitting || !cadastroManualForm.procuracaoNumero || !cadastroManualForm.procuradorNome || !cadastroManualForm.procuradorCpf}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processando...
+                </>
+              ) : (
+                "Cadastrar Procuração"
+              )}
+            </Button>
+          </div>
         ) : (
           <div className="flex w-full justify-end">
-            <Button variant="outline" onClick={() => setActiveTab("nova")}>
-              Nova Procuração
+            <Button variant="outline" onClick={() => setActiveTab("nova")} className="mr-2">
+              Solicitar Nova
+            </Button>
+            <Button variant="outline" onClick={() => setActiveTab("manual")}>
+              Cadastrar Existente
             </Button>
           </div>
         )}
