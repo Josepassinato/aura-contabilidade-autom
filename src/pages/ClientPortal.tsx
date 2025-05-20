@@ -62,7 +62,7 @@ const ClientPortal = () => {
       // Configurar dados do cliente
       setClientName(storedClientName || "Cliente");
       setClientCNPJ(storedClientCNPJ || "");
-      setLoading(false);
+      setIsLoading(false);
     };
     
     checkClientAccess();
