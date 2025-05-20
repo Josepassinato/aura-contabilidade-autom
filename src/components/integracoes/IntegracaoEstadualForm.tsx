@@ -18,6 +18,7 @@ import { CodigoAcessoField } from './forms/CodigoAcessoField';
 import { estadualFormSchema, EstadualFormValues } from './forms/estadualFormSchema';
 import { SefazScrapedDataTable } from './SefazScrapedDataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SantaCatarinaIntegracao } from './santaCatarina/SantaCatarinaIntegracao';
 
 interface IntegracaoEstadualFormProps {
   clientId: string;
@@ -27,6 +28,12 @@ interface IntegracaoEstadualFormProps {
 }
 
 export function IntegracaoEstadualForm({ clientId, clientName, uf, onSave }: IntegracaoEstadualFormProps) {
+  // Se for Santa Catarina, usar o componente específico
+  if (uf === 'SC') {
+    return <SantaCatarinaIntegracao clientId={clientId} clientName={clientName} />;
+  }
+
+  // Para outros estados, continuar usando o formulário padrão
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [activeTab, setActiveTab] = React.useState<string>("credenciais");

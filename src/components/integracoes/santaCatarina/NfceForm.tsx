@@ -4,16 +4,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import { RadioGroup, RadioItem } from "@/components/ui/radio-group";
-import { NfceScConfig } from "@/services/governamental/sefazScraperService";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface NfceFormProps {
-  onSubmit: (config: NfceScConfig) => Promise<void>;
+  onSubmit: (config: any) => Promise<void>;
   loading: boolean;
 }
 
 export function NfceForm({ onSubmit, loading }: NfceFormProps) {
-  const [nfceConfig, setNfceConfig] = useState<NfceScConfig>({
+  const [nfceConfig, setNfceConfig] = useState({
     dtecUsuario: '',
     dtecSenha: '',
     tipoTTD: '706',
@@ -79,17 +78,17 @@ export function NfceForm({ onSubmit, loading }: NfceFormProps) {
           <Label>Tipo de TTD</Label>
           <RadioGroup 
             value={nfceConfig.tipoTTD} 
-            onValueChange={(value: '706' | '707') => setNfceConfig(prev => ({
+            onValueChange={(value: string) => setNfceConfig(prev => ({
               ...prev,
               tipoTTD: value
             }))}
           >
             <div className="flex items-center space-x-2">
-              <RadioItem value="706" id="ttd-706" />
+              <RadioGroupItem value="706" id="ttd-706" />
               <Label htmlFor="ttd-706">TTD 706 - Emissão Normal</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioItem value="707" id="ttd-707" />
+              <RadioGroupItem value="707" id="ttd-707" />
               <Label htmlFor="ttd-707">TTD 707 - Contingência</Label>
             </div>
           </RadioGroup>

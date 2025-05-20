@@ -5,16 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileUp, Info } from "lucide-react";
-import { SerproIntegraContadorConfig } from "@/services/governamental/sefazScraperService";
 
 interface IntegraContadorFormProps {
-  onSubmit: (config: SerproIntegraContadorConfig) => Promise<void>;
+  onSubmit: (config: any) => Promise<void>;
   loading: boolean;
 }
 
 export function IntegraContadorForm({ onSubmit, loading }: IntegraContadorFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [serproConfig, setSerproConfig] = useState<SerproIntegraContadorConfig>({
+  const [serproConfig, setSerproConfig] = useState({
     certificadoDigital: '',
     senhaCertificado: '',
     procuracaoEletronica: false
