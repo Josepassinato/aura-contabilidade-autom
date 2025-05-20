@@ -11,6 +11,7 @@ import { IndexesFinanceiros } from '@/components/relatorios/IndexesFinanceiros';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const RelatoriosFinanceiros = () => {
   const { isAuthenticated, isAccountant, enhancedLogout } = useAuth();
@@ -71,77 +72,79 @@ const RelatoriosFinanceiros = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <BackButton />
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            className="flex items-center"
-            onClick={enhancedLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
-        </div>
-        <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
-        <p className="text-muted-foreground">Visualize e analise os dados financeiros dos seus clientes</p>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-1/2">
-          <label className="block text-sm font-medium mb-1">Cliente</label>
-          <ClientSelector onClientSelect={handleClientSelect} />
-        </div>
-        {renderPeriodSelector()}
-      </div>
-
-      {!selectedClient ? (
-        <div className="bg-muted/40 p-8 rounded-lg text-center">
-          <p className="text-muted-foreground">Selecione um cliente para visualizar os relatórios.</p>
-        </div>
-      ) : (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-            <TabsTrigger value="balanco">Balanço Patrimonial</TabsTrigger>
-            <TabsTrigger value="dre">DRE</TabsTrigger>
-            <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
-            <TabsTrigger value="indexes">Indicadores</TabsTrigger>
-          </TabsList>
-          
-          <div className="mt-6">
-            <TabsContent value="balanco">
-              <BalancoPatrimonial 
-                clientId={selectedClient.id} 
-                periodo={selectedPeriod} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="dre">
-              <DRE 
-                clientId={selectedClient.id} 
-                periodo={selectedPeriod} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="fluxo">
-              <FluxoCaixa 
-                clientId={selectedClient.id} 
-                periodo={selectedPeriod}
-              />
-            </TabsContent>
-            
-            <TabsContent value="indexes">
-              <IndexesFinanceiros 
-                clientId={selectedClient.id} 
-                periodo={selectedPeriod}
-              />
-            </TabsContent>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <BackButton />
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="flex items-center"
+              onClick={enhancedLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
           </div>
-        </Tabs>
-      )}
-    </div>
+          <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
+          <p className="text-muted-foreground">Visualize e analise os dados financeiros dos seus clientes</p>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="w-full md:w-1/2">
+            <label className="block text-sm font-medium mb-1">Cliente</label>
+            <ClientSelector onClientSelect={handleClientSelect} />
+          </div>
+          {renderPeriodSelector()}
+        </div>
+
+        {!selectedClient ? (
+          <div className="bg-muted/40 p-8 rounded-lg text-center">
+            <p className="text-muted-foreground">Selecione um cliente para visualizar os relatórios.</p>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+              <TabsTrigger value="balanco">Balanço Patrimonial</TabsTrigger>
+              <TabsTrigger value="dre">DRE</TabsTrigger>
+              <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
+              <TabsTrigger value="indexes">Indicadores</TabsTrigger>
+            </TabsList>
+            
+            <div className="mt-6">
+              <TabsContent value="balanco">
+                <BalancoPatrimonial 
+                  clientId={selectedClient.id} 
+                  periodo={selectedPeriod} 
+                />
+              </TabsContent>
+              
+              <TabsContent value="dre">
+                <DRE 
+                  clientId={selectedClient.id} 
+                  periodo={selectedPeriod} 
+                />
+              </TabsContent>
+              
+              <TabsContent value="fluxo">
+                <FluxoCaixa 
+                  clientId={selectedClient.id} 
+                  periodo={selectedPeriod}
+                />
+              </TabsContent>
+              
+              <TabsContent value="indexes">
+                <IndexesFinanceiros 
+                  clientId={selectedClient.id} 
+                  periodo={selectedPeriod}
+                />
+              </TabsContent>
+            </div>
+          </Tabs>
+        )}
+      </div>
+    </DashboardLayout>
   );
 };
 
