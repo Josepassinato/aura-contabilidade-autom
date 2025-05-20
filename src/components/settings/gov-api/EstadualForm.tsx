@@ -33,6 +33,12 @@ export function EstadualForm() {
           password: localStorage.getItem("gov-estadual-rj-password") || "",
           certificate: localStorage.getItem("gov-estadual-rj-cert") || "",
         },
+        sc: {
+          apiKey: localStorage.getItem("gov-estadual-sc-key") || "",
+          username: localStorage.getItem("gov-estadual-sc-username") || "",
+          password: localStorage.getItem("gov-estadual-sc-password") || "",
+          certificate: localStorage.getItem("gov-estadual-sc-cert") || "",
+        },
         mg: {
           apiKey: localStorage.getItem("gov-estadual-mg-key") || "",
           username: localStorage.getItem("gov-estadual-mg-username") || "",
@@ -48,6 +54,12 @@ export function EstadualForm() {
           certificate: "",
         },
         rj: {
+          apiKey: "",
+          username: "",
+          password: "",
+          certificate: "",
+        },
+        sc: {
           apiKey: "",
           username: "",
           password: "",
@@ -79,6 +91,12 @@ export function EstadualForm() {
     localStorage.setItem("gov-estadual-rj-password", data.rj.password || "");
     localStorage.setItem("gov-estadual-rj-cert", data.rj.certificate || "");
     
+    // Store SC values
+    localStorage.setItem("gov-estadual-sc-key", data.sc.apiKey || "");
+    localStorage.setItem("gov-estadual-sc-username", data.sc.username || "");
+    localStorage.setItem("gov-estadual-sc-password", data.sc.password || "");
+    localStorage.setItem("gov-estadual-sc-cert", data.sc.certificate || "");
+    
     // Store MG values
     localStorage.setItem("gov-estadual-mg-key", data.mg.apiKey || "");
     localStorage.setItem("gov-estadual-mg-username", data.mg.username || "");
@@ -107,6 +125,12 @@ export function EstadualForm() {
         />
         
         <SEFAZFormSection 
+          state="sc" 
+          title="SEFAZ Santa Catarina" 
+          control={form.control} 
+        />
+        
+        <SEFAZFormSection 
           state="mg" 
           title="SEFAZ Minas Gerais" 
           control={form.control} 
@@ -119,7 +143,7 @@ export function EstadualForm() {
 }
 
 type SEFAZFormSectionProps = {
-  state: "sp" | "rj" | "mg";
+  state: "sp" | "rj" | "sc" | "mg";
   title: string;
   control: any;
 }

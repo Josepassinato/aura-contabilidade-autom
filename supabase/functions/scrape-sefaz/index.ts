@@ -99,7 +99,24 @@ serve(async (req: Request) => {
     ];
 
     // In a real implementation, we would navigate to the SEFAZ portal and login
-    // await page.goto('https://portal.fazenda.sp.gov.br/login');
+    // Different portals for different states
+    let portalUrl;
+    switch(uf) {
+      case "SP":
+        portalUrl = "https://portal.fazenda.sp.gov.br/login";
+        break;
+      case "RJ":
+        portalUrl = "https://www4.fazenda.rj.gov.br/";
+        break;
+      case "SC":
+        portalUrl = "https://sat.sef.sc.gov.br/";
+        break;
+      default:
+        portalUrl = "https://portal.fazenda.sp.gov.br/login";
+    }
+    
+    // console.log(`Navigating to ${portalUrl} for SEFAZ-${uf}`);
+    // await page.goto(portalUrl);
     // await page.fill('#username', SEFAZ_USERNAME);
     // await page.fill('#password', SEFAZ_PASSWORD);
     // await page.click('button[type="submit"]');
@@ -133,7 +150,8 @@ serve(async (req: Request) => {
         numero_guia: guia.numero_guia,
         valor: guia.valor,
         data_vencimento: guia.data_vencimento,
-        status: guia.status
+        status: guia.status,
+        uf: uf // Adicionando campo UF para diferenciar os estados
       })));
 
     if (insertError) {

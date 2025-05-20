@@ -43,6 +43,11 @@ export function useIntegracoesGov() {
       status: 'desconectado',
     },
     {
+      id: "sefaz_sc",
+      nome: "SEFAZ-SC",
+      status: 'desconectado',
+    },
+    {
       id: "simples_nacional",
       nome: "Portal Simples Nacional",
       status: 'desconectado',
@@ -70,6 +75,11 @@ export function useIntegracoesGov() {
         {
           id: "sefaz_rj",
           nome: "SEFAZ-RJ",
+          status: 'desconectado',
+        },
+        {
+          id: "sefaz_sc",
+          nome: "SEFAZ-SC",
           status: 'desconectado',
         },
         {
@@ -122,6 +132,21 @@ export function useIntegracoesGov() {
             ultimoAcesso: rjIntegracao.ultimoAcesso,
             proximaRenovacao: rjIntegracao.proximaRenovacao,
             mensagem: rjIntegracao.mensagemErro
+          };
+        }
+      }
+      
+      // Atualizar SEFAZ-SC
+      const scIntegracao = integracoesEstadual.find(i => i.uf === "SC");
+      if (scIntegracao) {
+        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_sc");
+        if (index >= 0) {
+          updatedIntegracoes[index] = {
+            ...updatedIntegracoes[index],
+            status: scIntegracao.status,
+            ultimoAcesso: scIntegracao.ultimoAcesso,
+            proximaRenovacao: scIntegracao.proximaRenovacao,
+            mensagem: scIntegracao.mensagemErro
           };
         }
       }

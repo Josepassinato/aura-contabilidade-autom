@@ -24,6 +24,7 @@ interface SefazScrapedData {
   data_vencimento: string;
   status: string;
   scraped_at: string;
+  uf?: string;
 }
 
 interface SefazScrapedDataTableProps {
@@ -46,7 +47,7 @@ export function SefazScrapedDataTable({
     setError(null);
 
     try {
-      const result = await getSefazScrapedData(clientId);
+      const result = await getSefazScrapedData(clientId, uf);
       
       if (result.success) {
         setData(result.data || []);
@@ -65,7 +66,7 @@ export function SefazScrapedDataTable({
     if (clientId) {
       fetchData();
     }
-  }, [clientId]);
+  }, [clientId, uf]);
 
   // Fix: Updated to use only valid Badge variant values
   const getStatusBadgeVariant = (status: string) => {

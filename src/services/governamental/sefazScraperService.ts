@@ -1,6 +1,7 @@
 
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { UF } from "./estadualIntegration";
 
 interface ScrapeResult {
   success: boolean;
@@ -17,7 +18,7 @@ interface ScrapeResult {
  */
 export async function triggerSefazScrape(
   clientId: string,
-  uf: string = "SP"
+  uf: UF = "SP"
 ): Promise<ScrapeResult> {
   try {
     if (!clientId) {
@@ -37,7 +38,7 @@ export async function triggerSefazScrape(
 
     toast({
       title: "Coleta de dados iniciada",
-      description: "O processo de coleta de dados da SEFAZ foi iniciado com sucesso",
+      description: `O processo de coleta de dados da SEFAZ-${uf} foi iniciado com sucesso`,
     });
 
     return { 
@@ -50,7 +51,7 @@ export async function triggerSefazScrape(
     
     toast({
       title: "Erro ao iniciar coleta",
-      description: error.message || "Não foi possível iniciar a coleta de dados da SEFAZ",
+      description: error.message || `Não foi possível iniciar a coleta de dados da SEFAZ-${uf}`,
       variant: "destructive",
     });
     
@@ -64,19 +65,30 @@ export async function triggerSefazScrape(
 /**
  * Get scraped SEFAZ data for a specific client
  * @param clientId The ID of the client to get data for
+ * @param uf The state code (UF) to filter data by
  * @returns Promise with the scraped data
  */
-export async function getSefazScrapedData(clientId: string) {
+export async function getSefazScrapedData(clientId: string, uf: UF = "SP") {
   try {
     if (!clientId) {
       throw new Error("Client ID is required");
     }
 
-    const { data, error } = await supabase
+    console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
+
+    let query = supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
       .order("scraped_at", { ascending: false });
+      
+    // Se tiver o campo UF na tabela, filtra por ele
+    // Como estamos usando uma tabela única para todos os estados por enquanto
+    if (uf) {
+      query = query.eq("uf", uf);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching SEFAZ scraped data:", error);
@@ -91,7 +103,7 @@ export async function getSefazScrapedData(clientId: string) {
     console.error("Error fetching SEFAZ scraped data:", error);
     return { 
       success: false, 
-      error: error.message || "Failed to fetch SEFAZ scraped data"
+      error: error.message || `Failed to fetch SEFAZ-${uf} scraped data`
     };
   }
 }
