@@ -129,10 +129,10 @@ export async function obterCertidaoNegativaReal(cnpj: string): Promise<CertidaoN
     // Simular uma consulta bem-sucedida
     return {
       cnpj: cnpj,
-      situacao: 'REGULAR',
+      status: 'regular',
       dataEmissao: new Date().toISOString(),
       dataValidade: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(), // Válido por 30 dias
-      codigo: `CND${Math.floor(Math.random() * 1000000000).toString().padStart(10, '0')}`,
+      numero: `CND${Math.floor(Math.random() * 1000000000).toString().padStart(10, '0')}`,
       url: `https://cdn.gov.br/cnd/${cnpj}/${Date.now()}`
     };
   } catch (error: any) {

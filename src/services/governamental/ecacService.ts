@@ -21,6 +21,7 @@ export interface CertidaoNegativaResponse {
   dataValidade: string;
   numero: string;
   url?: string;
+  cnpj?: string; // Added to allow cnpj property
   pendencias?: Array<{
     tipo: string;
     descricao: string;
