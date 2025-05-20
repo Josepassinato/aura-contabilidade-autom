@@ -1,7 +1,8 @@
 
 import { CertificadoDigital } from "../certificadosDigitaisService";
 import { autenticarEcacReal } from "../ecacIntegration";
-import { adicionarLogProcuracao, atualizarStatusProcuracao } from "./procuracaoService";
+import { adicionarLogProcuracao, criarLogProcuracao } from "./procuracaoLogger";
+import { atualizarStatusProcuracao } from "./procuracaoService";
 import { LogProcuracao, ProcuracaoEletronica } from "./types";
 
 /**
