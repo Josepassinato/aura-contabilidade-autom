@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ScrapeResult, SerproIntegraContadorConfig, NfceScConfig } from "./types";
@@ -34,7 +33,7 @@ export async function configurarIntegraContadorSC(
       toast({
         title: "Atenção",
         description: "É necessário informar o número da procuração eletrônica",
-        variant: "warning",
+        variant: "destructive",
       });
     }
     
