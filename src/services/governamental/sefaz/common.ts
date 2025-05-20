@@ -72,8 +72,8 @@ export async function getSefazScrapedData(
     }
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
-
-    // Create a properly typed query variable to avoid type recursion
+    
+    // Using explicit method chaining with proper type casting at the end
     const { data, error } = await supabase
       .from("sefaz_sp_scrapes")
       .select("*")
