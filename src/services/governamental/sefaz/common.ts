@@ -73,25 +73,32 @@ export async function getSefazScrapedData(
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
     
-    // Fix: Create an explicit type annotation and use type assertion on the final result
-    const response = await supabase
+    // Avoid type inference issues by using a more direct approach without chaining
+    // Get data first, then handle the response separately
+    type ScrapesResponse = {
+      data: SefazScrapedData[] | null;
+      error: Error | null;
+    };
+    
+    // Use explicit typing to break the deep type instantiation
+    const { data, error }: ScrapesResponse = await supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
       .order("scraped_at", { ascending: false })
       .eq("uf", uf);
       
-    if (response.error) {
-      console.error("Error fetching SEFAZ scraped data:", response.error);
-      throw response.error;
+    if (error) {
+      console.error("Error fetching SEFAZ scraped data:", error);
+      throw error;
     }
 
-    // Use type assertion to explicitly type the data
-    const typedData = response.data as SefazScrapedData[];
+    // Safely handle potentially null data
+    const scrapedData: SefazScrapedData[] = data || [];
     
     return { 
       success: true, 
-      data: typedData
+      data: scrapedData 
     };
   } catch (error: any) {
     console.error("Error fetching SEFAZ scraped data:", error);
