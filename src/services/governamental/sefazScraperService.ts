@@ -24,7 +24,8 @@ export {
 export {
   consultarSefazAutomatico,
   emitirGuiaSefazAutomatico,
-  verificarDisponibilidadeProcuracaoSefaz
+  verificarDisponibilidadeProcuracaoSefaz,
+  buscarProcuracaoValidaAutomatica
 } from './sefazAutomaticService';
 
 // Export all type definitions

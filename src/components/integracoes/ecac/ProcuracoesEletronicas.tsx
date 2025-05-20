@@ -272,9 +272,10 @@ export function ProcuracoesEletronicas({ clientId, clientName }: ProcuracoesElet
         if (cadastroManualForm.servicos.includes('consultas')) servicosAutorizados.push('consultas');
       }
 
+      // Certifique-se de que o CPF é tratado como string
       const response = await cadastrarProcuracaoExistente({
         client_id: clientId,
-        procurador_cpf: cadastroManualForm.procuradorCpf,
+        procurador_cpf: cadastroManualForm.procuradorCpf.toString(),
         procurador_nome: cadastroManualForm.procuradorNome,
         procuracao_numero: cadastroManualForm.procuracaoNumero,
         data_emissao: new Date(cadastroManualForm.dataEmissao).toISOString(),

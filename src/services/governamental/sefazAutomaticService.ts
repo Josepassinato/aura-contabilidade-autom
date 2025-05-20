@@ -136,17 +136,25 @@ export async function verificarDisponibilidadeProcuracaoSefaz(
   clientId: string,
   uf: UF
 ): Promise<{possui: boolean; mensagem: string;}> {
-  const procuracaoId = await buscarProcuracaoValidaAutomatica(clientId, uf);
-  
-  if (procuracaoId) {
+  try {
+    const procuracaoId = await buscarProcuracaoValidaAutomatica(clientId, uf);
+    
+    if (procuracaoId) {
+      return {
+        possui: true,
+        mensagem: `Cliente possui procuração eletrônica válida para SEFAZ-${uf}`
+      };
+    }
+    
     return {
-      possui: true,
-      mensagem: `Cliente possui procuração eletrônica válida para SEFAZ-${uf}`
+      possui: false,
+      mensagem: `Cliente não possui procuração eletrônica válida para SEFAZ-${uf}`
+    };
+  } catch (error) {
+    console.error("Erro ao verificar disponibilidade de procuração:", error);
+    return {
+      possui: false,
+      mensagem: `Erro ao verificar procuração para SEFAZ-${uf}`
     };
   }
-  
-  return {
-    possui: false,
-    mensagem: `Cliente não possui procuração eletrônica válida para SEFAZ-${uf}`
-  };
 }

@@ -26,11 +26,18 @@ export function SefazScraperButton({
   // Verificar disponibilidade de procuração ao montar o componente
   useEffect(() => {
     const verificarProcuracao = async () => {
-      const { possui } = await verificarDisponibilidadeProcuracaoSefaz(clientId, uf);
-      setTemProcuracao(possui);
+      try {
+        const { possui } = await verificarDisponibilidadeProcuracaoSefaz(clientId, uf);
+        setTemProcuracao(possui);
+      } catch (error) {
+        console.error("Erro ao verificar procuração:", error);
+        setTemProcuracao(false);
+      }
     };
     
-    verificarProcuracao();
+    if (clientId && uf) {
+      verificarProcuracao();
+    }
   }, [clientId, uf]);
 
   const handleScrape = async () => {
@@ -51,6 +58,8 @@ export function SefazScraperButton({
           onSuccess(result.data);
         }
       }
+    } catch (error) {
+      console.error("Erro ao coletar dados da SEFAZ:", error);
     } finally {
       setIsLoading(false);
     }
