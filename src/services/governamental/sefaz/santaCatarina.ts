@@ -29,12 +29,12 @@ export async function configurarIntegraContadorSC(
       });
     }
     
-    // Definir tipo de informação a ser armazenada para evitar recursão de tipos
-    interface CertificadoInfo {
-      integraContador: boolean;
-      certificadoPresente: boolean;
-      procuracaoConfigurada: boolean;
-    }
+    // Preparar dados para armazenamento
+    const certificadoInfo = {
+      integraContador: true,
+      certificadoPresente: !!config.certificadoDigital,
+      procuracaoConfigurada: config.procuracaoEletronica
+    };
     
     // Salvar configuração na tabela de integrações estaduais
     const { error } = await supabase
@@ -45,11 +45,7 @@ export async function configurarIntegraContadorSC(
         nome: 'SEFAZ Santa Catarina',
         status: 'conectado',
         ultimo_acesso: new Date().toISOString(),
-        certificado_info: {
-          integraContador: true,
-          certificadoPresente: !!config.certificadoDigital,
-          procuracaoConfigurada: config.procuracaoEletronica
-        } as CertificadoInfo
+        certificado_info: JSON.stringify(certificadoInfo)
       });
       
     if (error) {
@@ -106,13 +102,13 @@ export async function configurarNfceSC(
       throw new Error("É necessário informar o tipo de TTD (706 ou 707)");
     }
     
-    // Definir tipo de informação a ser armazenada para evitar recursão de tipos
-    interface NfceInfo {
-      nfce: boolean;
-      dtecConfigurado: boolean;
-      tipoTTD: string;
-      cscConfigurado: boolean;
-    }
+    // Preparar dados para armazenamento
+    const nfceInfo = {
+      nfce: true,
+      dtecConfigurado: true,
+      tipoTTD: config.tipoTTD,
+      cscConfigurado: !!config.cscCodigo
+    };
     
     // Salvar configuração na base de dados
     const { error } = await supabase
@@ -123,12 +119,7 @@ export async function configurarNfceSC(
         nome: 'SEFAZ Santa Catarina - NFC-e',
         status: 'conectado',
         ultimo_acesso: new Date().toISOString(),
-        certificado_info: {
-          nfce: true,
-          dtecConfigurado: true,
-          tipoTTD: config.tipoTTD,
-          cscConfigurado: !!config.cscCodigo
-        } as NfceInfo
+        certificado_info: JSON.stringify(nfceInfo)
       });
       
     if (error) {
