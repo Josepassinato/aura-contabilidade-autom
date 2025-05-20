@@ -11,6 +11,8 @@ export interface ProcuracaoEletronica {
   certificado_id?: string;
   comprovante_url?: string;
   log_processamento?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ProcuracaoResponse {

@@ -794,6 +794,62 @@ export type Database = {
           },
         ]
       }
+      procuracoes_eletronicas: {
+        Row: {
+          certificado_id: string | null
+          client_id: string
+          comprovante_url: string | null
+          created_at: string | null
+          data_emissao: string | null
+          data_validade: string
+          id: string
+          log_processamento: string[] | null
+          procurador_cpf: string
+          procurador_nome: string
+          servicos_autorizados: string[]
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          certificado_id?: string | null
+          client_id: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_emissao?: string | null
+          data_validade: string
+          id?: string
+          log_processamento?: string[] | null
+          procurador_cpf: string
+          procurador_nome: string
+          servicos_autorizados: string[]
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          certificado_id?: string | null
+          client_id?: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_emissao?: string | null
+          data_validade?: string
+          id?: string
+          log_processamento?: string[] | null
+          procurador_cpf?: string
+          procurador_nome?: string
+          servicos_autorizados?: string[]
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procuracoes_eletronicas_certificado_id_fkey"
+            columns: ["certificado_id"]
+            isOneToOne: false
+            referencedRelation: "certificados_digitais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sefaz_sp_scrapes: {
         Row: {
           client_id: string
