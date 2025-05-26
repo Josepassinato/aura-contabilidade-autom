@@ -1,77 +1,115 @@
 
-import { ValidacaoProcuracaoResponse } from "./types";
 import { supabase } from "@/lib/supabase/client";
+import { ProcuracaoEletronica } from "./types";
 
 /**
- * Valida uma procuração eletrônica
- * @param procuracaoId ID da procuração ou número da procuração
- * @returns Resultado da validação
+ * Valida se uma procuração está ativa e dentro da validade
  */
-export async function validarProcuracao(
-  procuracaoId: string
-): Promise<ValidacaoProcuracaoResponse> {
+export async function validarProcuracaoAtiva(procuracaoId: string): Promise<{
+  valida: boolean;
+  mensagem: string;
+  procuracao?: ProcuracaoEletronica;
+}> {
   try {
-    // Buscar procuração pelo ID, número ou outro identificador
-    const { data, error } = await supabase
+    const { data: procuracao, error } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
-      .or(`id.eq.${procuracaoId},procuracao_numero.eq.${procuracaoId}`)
-      .maybeSingle();
-    
+      .eq('id', procuracaoId)
+      .single();
+
+    if (error || !procuracao) {
+      return {
+        valida: false,
+        mensagem: 'Procuração não encontrada'
+      };
+    }
+
+    const agora = new Date();
+    const dataValidade = new Date(procuracao.data_validade);
+
+    if (procuracao.status !== 'emitida') {
+      return {
+        valida: false,
+        mensagem: `Procuração com status: ${procuracao.status}`,
+        procuracao
+      };
+    }
+
+    if (dataValidade <= agora) {
+      return {
+        valida: false,
+        mensagem: 'Procuração expirada',
+        procuracao
+      };
+    }
+
+    return {
+      valida: true,
+      mensagem: 'Procuração válida e ativa',
+      procuracao
+    };
+  } catch (error: any) {
+    return {
+      valida: false,
+      mensagem: `Erro na validação: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Valida se um cliente possui procuração válida para um estado específico
+ */
+export async function validarProcuracaoParaEstado(
+  clientId: string, 
+  uf: string
+): Promise<{
+  valida: boolean;
+  mensagem: string;
+  procuracaoId?: string;
+}> {
+  try {
+    const { data: procuracoes, error } = await supabase
+      .from('procuracoes_eletronicas')
+      .select('*')
+      .eq('client_id', clientId)
+      .eq('status', 'emitida');
+
     if (error) {
       throw error;
     }
-    
-    if (!data) {
+
+    if (!procuracoes || procuracoes.length === 0) {
       return {
-        status: 'nao_encontrada',
-        message: 'Procuração não encontrada no sistema'
+        valida: false,
+        mensagem: `Nenhuma procuração encontrada para o estado ${uf}`
       };
     }
-    
-    // Verificar se expirou
-    const dataValidade = new Date(data.data_validade);
-    const hoje = new Date();
-    
-    if (dataValidade < hoje) {
+
+    const agora = new Date();
+    const procuracaoValida = procuracoes.find(p => {
+      const dataValidade = new Date(p.data_validade);
+      return dataValidade > agora && 
+             p.servicos_autorizados.some((servico: string) => 
+               servico.includes('SEFAZ') || servico.includes(uf)
+             );
+    });
+
+    if (!procuracaoValida) {
       return {
-        status: 'expirada',
-        message: 'Procuração expirada',
-        data_validade: data.data_validade
+        valida: false,
+        mensagem: `Nenhuma procuração válida para SEFAZ-${uf}`
       };
     }
-    
-    // Calcular dias restantes
-    const diasRestantes = Math.floor((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Verificar status
-    if (data.status === 'cancelada') {
-      return {
-        status: 'invalida',
-        message: 'Procuração foi cancelada'
-      };
-    }
-    
-    if (data.status !== 'emitida') {
-      return {
-        status: 'invalida',
-        message: `Procuração em status: ${data.status}`
-      };
-    }
-    
-    // Procuração válida
+
     return {
-      status: 'valida',
-      message: 'Procuração válida',
-      data_validade: data.data_validade,
-      dias_restantes: diasRestantes,
-      servicos_autorizados: data.servicos_autorizados
+      valida: true,
+      mensagem: 'Procuração válida encontrada',
+      procuracaoId: procuracaoValida.id
     };
   } catch (error: any) {
-    console.error('Erro ao validar procuração:', error);
     return {
-      status: 'nao_encontrada',
-      message: `Erro ao validar: ${error.message}`
+      valida: false,
+      mensagem: `Erro na validação: ${error.message}`
     };
   }
 }
