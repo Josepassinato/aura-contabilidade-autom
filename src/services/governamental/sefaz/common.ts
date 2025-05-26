@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UF } from "../estadualIntegration";
@@ -105,41 +104,28 @@ export async function getSefazScrapedData(
 
     console.log(`Fetching SEFAZ-${uf} data for client: ${clientId}`);
     
-    // Define the raw type structure to avoid deep inference
-    interface RawScrapeData {
-      id: string;
-      client_id: string;
-      competencia: string | null;
-      numero_guia: string | null;
-      valor: string | null;
-      data_vencimento: string | null;
-      status: string | null;
-      scraped_at: string | null;
-      created_at: string | null;
-      uf?: string | null;
-    }
-    
-    // Execute the query with a simple type annotation
+    // Simplify query to avoid deep type instantiation
     let query = supabase
       .from("sefaz_sp_scrapes")
-      .select("*")
+      .select("id, client_id, competencia, numero_guia, valor, data_vencimento, status, scraped_at, created_at")
       .eq("client_id", clientId)
       .order("scraped_at", { ascending: false });
 
-    // Filter by UF if the column exists
+    // Filter by UF if needed (for future multi-state support)
     if (uf !== "SP") {
-      query = query.eq("uf", uf);
+      // Note: Current table doesn't have UF column, this is for future compatibility
+      console.log(`Filtering by UF ${uf} (not yet implemented in database)`);
     }
     
-    const { data: rawData, error } = await query;
+    const { data, error } = await query;
     
     if (error) {
       console.error("Error fetching SEFAZ scraped data:", error);
       throw error;
     }
     
-    // Process and map the raw data to our expected type
-    const scrapedData: SefazScrapedData[] = (rawData || []).map((item: RawScrapeData) => ({
+    // Process the data with explicit typing
+    const scrapedData: SefazScrapedData[] = (data || []).map((item) => ({
       id: item.id,
       client_id: item.client_id,
       competencia: item.competencia || "",
@@ -148,7 +134,7 @@ export async function getSefazScrapedData(
       data_vencimento: item.data_vencimento || "",
       status: item.status || "",
       scraped_at: item.scraped_at || "",
-      uf: item.uf || uf // Use database value if available, fallback to parameter
+      uf: uf // Use parameter value since database doesn't have UF column yet
     }));
     
     return { 

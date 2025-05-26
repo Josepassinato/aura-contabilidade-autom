@@ -296,16 +296,22 @@ export async function consultarDebitosSefazReal(
   cnpj: string
 ): Promise<ScrapeResult> {
   try {
-    // Buscar dados da procuração
-    const { data: procuracao, error: procError } = await supabase
+    // Buscar dados da procuração com tipagem explícita
+    const { data: procuracaoRaw, error: procError } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
       .eq('id', procuracaoId)
       .single();
 
-    if (procError || !procuracao) {
+    if (procError || !procuracaoRaw) {
       throw new Error('Procuração não encontrada');
     }
+
+    // Converter para o tipo correto
+    const procuracao: ProcuracaoEletronica = {
+      ...procuracaoRaw,
+      status: procuracaoRaw.status as "pendente" | "emitida" | "expirada" | "cancelada" | "erro"
+    };
 
     // Buscar certificado digital
     const { data: certificado, error: certError } = await supabase
@@ -387,16 +393,22 @@ export async function emitirGuiaSefazReal(
   }
 ): Promise<ScrapeResult> {
   try {
-    // Buscar dados da procuração
-    const { data: procuracao, error: procError } = await supabase
+    // Buscar dados da procuração com tipagem explícita
+    const { data: procuracaoRaw, error: procError } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
       .eq('id', procuracaoId)
       .single();
 
-    if (procError || !procuracao) {
+    if (procError || !procuracaoRaw) {
       throw new Error('Procuração não encontrada');
     }
+
+    // Converter para o tipo correto
+    const procuracao: ProcuracaoEletronica = {
+      ...procuracaoRaw,
+      status: procuracaoRaw.status as "pendente" | "emitida" | "expirada" | "cancelada" | "erro"
+    };
 
     // Buscar certificado digital
     const { data: certificado, error: certError } = await supabase
