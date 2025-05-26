@@ -51,41 +51,44 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="max-w-md w-full">
-        <div className="mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-2 sm:p-4">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <div className="mb-2 sm:mb-4">
           <BackButton />
         </div>
         
-        <AuthHeader />
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ContaFácil</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">Sistema de gestão contábil</p>
+        </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Acesso ao Sistema</CardTitle>
-            <CardDescription>
+        <Card className="border-0 sm:border shadow-lg sm:shadow-sm">
+          <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
+            <CardTitle className="text-lg sm:text-xl">Acesso ao Sistema</CardTitle>
+            <CardDescription className="text-sm">
               Faça login ou cadastre-se para acessar o sistema
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Cadastro</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10">
+                <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
+                <TabsTrigger value="signup" className="text-sm">Cadastro</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="login">
+              <TabsContent value="login" className="mt-4 sm:mt-6">
                 <LoginForm />
                 <QuickLoginButtons />
               </TabsContent>
               
-              <TabsContent value="signup">
+              <TabsContent value="signup" className="mt-4 sm:mt-6">
                 <SignupForm onSuccess={handleSignupSuccess} />
               </TabsContent>
             </Tabs>
           </CardContent>
           
-          <CardFooter>
+          <CardFooter className="px-4 py-4 sm:px-6 sm:py-6">
             <AuthFooter />
           </CardFooter>
         </Card>

@@ -72,13 +72,13 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="text-sm">Email</FormLabel>
               <FormControl>
                 <Input
                   placeholder="seu@email.com"
@@ -86,9 +86,10 @@ export function LoginForm() {
                   {...field}
                   autoComplete="email"
                   disabled={loading}
+                  className="h-10 sm:h-10 text-base sm:text-sm"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs sm:text-sm" />
             </FormItem>
           )}
         />
@@ -97,7 +98,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Senha</FormLabel>
+              <FormLabel className="text-sm">Senha</FormLabel>
               <FormControl>
                 <Input
                   placeholder="******"
@@ -105,13 +106,14 @@ export function LoginForm() {
                   {...field}
                   autoComplete="current-password"
                   disabled={loading}
+                  className="h-10 sm:h-10 text-base sm:text-sm"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs sm:text-sm" />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full h-10 sm:h-10 text-sm sm:text-base" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

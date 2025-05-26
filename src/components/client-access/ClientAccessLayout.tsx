@@ -19,24 +19,24 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-2 sm:p-4">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <div className="flex justify-between items-center mb-2 sm:mb-4">
           <BackButton />
           <Button 
             variant="destructive" 
             size="sm" 
-            className="flex items-center"
+            className="flex items-center h-8 sm:h-9 text-xs sm:text-sm"
             onClick={handleLogout}
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Sair
           </Button>
         </div>
         
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">ContaFácil</h1>
-          <p className="text-muted-foreground mt-2">Portal de acesso ao cliente</p>
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ContaFácil</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">Portal de acesso ao cliente</p>
         </div>
         
         {children}
