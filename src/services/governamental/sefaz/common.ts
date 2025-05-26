@@ -3,9 +3,11 @@ import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UF } from "../estadualIntegration";
 import { ScrapeResult, SefazScrapedData, SefazScrapedResult } from "./types";
+import { consultarSefazPorEstado } from "./estadualApiService";
+import { buscarProcuracaoValidaAutomatica } from "../sefazAutomaticService";
 
 /**
- * Trigger the SEFAZ scraper for a specific client
+ * Trigger the SEFAZ scraper for a specific client - now using real API integration
  * @param clientId The ID of the client to scrape data for
  * @param uf The state code (UF) to scrape data from
  * @returns Promise with the scrape result
@@ -19,27 +21,57 @@ export async function triggerSefazScrape(
       throw new Error("Client ID is required");
     }
 
-    console.log(`Triggering SEFAZ-${uf} scrape for client: ${clientId}`);
+    console.log(`Iniciando coleta real de dados SEFAZ-${uf} para cliente: ${clientId}`);
 
-    const { data, error } = await supabase.functions.invoke("scrape-sefaz", {
-      body: { clientId, uf },
-    });
+    // Verificar se existe procuração válida
+    const procuracaoId = await buscarProcuracaoValidaAutomatica(clientId, uf);
+    
+    if (!procuracaoId) {
+      // Se não tem procuração, usar o método de fallback (edge function simulada)
+      console.log(`Nenhuma procuração encontrada para ${uf}, usando método de fallback`);
+      
+      const { data, error } = await supabase.functions.invoke("scrape-sefaz", {
+        body: { clientId, uf },
+      });
 
-    if (error) {
-      console.error("Error invoking scrape-sefaz function:", error);
-      throw new Error(error.message || "Failed to start SEFAZ data scraping");
+      if (error) {
+        console.error("Error invoking scrape-sefaz function:", error);
+        throw new Error(error.message || "Failed to start SEFAZ data scraping");
+      }
+
+      toast({
+        title: "Coleta de dados iniciada (simulada)",
+        description: `Processo de coleta simulada da SEFAZ-${uf} iniciado. Configure uma procuração eletrônica para acesso real.`,
+        variant: "destructive"
+      });
+
+      return { 
+        success: true, 
+        data, 
+        count: data?.count || 0 
+      };
     }
 
-    toast({
-      title: "Coleta de dados iniciada",
-      description: `O processo de coleta de dados da SEFAZ-${uf} foi iniciado com sucesso`,
-    });
+    // Se tem procuração, usar a integração real
+    console.log(`Procuração encontrada (${procuracaoId}), usando integração real`);
+    
+    const result = await consultarSefazPorEstado(clientId, uf);
+    
+    if (result.success) {
+      toast({
+        title: "Dados coletados com sucesso",
+        description: `Dados reais da SEFAZ-${uf} coletados via procuração eletrônica`,
+      });
+    } else {
+      toast({
+        title: "Erro na coleta de dados",
+        description: result.error || `Não foi possível coletar dados da SEFAZ-${uf}`,
+        variant: "destructive",
+      });
+    }
 
-    return { 
-      success: true, 
-      data, 
-      count: data?.count || 0 
-    };
+    return result;
+    
   } catch (error: any) {
     console.error("Error triggering SEFAZ scrape:", error);
     
@@ -84,15 +116,22 @@ export async function getSefazScrapedData(
       status: string | null;
       scraped_at: string | null;
       created_at: string | null;
-      // The 'uf' field might not be in the database schema yet
+      uf?: string | null;
     }
     
     // Execute the query with a simple type annotation
-    const { data: rawData, error } = await supabase
+    let query = supabase
       .from("sefaz_sp_scrapes")
       .select("*")
       .eq("client_id", clientId)
       .order("scraped_at", { ascending: false });
+
+    // Filter by UF if the column exists
+    if (uf !== "SP") {
+      query = query.eq("uf", uf);
+    }
+    
+    const { data: rawData, error } = await query;
     
     if (error) {
       console.error("Error fetching SEFAZ scraped data:", error);
@@ -109,7 +148,7 @@ export async function getSefazScrapedData(
       data_vencimento: item.data_vencimento || "",
       status: item.status || "",
       scraped_at: item.scraped_at || "",
-      uf: uf // Use the function parameter as the UF value
+      uf: item.uf || uf // Use database value if available, fallback to parameter
     }));
     
     return { 

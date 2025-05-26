@@ -28,6 +28,21 @@ export {
   buscarProcuracaoValidaAutomatica
 } from './sefazAutomaticService';
 
+// Export real API integration services
+export {
+  consultarSefazPorEstado,
+  emitirGuiaPorEstado,
+  consultarSefazSC,
+  consultarSefazGenerico
+} from './sefaz/estadualApiService';
+
+// Export API integration utilities
+export {
+  autenticarSefazApi,
+  consultarDebitosSefazReal,
+  emitirGuiaSefazReal
+} from './sefaz/apiIntegration';
+
 // Export all type definitions
 export type {
   ScrapeResult,
