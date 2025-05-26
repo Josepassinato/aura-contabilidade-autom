@@ -1,67 +1,41 @@
 
-import { LogProcuracao } from "./types";
 import { supabase } from "@/lib/supabase/client";
+import { LogProcuracao } from "./types";
 
 /**
- * Cria uma entrada de log para a procuração
- * @param acao Ação realizada
- * @param resultado Resultado da ação
- * @param detalhes Detalhes adicionais
- * @returns Objeto LogProcuracao formatado
+ * Adiciona uma entrada de log ao processamento da procuração
  */
-export function criarLogProcuracao(
-  acao: string,
-  resultado: string,
-  detalhes?: Record<string, any>
-): LogProcuracao {
-  return {
-    timestamp: new Date().toISOString(),
-    acao,
-    resultado,
-    detalhes
-  };
-}
-
-/**
- * Adiciona um log ao registro da procuração
- * @param procuracaoId ID da procuração
- * @param logEntry Entrada de log a ser adicionada
- */
-export async function adicionarLogProcuracao(
-  procuracaoId: string,
-  logEntry: LogProcuracao
-): Promise<boolean> {
+export async function adicionarLogProcuracao(procuracaoId: string, log: LogProcuracao) {
   try {
-    // Buscar logs atuais
-    const { data: procuracao, error: fetchError } = await supabase
+    // Buscar a procuração atual para obter o log existente
+    const { data: procuracaoAtual, error: fetchError } = await supabase
       .from('procuracoes_eletronicas')
       .select('log_processamento')
       .eq('id', procuracaoId)
       .single();
-      
+
     if (fetchError) {
-      console.error('Erro ao buscar logs da procuração:', fetchError);
-      return false;
+      console.error('Erro ao buscar procuração para adicionar log:', fetchError);
+      return;
     }
-    
-    // Preparar array de logs (existentes + novo)
-    const logs = procuracao.log_processamento || [];
-    logs.push(JSON.stringify(logEntry));
-    
-    // Atualizar registro com novo log
+
+    // Atualizar o log de processamento
+    const logAtual = procuracaoAtual?.log_processamento || [];
+    const novaEntrada = JSON.stringify(log);
+    const novoLog = [...logAtual, novaEntrada];
+
     const { error: updateError } = await supabase
       .from('procuracoes_eletronicas')
-      .update({ log_processamento: logs })
+      .update({
+        log_processamento: novoLog,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', procuracaoId);
-      
+
     if (updateError) {
-      console.error('Erro ao salvar log da procuração:', updateError);
-      return false;
+      console.error('Erro ao atualizar log da procuração:', updateError);
     }
-    
-    return true;
   } catch (error) {
-    console.error('Erro ao adicionar log à procuração:', error);
-    return false;
+    console.error('Erro ao adicionar log da procuração:', error);
   }
 }

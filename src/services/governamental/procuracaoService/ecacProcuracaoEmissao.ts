@@ -26,9 +26,7 @@ export async function processarEmissaoProcuracao(
     } as LogProcuracao);
 
     // Atualizar status
-    await atualizarStatusProcuracao(procuracao.id!, 'pendente', {
-      etapa: 'autenticacao'
-    });
+    await atualizarStatusProcuracao(procuracao.id!, 'pendente', 'Iniciando autenticação');
 
     // 1. Autenticar no e-CAC com o certificado digital
     const autenticacaoResult = await autenticarEcacReal({
@@ -88,9 +86,7 @@ export async function processarEmissaoProcuracao(
     }
 
     // Atualizar status para emitida
-    await atualizarStatusProcuracao(procuracao.id!, 'emitida', {
-      data_conclusao: new Date().toISOString()
-    });
+    await atualizarStatusProcuracao(procuracao.id!, 'emitida', 'Procuração emitida com sucesso');
 
     // Log de finalização
     await adicionarLogProcuracao(procuracao.id!, {
@@ -123,9 +119,7 @@ export async function processarEmissaoProcuracao(
     } as LogProcuracao);
 
     // Atualizar status para erro
-    await atualizarStatusProcuracao(procuracao.id!, 'erro', {
-      mensagem_erro: error.message
-    });
+    await atualizarStatusProcuracao(procuracao.id!, 'erro', `Erro: ${error.message}`);
 
     return {
       success: false,

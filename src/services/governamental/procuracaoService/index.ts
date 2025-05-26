@@ -1,10 +1,20 @@
 
-// Arquivo de barril para expor todos os módulos relacionados às procurações
+export {
+  emitirProcuracao,
+  fetchProcuracoes,
+  validarProcuracao,
+  cancelarProcuracao,
+  cadastrarProcuracaoExistente,
+  atualizarStatusProcuracao
+} from './procuracaoService';
 
-export * from "./types";
-export * from "./procuracaoService";
-export * from "./procuracaoValidador";
-export * from "./procuracaoLogger";
-export * from "./ecacProcuracao";
+export { processarEmissaoProcuracao } from './ecacProcuracaoEmissao';
+export { adicionarLogProcuracao } from './procuracaoLogger';
 
-// Não exportamos o procuracaoRepository.ts pois é um detalhe de implementação
+export type {
+  ProcuracaoEletronica,
+  EmitirProcuracaoParams,
+  CadastrarProcuracaoExistenteParams,
+  LogProcuracao,
+  ValidationResult
+} from './types';
