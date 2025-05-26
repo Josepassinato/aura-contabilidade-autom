@@ -6,7 +6,7 @@ import { IntegracaoEstadualForm } from './IntegracaoEstadualForm';
 import { SefazXmlUploader } from './SefazXmlUploader';
 import { SefazScrapedDataTable } from './SefazScrapedDataTable';
 import { UF } from "@/services/governamental/estadualIntegration";
-import { WifiOff, Wifi } from "lucide-react";
+import { WifiOff, Wifi, Database } from "lucide-react";
 
 interface IntegracaoEstadualFormWithUploadProps {
   uf: UF;
@@ -34,16 +34,17 @@ export function IntegracaoEstadualFormWithUpload({
       
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="integracao" className="flex items-center gap-2">
               <Wifi className="h-4 w-4" />
-              Integração API
+              Credenciais
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <WifiOff className="h-4 w-4" />
               Upload Manual
             </TabsTrigger>
-            <TabsTrigger value="dados">
+            <TabsTrigger value="dados" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
               Dados Coletados
             </TabsTrigger>
           </TabsList>
