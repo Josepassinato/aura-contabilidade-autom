@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,9 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { KeyRound, Lock, ShieldCheck, FileText } from "lucide-react";
+import { KeyRound, Lock, ShieldCheck, FileText, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProcuracoesEletronicas } from "./ecac/ProcuracoesEletronicas";
+import { EcacXmlUploader } from "./ecac/EcacXmlUploader";
 
 const formSchema = z.object({
   certificadoDigital: z.string().min(1, {
@@ -98,6 +98,10 @@ export function IntegracaoGovForm({ clientId, clientName, onSave }: IntegracaoGo
             <TabsTrigger value="procuracoes">
               <FileText className="h-4 w-4 mr-2" />
               Procurações Eletrônicas
+            </TabsTrigger>
+            <TabsTrigger value="upload">
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Manual
             </TabsTrigger>
           </TabsList>
           
@@ -208,6 +212,13 @@ export function IntegracaoGovForm({ clientId, clientName, onSave }: IntegracaoGo
           
           <TabsContent value="procuracoes">
             <ProcuracoesEletronicas 
+              clientId={clientId} 
+              clientName={clientName} 
+            />
+          </TabsContent>
+
+          <TabsContent value="upload">
+            <EcacXmlUploader 
               clientId={clientId} 
               clientName={clientName} 
             />
