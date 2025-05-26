@@ -35,39 +35,18 @@ export async function autenticarEcacReal(credentials: EcacCredentials): Promise<
       throw new Error('Certificado digital não fornecido');
     }
     
-    const requestBody: EcacAuthRequest = {
-      certificateBase64: credentials.certificado.arquivo,
-      certificatePassword: credentials.certificado.senha,
+    // Em produção, aqui seria feita a chamada real para a API do e-CAC
+    toast({
+      title: 'Integração não configurada',
+      description: 'A autenticação real no e-CAC ainda não foi implementada',
+      variant: 'destructive'
+    });
+    
+    return {
+      success: false,
+      error: 'Integração não configurada'
     };
     
-    // Adicionar CNPJ ou CPF se fornecido nas credenciais
-    if (credentials.dados?.cnpj) {
-      requestBody.cnpj = credentials.dados.cnpj;
-    } else if (credentials.dados?.cpf) {
-      requestBody.cpf = credentials.dados.cpf;
-    }
-    
-    // Realizando autenticação com o serviço e-CAC
-    // Em um ambiente de produção, esta seria uma chamada real para a API
-    try {
-      // Simular uma autenticação bem-sucedida
-      // Em produção, substituir por chamada HTTP real para a API do e-CAC
-      const responseData = {
-        success: true,
-        sessionToken: `ecac-token-${Date.now()}`,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 30).toISOString() // Token válido por 30 minutos
-      };
-      
-      // Armazenar token na localStorage para uso em outras operações
-      localStorage.setItem('ecac-session-token', responseData.sessionToken);
-      localStorage.setItem('ecac-session-expiry', responseData.expiresAt);
-      
-      console.log('Autenticação bem-sucedida no e-CAC');
-      return responseData;
-    } catch (apiError: any) {
-      console.error('Erro na comunicação com API do e-CAC:', apiError);
-      throw new Error(`Erro na API do e-CAC: ${apiError.message}`);
-    }
   } catch (error: any) {
     console.error('Erro na autenticação do e-CAC:', error);
     toast({
@@ -87,54 +66,33 @@ export async function autenticarEcacReal(credentials: EcacCredentials): Promise<
  * Verifica se existe uma sessão válida do e-CAC
  */
 export function verificarSessaoEcac(): boolean {
-  const token = localStorage.getItem('ecac-session-token');
-  const expiry = localStorage.getItem('ecac-session-expiry');
-  
-  if (!token || !expiry) {
-    return false;
-  }
-  
-  // Verificar se a sessão ainda é válida
-  return new Date(expiry) > new Date();
+  // Em produção, verificaria sessão real
+  return false;
 }
 
 /**
  * Obter token de sessão do e-CAC
  */
 export function obterTokenSessaoEcac(): string | null {
-  if (!verificarSessaoEcac()) {
-    return null;
-  }
-  
-  return localStorage.getItem('ecac-session-token');
+  // Em produção, retornaria token real se disponível
+  return null;
 }
 
 /**
  * Obter Certidão Negativa de Débito com integração real ao e-CAC
- * Utiliza o token de sessão armazenado para autenticação
  */
 export async function obterCertidaoNegativaReal(cnpj: string): Promise<CertidaoNegativaResponse | null> {
   try {
-    // Verificar se existe uma sessão válida
-    if (!verificarSessaoEcac()) {
-      throw new Error('Sessão do e-CAC expirada ou inválida. Por favor, autentique novamente.');
-    }
-    
-    const token = obterTokenSessaoEcac();
     console.log(`Consultando CND para CNPJ ${cnpj}`);
     
-    // Implementação real da consulta de CND
-    // Em produção, substituir por chamada HTTP real para a API do e-CAC
+    // Em produção, aqui seria feita a chamada real para a API do e-CAC
+    toast({
+      title: 'Serviço não disponível',
+      description: 'A consulta real de CND ainda não foi implementada',
+      variant: 'destructive'
+    });
     
-    // Simular uma consulta bem-sucedida
-    return {
-      cnpj: cnpj,
-      status: 'regular',
-      dataEmissao: new Date().toISOString(),
-      dataValidade: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(), // Válido por 30 dias
-      numero: `CND${Math.floor(Math.random() * 1000000000).toString().padStart(10, '0')}`,
-      url: `https://cdn.gov.br/cnd/${cnpj}/${Date.now()}`
-    };
+    return null;
   } catch (error: any) {
     console.error('Erro ao obter Certidão Negativa:', error);
     toast({

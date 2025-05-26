@@ -12,61 +12,9 @@ import { BackButton } from '@/components/navigation/BackButton';
 export const DashboardView = () => {
   const { enhancedLogout } = useAuth();
   
-  // Mock data for events
-  const mockEvents = [
-    {
-      id: '1', 
-      title: 'Entrega SPED Fiscal', 
-      client: 'Tech Solutions Ltda',
-      dueDate: '25/05/2025',
-      status: 'pendente' as const,
-      priority: 'alta' as const,
-    },
-    {
-      id: '2', 
-      title: 'Pagamento ICMS', 
-      client: 'Comércio Online SA',
-      dueDate: '27/05/2025',
-      status: 'pendente' as const,
-      priority: 'média' as const,
-    },
-    {
-      id: '3', 
-      title: 'Declaração IR', 
-      client: 'Consultoria XYZ',
-      dueDate: '30/05/2025',
-      status: 'atrasado' as const,
-      priority: 'alta' as const,
-    }
-  ];
-
-  // Mock data for documents
-  const mockDocuments = [
-    {
-      id: '1',
-      name: 'Nota Fiscal #78923',
-      client: 'Comércio Online SA',
-      type: 'NF-e',
-      status: 'pendente' as const,
-      date: '19/05/2025',
-    },
-    {
-      id: '2',
-      name: 'Extrato Bancário',
-      client: 'Tech Solutions Ltda',
-      type: 'Financeiro',
-      status: 'recebido' as const,
-      date: '18/05/2025',
-    },
-    {
-      id: '3',
-      name: 'Folha de Pagamento',
-      client: 'Consultoria XYZ',
-      type: 'RH',
-      status: 'processado' as const,
-      date: '17/05/2025',
-    },
-  ];
+  // Arrays vazios - sem dados simulados
+  const mockEvents: any[] = [];
+  const mockDocuments: any[] = [];
   
   return (
     <div className="space-y-6">
@@ -95,26 +43,26 @@ export const DashboardView = () => {
         <ClientSummaryCard
           name="Total de Clientes"
           status="regular"
-          documentsPending={2}
-          upcomingDeadlines={6}
+          documentsPending={0}
+          upcomingDeadlines={0}
         />
         <ClientSummaryCard
           name="Obrigações Fiscais"
-          status="pendente"
-          documentsPending={12}
-          upcomingDeadlines={3}
+          status="regular"
+          documentsPending={0}
+          upcomingDeadlines={0}
         />
         <ClientSummaryCard
           name="Documentos"
           status="regular"
-          documentsPending={54}
+          documentsPending={0}
           upcomingDeadlines={0}
         />
         <ClientSummaryCard
           name="Economias Fiscais"
           status="regular"
           documentsPending={0}
-          upcomingDeadlines={18}
+          upcomingDeadlines={0}
         />
       </div>
 
@@ -127,7 +75,13 @@ export const DashboardView = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <FiscalCalendar events={mockEvents} />
+            {mockEvents.length === 0 ? (
+              <div className="h-32 flex items-center justify-center text-muted-foreground">
+                Nenhum evento cadastrado
+              </div>
+            ) : (
+              <FiscalCalendar events={mockEvents} />
+            )}
           </CardContent>
         </Card>
         
@@ -139,7 +93,13 @@ export const DashboardView = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DocumentsTable documents={mockDocuments} />
+            {mockDocuments.length === 0 ? (
+              <div className="h-32 flex items-center justify-center text-muted-foreground">
+                Nenhum documento recente
+              </div>
+            ) : (
+              <DocumentsTable documents={mockDocuments} />
+            )}
           </CardContent>
         </Card>
       </div>

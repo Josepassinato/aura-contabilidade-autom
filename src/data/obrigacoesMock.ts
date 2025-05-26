@@ -1,7 +1,7 @@
 
 import { Obrigacao } from "@/types/obrigacoes";
 
-// Este arquivo não contém mais dados mockados
+// Arquivo limpo - sem dados simulados
 export const obrigacoesMock: Obrigacao[] = [];
 
 // Função mantida para compatibilidade com código existente

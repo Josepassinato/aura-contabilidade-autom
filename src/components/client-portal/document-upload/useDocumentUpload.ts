@@ -174,22 +174,20 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
   // Function to detect document type from content
   const detectDocumentType = async (file: File): Promise<string | null> => {
     try {
-      const firstPages = await getFirstPageAsText(file);
+      // Em produção, aqui seria usado um serviço real de análise de PDF
+      // Por enquanto, usa apenas o nome do arquivo
+      const filename = file.name.toLowerCase();
       
-      // Simple keyword-based classification
-      const text = firstPages.toLowerCase();
-      
-      if (text.includes('nota fiscal') || text.includes('nf-e') || text.includes('danfe')) {
+      if (filename.includes('nota') || filename.includes('nf')) {
         return 'nota-fiscal';
-      } else if (text.includes('recibo') || text.includes('pagamento')) {
+      } else if (filename.includes('recibo')) {
         return 'recibo';
-      } else if (text.includes('contrato') || text.includes('acordo')) {
+      } else if (filename.includes('contrato')) {
         return 'contrato';
-      } else if (text.includes('extrato') || text.includes('bancário') || text.includes('banco')) {
+      } else if (filename.includes('extrato')) {
         return 'extrato';
       }
       
-      // If no clear match, return the manually selected type
       return null;
     } catch (error) {
       console.error("Erro ao detectar tipo de documento:", error);
@@ -197,43 +195,15 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
     }
   };
 
-  // Extract text from the first page of a PDF for classification
-  const getFirstPageAsText = async (file: File): Promise<string> => {
-    // In a real implementation, this would use a PDF library to extract text
-    // For this example, we'll simulate with a promise that resolves after a delay
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Simulate extracted text based on filename (in real code, would analyze PDF content)
-        const filename = file.name.toLowerCase();
-        if (filename.includes('nota') || filename.includes('nf')) {
-          resolve('DOCUMENTO FISCAL NOTA FISCAL ELETRÔNICA');
-        } else if (filename.includes('recibo')) {
-          resolve('RECIBO DE PAGAMENTO');
-        } else if (filename.includes('contrato')) {
-          resolve('CONTRATO DE PRESTAÇÃO DE SERVIÇOS');
-        } else if (filename.includes('extrato')) {
-          resolve('EXTRATO BANCÁRIO');
-        } else {
-          resolve('');
-        }
-      }, 200);
-    });
-  };
-
   // Process document after upload and classification
   const processDocument = async (documentId: string, filePath: string, documentType: string): Promise<void> => {
     try {
       console.log(`Processando documento ${documentId} do tipo ${documentType}`);
       
-      // For fiscal documents, use document classification service
+      // For fiscal documents, use document classification service 
       if (documentType === 'nota-fiscal') {
-        // Call the document classifier service 
         await classifyDocument(documentId, filePath);
-      } else if (documentType === 'extrato') {
-        // For bank statements, could trigger bank reconciliation process
-        console.log('Processo de conciliação bancária iniciado para o extrato');
       } else {
-        // For other document types
         console.log(`Documento ${documentId} registrado para revisão manual`);
       }
     } catch (error) {

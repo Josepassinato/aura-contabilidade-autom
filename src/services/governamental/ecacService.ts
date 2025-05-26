@@ -21,7 +21,7 @@ export interface CertidaoNegativaResponse {
   dataValidade: string;
   numero: string;
   url?: string;
-  cnpj?: string; // Added to allow cnpj property
+  cnpj?: string;
   pendencias?: Array<{
     tipo: string;
     descricao: string;
@@ -43,6 +43,13 @@ export async function autenticarEcac(credentials: EcacCredentials): Promise<bool
   try {
     // Em produção, esta função realizaria uma chamada real à API do e-CAC
     console.log('Tentativa de autenticação no e-CAC');
+    
+    toast({
+      title: 'Integração não configurada',
+      description: 'A integração com o e-CAC ainda não foi implementada',
+      variant: 'destructive'
+    });
+    
     return false;
   } catch (error: any) {
     console.error('Erro na autenticação do e-CAC:', error);
@@ -60,6 +67,13 @@ export async function obterCertidaoNegativa(cnpj: string): Promise<CertidaoNegat
   try {
     // Em produção, esta função realizaria uma chamada real à API do e-CAC
     console.log(`Solicitando certidão negativa para CNPJ ${cnpj}`);
+    
+    toast({
+      title: 'Serviço não disponível',
+      description: 'A consulta de certidão negativa ainda não foi implementada',
+      variant: 'destructive'
+    });
+    
     return null;
   } catch (error: any) {
     console.error('Erro ao obter Certidão Negativa:', error);
@@ -77,6 +91,13 @@ export async function obterDeclaracoes(cnpj: string, ano: number): Promise<Decla
   try {
     // Em produção, esta função realizaria uma chamada real à API do e-CAC
     console.log(`Solicitando declarações para CNPJ ${cnpj} do ano ${ano}`);
+    
+    toast({
+      title: 'Serviço não disponível',
+      description: 'A consulta de declarações ainda não foi implementada',
+      variant: 'destructive'
+    });
+    
     return [];
   } catch (error: any) {
     console.error('Erro ao obter Declarações:', error);
@@ -100,6 +121,13 @@ export async function verificarDebitosFiscais(cnpj: string): Promise<Array<{
   try {
     // Em produção, esta função realizaria uma chamada real à API do e-CAC
     console.log(`Verificando débitos fiscais para CNPJ ${cnpj}`);
+    
+    toast({
+      title: 'Serviço não disponível',
+      description: 'A verificação de débitos fiscais ainda não foi implementada',
+      variant: 'destructive'
+    });
+    
     return [];
   } catch (error: any) {
     console.error('Erro ao verificar débitos fiscais:', error);
