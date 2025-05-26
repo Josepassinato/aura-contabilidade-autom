@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,24 +58,24 @@ const Login = () => {
         </div>
         
         <div className="text-center mb-8">
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">ContaFácil</h1>
-          <p className="text-muted-foreground mt-3 text-2xl sm:text-3xl">Sistema de gestão contábil</p>
+          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight">ContaFácil</h1>
+          <p className="text-muted-foreground mt-3 text-3xl sm:text-4xl">Sistema de gestão contábil</p>
         </div>
         
         <div className="flex-1 flex items-center justify-center">
           <Card className="border shadow-lg w-full">
             <CardHeader className="p-8">
-              <CardTitle className="text-4xl sm:text-5xl">Acesso ao Sistema</CardTitle>
-              <CardDescription className="text-xl sm:text-2xl mt-3">
+              <CardTitle className="text-5xl sm:text-6xl">Acesso ao Sistema</CardTitle>
+              <CardDescription className="text-2xl sm:text-3xl mt-3">
                 Faça login ou cadastre-se para acessar o sistema
               </CardDescription>
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-16 mb-8">
-                  <TabsTrigger value="login" className="text-xl sm:text-2xl font-medium">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-xl sm:text-2xl font-medium">Cadastro</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 h-20 mb-8">
+                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium">Cadastro</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login" className="mt-0">

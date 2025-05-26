@@ -29,7 +29,7 @@ export const QuickLoginButtons = () => {
 
   return (
     <div className="mt-8">
-      <div className="text-xl text-center mb-6 text-muted-foreground">
+      <div className="text-2xl text-center mb-6 text-muted-foreground">
         Acesso rápido para demonstração
       </div>
       <div className="flex flex-col gap-4">
@@ -37,9 +37,9 @@ export const QuickLoginButtons = () => {
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('contador')}
-          className="justify-start h-18 text-xl px-4 py-4"
+          className="justify-start h-20 text-2xl px-4 py-4"
         >
-          <span className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-lg mr-4 font-medium">C</span>
+          <span className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mr-4 font-medium">C</span>
           Entrar como Contador
         </Button>
         
@@ -47,9 +47,9 @@ export const QuickLoginButtons = () => {
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('cliente')}
-          className="justify-start h-18 text-xl px-4 py-4"
+          className="justify-start h-20 text-2xl px-4 py-4"
         >
-          <span className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-lg mr-4 font-medium">E</span>
+          <span className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl mr-4 font-medium">E</span>
           Entrar como Empresa
         </Button>
         
@@ -57,9 +57,9 @@ export const QuickLoginButtons = () => {
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('admin')}
-          className="justify-start h-18 text-xl px-4 py-4"
+          className="justify-start h-20 text-2xl px-4 py-4"
         >
-          <span className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-lg mr-4 font-medium">A</span>
+          <span className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl mr-4 font-medium">A</span>
           Entrar como Administrador
         </Button>
       </div>
