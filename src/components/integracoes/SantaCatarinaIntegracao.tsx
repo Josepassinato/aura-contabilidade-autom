@@ -10,8 +10,9 @@ import {
   SerproIntegraContadorConfig,
   NfceScConfig
 } from "@/services/governamental/sefazScraperService";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Wifi, WifiOff, Database } from "lucide-react";
 import { SefazScrapedDataTable } from './SefazScrapedDataTable';
+import { SefazXmlUploader } from './SefazXmlUploader';
 import { IntegraContadorForm } from './santaCatarina/IntegraContadorForm';
 import { NfceForm } from './santaCatarina/NfceForm';
 
@@ -89,16 +90,29 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
           {clientName && <span className="text-sm font-normal">- {clientName}</span>}
         </CardTitle>
         <CardDescription>
-          Configure a integração com o sistema SEFAZ SC e o Serpro Integra Contador
+          Configure a integração com o sistema SEFAZ SC, Serpro Integra Contador ou envie XMLs manualmente
         </CardDescription>
       </CardHeader>
       
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="integracao">Integra Contador</TabsTrigger>
-            <TabsTrigger value="nfce">NFC-e Santa Catarina</TabsTrigger>
-            <TabsTrigger value="dados">Dados Coletados</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="integracao" className="flex items-center gap-2">
+              <Wifi className="h-4 w-4" />
+              Integra Contador
+            </TabsTrigger>
+            <TabsTrigger value="nfce" className="flex items-center gap-2">
+              <Wifi className="h-4 w-4" />
+              NFC-e Santa Catarina
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="flex items-center gap-2">
+              <WifiOff className="h-4 w-4" />
+              Upload Manual
+            </TabsTrigger>
+            <TabsTrigger value="dados" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Dados Coletados
+            </TabsTrigger>
           </TabsList>
           
           {/* Tab content for Integra Contador */}
@@ -114,6 +128,15 @@ export function SantaCatarinaIntegracao({ clientId, clientName }: SantaCatarinaI
             <NfceForm
               onSubmit={handleNfceSubmit}
               loading={nfceLoading}
+            />
+          </TabsContent>
+
+          {/* Tab content for Upload Manual */}
+          <TabsContent value="upload" className="mt-4">
+            <SefazXmlUploader
+              clientId={clientId}
+              clientName={clientName}
+              onUploadComplete={() => setActiveTab("dados")}
             />
           </TabsContent>
           
