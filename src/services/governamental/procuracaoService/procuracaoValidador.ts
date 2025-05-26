@@ -11,18 +11,24 @@ export async function validarProcuracaoAtiva(procuracaoId: string): Promise<{
   procuracao?: ProcuracaoEletronica;
 }> {
   try {
-    const { data: procuracao, error } = await supabase
+    const { data: procuracaoRaw, error } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
       .eq('id', procuracaoId)
       .single();
 
-    if (error || !procuracao) {
+    if (error || !procuracaoRaw) {
       return {
         valida: false,
         mensagem: 'Procuração não encontrada'
       };
     }
+
+    // Convert to proper type
+    const procuracao: ProcuracaoEletronica = {
+      ...procuracaoRaw,
+      status: procuracaoRaw.status as "pendente" | "emitida" | "expirada" | "cancelada" | "erro"
+    };
 
     const agora = new Date();
     const dataValidade = new Date(procuracao.data_validade);
@@ -68,7 +74,7 @@ export async function validarProcuracaoParaEstado(
   procuracaoId?: string;
 }> {
   try {
-    const { data: procuracoes, error } = await supabase
+    const { data: procuracoesRaw, error } = await supabase
       .from('procuracoes_eletronicas')
       .select('*')
       .eq('client_id', clientId)
@@ -78,12 +84,18 @@ export async function validarProcuracaoParaEstado(
       throw error;
     }
 
-    if (!procuracoes || procuracoes.length === 0) {
+    if (!procuracoesRaw || procuracoesRaw.length === 0) {
       return {
         valida: false,
         mensagem: `Nenhuma procuração encontrada para o estado ${uf}`
       };
     }
+
+    // Convert to proper types
+    const procuracoes: ProcuracaoEletronica[] = procuracoesRaw.map(p => ({
+      ...p,
+      status: p.status as "pendente" | "emitida" | "expirada" | "cancelada" | "erro"
+    }));
 
     const agora = new Date();
     const procuracaoValida = procuracoes.find(p => {

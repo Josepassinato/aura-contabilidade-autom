@@ -897,6 +897,62 @@ export type Database = {
           },
         ]
       }
+      sefaz_xml_uploads: {
+        Row: {
+          client_id: string
+          conteudo_xml: string
+          created_at: string
+          dados_processados: Json | null
+          descricao: string | null
+          id: string
+          nome_arquivo: string
+          status: string
+          tamanho_arquivo: number
+          tipo_documento: string
+          uf: string
+          updated_at: string
+          upload_manual: boolean
+        }
+        Insert: {
+          client_id: string
+          conteudo_xml: string
+          created_at?: string
+          dados_processados?: Json | null
+          descricao?: string | null
+          id?: string
+          nome_arquivo: string
+          status?: string
+          tamanho_arquivo: number
+          tipo_documento: string
+          uf: string
+          updated_at?: string
+          upload_manual?: boolean
+        }
+        Update: {
+          client_id?: string
+          conteudo_xml?: string
+          created_at?: string
+          dados_processados?: Json | null
+          descricao?: string | null
+          id?: string
+          nome_arquivo?: string
+          status?: string
+          tamanho_arquivo?: number
+          tipo_documento?: string
+          uf?: string
+          updated_at?: string
+          upload_manual?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sefaz_xml_uploads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       serpro_api_credentials: {
         Row: {
           ambiente: string

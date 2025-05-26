@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 
 export interface UploadXmlParams {
@@ -267,8 +266,7 @@ async function salvarDadosDebitos(clientId: string, uf: string, debitos: any[]) 
     numero_guia: debito.numero,
     valor: debito.valor,
     data_vencimento: debito.vencimento,
-    status: debito.situacao || 'Pendente',
-    fonte: 'upload_manual'
+    status: debito.situacao || 'Pendente'
   }));
 
   const { error } = await supabase

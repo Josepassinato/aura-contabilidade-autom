@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { upload, FileUp, AlertCircle } from "lucide-react";
+import { Upload, FileUp, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import { uploadSefazXmlManual } from "@/services/governamental/sefaz/xmlUploadService";
@@ -127,7 +127,7 @@ export function SefazXmlUploader({ clientId, clientName, onUploadComplete }: Sef
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <upload className="h-5 w-5" />
+          <Upload className="h-5 w-5" />
           Upload Manual de XML SEFAZ
           {clientName && <span className="text-sm font-normal">- {clientName}</span>}
         </CardTitle>
