@@ -52,29 +52,29 @@ const Login = () => {
   return (
     <div className="min-h-screen w-full bg-muted/30 p-4 flex flex-col">
       <div className="flex-1 flex flex-col w-full">
-        <div className="mb-4">
+        <div className="mb-6">
           <BackButton />
         </div>
         
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">ContaFácil</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Sistema de gestão contábil</p>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">ContaFácil</h1>
+          <p className="text-muted-foreground mt-3 text-xl sm:text-2xl">Sistema de gestão contábil</p>
         </div>
         
         <div className="flex-1 flex items-center justify-center">
           <Card className="border shadow-lg w-full">
-            <CardHeader className="p-6">
-              <CardTitle className="text-2xl">Acesso ao Sistema</CardTitle>
-              <CardDescription className="text-base mt-2">
+            <CardHeader className="p-8">
+              <CardTitle className="text-3xl sm:text-4xl">Acesso ao Sistema</CardTitle>
+              <CardDescription className="text-lg sm:text-xl mt-3">
                 Faça login ou cadastre-se para acessar o sistema
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="p-6 pt-0">
+            <CardContent className="p-8 pt-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-12 mb-6">
-                  <TabsTrigger value="login" className="text-base font-medium">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-base font-medium">Cadastro</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 h-14 mb-8">
+                  <TabsTrigger value="login" className="text-lg sm:text-xl font-medium">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-lg sm:text-xl font-medium">Cadastro</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login" className="mt-0">
@@ -88,7 +88,7 @@ const Login = () => {
               </Tabs>
             </CardContent>
             
-            <CardFooter className="p-6 pt-0">
+            <CardFooter className="p-8 pt-0">
               <AuthFooter />
             </CardFooter>
           </Card>

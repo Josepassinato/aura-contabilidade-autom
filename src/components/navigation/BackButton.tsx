@@ -20,10 +20,10 @@ export const BackButton = ({ className = '' }: BackButtonProps) => {
       variant="ghost" 
       size="sm" 
       onClick={goBack}
-      className={`flex items-center gap-2 h-10 sm:h-9 text-sm sm:text-sm px-3 sm:px-3 ${className}`}
+      className={`flex items-center gap-2 h-12 text-lg px-4 ${className}`}
       title="Voltar à página anterior"
     >
-      <ArrowLeft className="h-4 w-4 sm:h-4 sm:w-4" />
+      <ArrowLeft className="h-5 w-5" />
       <span>Voltar</span>
     </Button>
   );
