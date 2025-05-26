@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UF } from "../estadualIntegration";
@@ -6,7 +7,7 @@ import { consultarSefazPorEstado } from "./estadualApiService";
 import { buscarProcuracaoValidaAutomatica } from "../sefazAutomaticService";
 
 /**
- * Trigger the SEFAZ scraper for a specific client - now using real API integration
+ * Trigger the SEFAZ scraper for a specific client - REAL API integration only
  * @param clientId The ID of the client to scrape data for
  * @param uf The state code (UF) to scrape data from
  * @returns Promise with the scrape result
@@ -20,38 +21,27 @@ export async function triggerSefazScrape(
       throw new Error("Client ID is required");
     }
 
-    console.log(`Iniciando coleta real de dados SEFAZ-${uf} para cliente: ${clientId}`);
+    console.log(`Iniciando coleta REAL de dados SEFAZ-${uf} para cliente: ${clientId}`);
 
-    // Verificar se existe procuração válida
+    // Verificar se existe procuração válida (OBRIGATÓRIO)
     const procuracaoId = await buscarProcuracaoValidaAutomatica(clientId, uf);
     
     if (!procuracaoId) {
-      // Se não tem procuração, usar o método de fallback (edge function simulada)
-      console.log(`Nenhuma procuração encontrada para ${uf}, usando método de fallback`);
+      const errorMessage = `Cliente não possui procuração eletrônica válida para SEFAZ-${uf}. Configure uma procuração eletrônica para acessar os dados reais.`;
       
-      const { data, error } = await supabase.functions.invoke("scrape-sefaz", {
-        body: { clientId, uf },
-      });
-
-      if (error) {
-        console.error("Error invoking scrape-sefaz function:", error);
-        throw new Error(error.message || "Failed to start SEFAZ data scraping");
-      }
-
       toast({
-        title: "Coleta de dados iniciada (simulada)",
-        description: `Processo de coleta simulada da SEFAZ-${uf} iniciado. Configure uma procuração eletrônica para acesso real.`,
+        title: "Procuração eletrônica necessária",
+        description: errorMessage,
         variant: "destructive"
       });
 
       return { 
-        success: true, 
-        data, 
-        count: data?.count || 0 
+        success: false, 
+        error: errorMessage
       };
     }
 
-    // Se tem procuração, usar a integração real
+    // Usar APENAS a integração real
     console.log(`Procuração encontrada (${procuracaoId}), usando integração real`);
     
     const result = await consultarSefazPorEstado(clientId, uf);

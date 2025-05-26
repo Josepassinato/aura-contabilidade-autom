@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Loader2, Download, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { triggerSefazScrape, verificarDisponibilidadeProcuracaoSefaz } from "@/services/governamental/sefazScraperService";
 import { UF } from "@/services/governamental/estadualIntegration";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,6 +23,7 @@ export function SefazScraperButton({
 }: SefazScraperButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [temProcuracao, setTemProcuracao] = useState(false);
+  const [statusChecked, setStatusChecked] = useState(false);
   const [statusIntegracao, setStatusIntegracao] = useState<{
     disponivel: boolean;
     status: string;
@@ -36,9 +37,13 @@ export function SefazScraperButton({
   useEffect(() => {
     const verificarProcuracao = async () => {
       try {
+        console.log(`Verificando procuração para cliente ${clientId} - UF: ${uf}`);
         const status = await verificarStatusIntegracao(clientId, uf);
+        console.log('Status da integração:', status);
+        
         setStatusIntegracao(status);
         setTemProcuracao(status.disponivel);
+        setStatusChecked(true);
       } catch (error) {
         console.error("Erro ao verificar procuração:", error);
         setTemProcuracao(false);
@@ -48,6 +53,7 @@ export function SefazScraperButton({
           mensagem: 'Erro ao verificar status',
           tipo_integracao: 'procuracao_eletronica'
         });
+        setStatusChecked(true);
       }
     };
     
@@ -57,34 +63,21 @@ export function SefazScraperButton({
   }, [clientId, uf, verificarStatusIntegracao]);
 
   const handleScrape = async () => {
+    if (!temProcuracao) {
+      return; // Não permite coleta sem procuração
+    }
+
     setIsLoading(true);
     try {
-      if (temProcuracao) {
-        // Usar integração real
-        console.log(`Usando integração real para SEFAZ-${uf}`);
-        const success = await consultarDados(clientId, uf);
-        
-        if (success && onSuccess) {
-          // Buscar dados atualizados para passar para callback
-          onSuccess({ 
-            metodo: 'integracao_real', 
-            uf, 
-            procuracao: true 
-          });
-        }
-      } else {
-        // Usar método tradicional (simulado)
-        console.log(`Usando método tradicional para SEFAZ-${uf}`);
-        const result = await triggerSefazScrape(clientId, uf);
-        
-        if (result.success && onSuccess) {
-          onSuccess({
-            metodo: 'simulado',
-            uf,
-            procuracao: false,
-            data: result.data
-          });
-        }
+      console.log(`Usando integração REAL para SEFAZ-${uf}`);
+      const success = await consultarDados(clientId, uf);
+      
+      if (success && onSuccess) {
+        onSuccess({ 
+          metodo: 'integracao_real', 
+          uf, 
+          procuracao: true 
+        });
       }
     } catch (error) {
       console.error("Erro ao coletar dados da SEFAZ:", error);
@@ -94,34 +87,79 @@ export function SefazScraperButton({
   };
 
   const getStatusBadge = () => {
+    if (!statusChecked) {
+      return (
+        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 flex items-center gap-1">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Verificando...
+        </Badge>
+      );
+    }
+
     if (!statusIntegracao) return null;
 
     if (statusIntegracao.disponivel) {
       return (
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
           <CheckCircle2 className="h-3 w-3" />
-          Integração Real
+          Conectado
         </Badge>
       );
     } else {
       return (
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3" />
-          Modo Simulado
+        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
+          <XCircle className="h-3 w-3" />
+          Desconectado
         </Badge>
       );
     }
   };
 
   const getTooltipContent = () => {
-    if (!statusIntegracao) return "Carregando status...";
+    if (!statusChecked) return "Verificando status da integração...";
+    if (!statusIntegracao) return "Erro ao verificar status";
 
     if (statusIntegracao.disponivel) {
-      return `Usando integração real com SEFAZ-${uf} via procuração eletrônica. Os dados coletados serão reais e atualizados.`;
+      return `Integração real ativa com SEFAZ-${uf} via procuração eletrônica. Os dados coletados serão reais e atualizados.`;
     } else {
-      return `Dados simulados para SEFAZ-${uf}. Configure uma procuração eletrônica para acesso real aos dados.`;
+      return `Não há procuração eletrônica válida para SEFAZ-${uf}. Configure uma procuração eletrônica para acessar dados reais.`;
     }
   };
+
+  // Se não tem procuração, mostra botão desabilitado
+  if (statusChecked && !temProcuracao) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled
+                className="flex items-center gap-2 opacity-50"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                Procuração necessária
+              </Button>
+              
+              {getStatusBadge()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="max-w-xs">
+              <p className="font-medium text-red-600">
+                Procuração Eletrônica Necessária
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Configure uma procuração eletrônica válida para acessar dados reais da SEFAZ-{uf}.
+              </p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -132,18 +170,18 @@ export function SefazScraperButton({
               variant="outline" 
               size="sm" 
               onClick={handleScrape} 
-              disabled={isLoading}
+              disabled={isLoading || !temProcuracao || !statusChecked}
               className="flex items-center gap-2"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {temProcuracao ? 'Coletando dados reais...' : 'Coletando dados...'}
+                  Coletando dados reais...
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  {temProcuracao ? `Coletar SEFAZ-${uf} (Real)` : `Coletar SEFAZ-${uf} (Simulado)`}
+                  Coletar SEFAZ-{uf} (Real)
                 </>
               )}
             </Button>
@@ -154,7 +192,7 @@ export function SefazScraperButton({
         <TooltipContent>
           <div className="max-w-xs">
             <p className="font-medium">
-              {temProcuracao ? 'Integração Real Ativa' : 'Modo Simulado'}
+              {temProcuracao ? 'Integração Real Ativa' : 'Integração Não Configurada'}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               {getTooltipContent()}

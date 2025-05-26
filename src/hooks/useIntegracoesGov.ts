@@ -7,6 +7,7 @@ import {
   fetchIntegracoesEstaduais 
 } from "@/services/supabase/integracoesService";
 import { fetchClientById } from "@/services/supabase/clientsService";
+import { verificarDisponibilidadeProcuracaoSefaz } from "@/services/governamental/sefazAutomaticService";
 
 export interface IntegracaoStatus {
   id: string;
@@ -25,7 +26,7 @@ export function useIntegracoesGov() {
   const [showStateDropdown, setShowStateDropdown] = useState(false);
   const [selectedState, setSelectedState] = useState<UF | null>(null);
   
-  // Estado para as integrações
+  // Estado para as integrações - INICIA SEMPRE COMO DESCONECTADO
   const [integracoes, setIntegracoes] = useState<IntegracaoStatus[]>([
     {
       id: "ecac",
@@ -60,7 +61,7 @@ export function useIntegracoesGov() {
     setSelectedClientCnpj(client.cnpj || '');
     
     if (!client.id) {
-      // Resetar integrações para o estado inicial
+      // Resetar integrações para DESCONECTADO
       setIntegracoes([
         {
           id: "ecac",
@@ -99,62 +100,48 @@ export function useIntegracoesGov() {
       }
     }
     
-    // Buscar integrações estaduais do cliente
+    // Verificar status REAL das integrações SEFAZ
     try {
-      const integracoesEstadual = await fetchIntegracoesEstaduais(client.id);
-      
-      // Atualizar status das integrações com SEFAZ
       const updatedIntegracoes = [...integracoes];
       
-      // Atualizar SEFAZ-SP
-      const spIntegracao = integracoesEstadual.find(i => i.uf === "SP");
-      if (spIntegracao) {
-        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_sp");
-        if (index >= 0) {
-          updatedIntegracoes[index] = {
-            ...updatedIntegracoes[index],
-            status: spIntegracao.status,
-            ultimoAcesso: spIntegracao.ultimoAcesso,
-            proximaRenovacao: spIntegracao.proximaRenovacao,
-            mensagem: spIntegracao.mensagemErro
-          };
-        }
+      // Verificar SEFAZ-SP
+      const statusSP = await verificarDisponibilidadeProcuracaoSefaz(client.id, "SP");
+      const indexSP = updatedIntegracoes.findIndex(i => i.id === "sefaz_sp");
+      if (indexSP >= 0) {
+        updatedIntegracoes[indexSP] = {
+          ...updatedIntegracoes[indexSP],
+          status: statusSP.possui ? 'conectado' : 'desconectado',
+          mensagem: statusSP.mensagem
+        };
       }
       
-      // Atualizar SEFAZ-RJ
-      const rjIntegracao = integracoesEstadual.find(i => i.uf === "RJ");
-      if (rjIntegracao) {
-        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_rj");
-        if (index >= 0) {
-          updatedIntegracoes[index] = {
-            ...updatedIntegracoes[index],
-            status: rjIntegracao.status,
-            ultimoAcesso: rjIntegracao.ultimoAcesso,
-            proximaRenovacao: rjIntegracao.proximaRenovacao,
-            mensagem: rjIntegracao.mensagemErro
-          };
-        }
+      // Verificar SEFAZ-RJ
+      const statusRJ = await verificarDisponibilidadeProcuracaoSefaz(client.id, "RJ");
+      const indexRJ = updatedIntegracoes.findIndex(i => i.id === "sefaz_rj");
+      if (indexRJ >= 0) {
+        updatedIntegracoes[indexRJ] = {
+          ...updatedIntegracoes[indexRJ],
+          status: statusRJ.possui ? 'conectado' : 'desconectado',
+          mensagem: statusRJ.mensagem
+        };
       }
       
-      // Atualizar SEFAZ-SC
-      const scIntegracao = integracoesEstadual.find(i => i.uf === "SC");
-      if (scIntegracao) {
-        const index = updatedIntegracoes.findIndex(i => i.id === "sefaz_sc");
-        if (index >= 0) {
-          updatedIntegracoes[index] = {
-            ...updatedIntegracoes[index],
-            status: scIntegracao.status,
-            ultimoAcesso: scIntegracao.ultimoAcesso,
-            proximaRenovacao: scIntegracao.proximaRenovacao,
-            mensagem: scIntegracao.mensagemErro
-          };
-        }
+      // Verificar SEFAZ-SC
+      const statusSC = await verificarDisponibilidadeProcuracaoSefaz(client.id, "SC");
+      const indexSC = updatedIntegracoes.findIndex(i => i.id === "sefaz_sc");
+      if (indexSC >= 0) {
+        updatedIntegracoes[indexSC] = {
+          ...updatedIntegracoes[indexSC],
+          status: statusSC.possui ? 'conectado' : 'desconectado',
+          mensagem: statusSC.mensagem
+        };
       }
       
       setIntegracoes(updatedIntegracoes);
       
     } catch (error) {
-      console.error("Erro ao buscar integrações:", error);
+      console.error("Erro ao verificar integrações:", error);
+      // Manter todas como desconectado em caso de erro
     }
   };
   
@@ -184,7 +171,7 @@ export function useIntegracoesGov() {
         throw new Error("Falha ao salvar configuração");
       }
       
-      // Atualizar o estado local
+      // Atualizar o estado local APENAS se salvou com sucesso
       setIntegracoes(prev => prev.map(integracao => 
         integracao.id === activeTab || (activeTab === "sefaz" && integracao.id === `sefaz_${selectedState?.toLowerCase()}`) ? {
           ...integracao,
