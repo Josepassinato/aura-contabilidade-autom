@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { UF } from "@/services/governamental/estadualIntegration";
 import { 
@@ -56,6 +55,17 @@ export function useIntegracoesGov() {
   ]);
   
   const handleClientSelect = async (client: { id: string, name: string, cnpj?: string }) => {
+    console.log('Cliente selecionado:', client);
+    
+    // Validar se o ID do cliente é um UUID válido
+    if (client.id) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(client.id)) {
+        console.error('ID do cliente não é um UUID válido:', client.id);
+        return;
+      }
+    }
+    
     setSelectedClientId(client.id);
     setSelectedClientName(client.name);
     setSelectedClientCnpj(client.cnpj || '');
@@ -94,9 +104,13 @@ export function useIntegracoesGov() {
     
     // Se não tiver CNPJ, tenta buscar do Supabase
     if (!client.cnpj) {
-      const clientData = await fetchClientById(client.id);
-      if (clientData?.cnpj) {
-        setSelectedClientCnpj(clientData.cnpj);
+      try {
+        const clientData = await fetchClientById(client.id);
+        if (clientData?.cnpj) {
+          setSelectedClientCnpj(clientData.cnpj);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados do cliente:', error);
       }
     }
     

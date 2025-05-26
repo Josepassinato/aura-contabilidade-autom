@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -158,7 +157,7 @@ export function ProcuracaoEletronicaForm({ clientId, clientName }: ProcuracaoEle
   // Formatar CPF para exibição
   const formatCpf = (cpf: string) => {
     if (!cpf) return "";
-    cpf = cpf.replace(/\D/g, ""); // Remove caracteres não numéricos
+    cpf = cpf.replace(/\D/g, "");
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
   };
 
@@ -184,8 +183,37 @@ export function ProcuracaoEletronicaForm({ clientId, clientName }: ProcuracaoEle
 
   // Lidar com o envio do formulário
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!clientId) {
+      toast({
+        title: "Erro de validação",
+        description: "ID do cliente não encontrado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar se clientId é um UUID válido
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(clientId)) {
+      toast({
+        title: "Erro de validação",
+        description: "ID do cliente deve ser um UUID válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      console.log('Dados para emissão de procuração:', {
+        client_id: clientId,
+        certificado_id: data.certificadoId,
+        procurador_cpf: data.procuradorCpf,
+        procurador_nome: data.procuradorNome,
+        servicos_autorizados: data.servicosAutorizados,
+        validade_dias: data.validadeDias
+      });
+
       const response = await emitirProcuracao({
         client_id: clientId,
         certificado_id: data.certificadoId,
@@ -233,6 +261,7 @@ export function ProcuracaoEletronicaForm({ clientId, clientName }: ProcuracaoEle
         });
       }
     } catch (error: any) {
+      console.error('Erro ao emitir procuração:', error);
       toast({
         title: "Erro na emissão",
         description: error.message || "Ocorreu um erro ao emitir a procuração",
