@@ -28,18 +28,18 @@ export const QuickLoginButtons = () => {
   };
 
   return (
-    <div className="mt-4 sm:mt-6">
-      <div className="text-xs sm:text-sm text-center mb-2 sm:mb-3 text-muted-foreground">
+    <div className="mt-6 sm:mt-6">
+      <div className="text-sm sm:text-sm text-center mb-4 sm:mb-3 text-muted-foreground">
         Acesso rápido para demonstração
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3 sm:gap-2">
         <Button 
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('contador')}
-          className="justify-start h-9 sm:h-10 text-xs sm:text-sm"
+          className="justify-start h-12 sm:h-10 text-base sm:text-sm"
         >
-          <span className="w-4 h-4 sm:w-5 sm:h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs mr-2">C</span>
+          <span className="w-6 h-6 sm:w-5 sm:h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm sm:text-xs mr-3 sm:mr-2">C</span>
           Entrar como Contador
         </Button>
         
@@ -47,9 +47,9 @@ export const QuickLoginButtons = () => {
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('cliente')}
-          className="justify-start h-9 sm:h-10 text-xs sm:text-sm"
+          className="justify-start h-12 sm:h-10 text-base sm:text-sm"
         >
-          <span className="w-4 h-4 sm:w-5 sm:h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-2">E</span>
+          <span className="w-6 h-6 sm:w-5 sm:h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm sm:text-xs mr-3 sm:mr-2">E</span>
           Entrar como Empresa
         </Button>
         
@@ -57,9 +57,9 @@ export const QuickLoginButtons = () => {
           type="button" 
           variant="outline" 
           onClick={() => quickLogin('admin')}
-          className="justify-start h-9 sm:h-10 text-xs sm:text-sm"
+          className="justify-start h-12 sm:h-10 text-base sm:text-sm"
         >
-          <span className="w-4 h-4 sm:w-5 sm:h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs mr-2">A</span>
+          <span className="w-6 h-6 sm:w-5 sm:h-5 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm sm:text-xs mr-3 sm:mr-2">A</span>
           Entrar como Administrador
         </Button>
       </div>
