@@ -72,13 +72,13 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-medium">Email</FormLabel>
+              <FormLabel className="text-xl font-medium">Email</FormLabel>
               <FormControl>
                 <Input
                   placeholder="seu@email.com"
@@ -86,10 +86,10 @@ export function LoginForm() {
                   {...field}
                   autoComplete="email"
                   disabled={loading}
-                  className="h-14 text-lg px-4 py-4"
+                  className="h-16 text-xl px-4 py-4"
                 />
               </FormControl>
-              <FormMessage className="text-base" />
+              <FormMessage className="text-lg" />
             </FormItem>
           )}
         />
@@ -98,7 +98,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-lg font-medium">Senha</FormLabel>
+              <FormLabel className="text-xl font-medium">Senha</FormLabel>
               <FormControl>
                 <Input
                   placeholder="******"
@@ -106,14 +106,14 @@ export function LoginForm() {
                   {...field}
                   autoComplete="current-password"
                   disabled={loading}
-                  className="h-14 text-lg px-4 py-4"
+                  className="h-16 text-xl px-4 py-4"
                 />
               </FormControl>
-              <FormMessage className="text-base" />
+              <FormMessage className="text-lg" />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-14 text-lg font-medium mt-8" disabled={loading}>
+        <Button type="submit" className="w-full h-16 text-xl font-medium mt-8" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-6 w-6 animate-spin" />

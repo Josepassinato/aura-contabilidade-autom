@@ -12,7 +12,7 @@ export const BackButton = ({ className = '' }: BackButtonProps) => {
   const navigate = useNavigate();
 
   const goBack = () => {
-    navigate(-1); // Navigate to the previous page in history
+    navigate(-1);
   };
 
   return (
@@ -20,10 +20,10 @@ export const BackButton = ({ className = '' }: BackButtonProps) => {
       variant="ghost" 
       size="sm" 
       onClick={goBack}
-      className={`flex items-center gap-2 h-12 text-lg px-4 ${className}`}
+      className={`flex items-center gap-2 h-14 text-xl px-4 ${className}`}
       title="Voltar à página anterior"
     >
-      <ArrowLeft className="h-5 w-5" />
+      <ArrowLeft className="h-6 w-6" />
       <span>Voltar</span>
     </Button>
   );
