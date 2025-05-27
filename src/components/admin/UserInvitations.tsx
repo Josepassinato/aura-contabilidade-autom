@@ -42,12 +42,28 @@ export const UserInvitations = () => {
   const loadInvitations = async () => {
     try {
       const { data, error } = await supabase
-        .from('user_invitations' as any)
+        .from('user_invitations')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvitations((data as UserInvitation[]) || []);
+      
+      // Transform the data to match our UserInvitation interface
+      const transformedData: UserInvitation[] = (data || []).map(item => ({
+        id: item.id,
+        email: item.email,
+        role: item.role as 'admin' | 'accountant' | 'client',
+        token: item.token,
+        status: item.status as 'pending' | 'accepted' | 'expired',
+        invited_by: item.invited_by,
+        invited_by_name: item.invited_by_name,
+        expires_at: item.expires_at,
+        accepted_at: item.accepted_at,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      }));
+      
+      setInvitations(transformedData);
     } catch (error) {
       console.error('Erro ao carregar convites:', error);
       toast({
@@ -71,7 +87,7 @@ export const UserInvitations = () => {
     try {
       // Verificar se já existe um convite pendente para este email
       const { data: existingInvite } = await supabase
-        .from('user_invitations' as any)
+        .from('user_invitations')
         .select('id')
         .eq('email', data.email)
         .eq('status', 'pending')
@@ -103,7 +119,7 @@ export const UserInvitations = () => {
       };
 
       const { error } = await supabase
-        .from('user_invitations' as any)
+        .from('user_invitations')
         .insert(invitationData);
 
       if (error) throw error;
@@ -139,7 +155,7 @@ export const UserInvitations = () => {
   const deleteInvitation = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('user_invitations' as any)
+        .from('user_invitations')
         .delete()
         .eq('id', id);
 

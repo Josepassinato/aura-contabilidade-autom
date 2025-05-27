@@ -56,7 +56,7 @@ export const InviteSignupForm = () => {
 
       try {
         const { data, error } = await supabase
-          .from('user_invitations' as any)
+          .from('user_invitations')
           .select('id, email, role, invited_by_name, expires_at')
           .eq('token', token)
           .eq('status', 'pending')
@@ -75,7 +75,22 @@ export const InviteSignupForm = () => {
           return;
         }
 
-        setInvitation(data as UserInvitation);
+        // Transform the data to match our UserInvitation interface
+        const transformedInvitation: UserInvitation = {
+          id: data.id,
+          email: data.email,
+          role: data.role as 'admin' | 'accountant' | 'client',
+          token: token,
+          status: 'pending',
+          invited_by: null,
+          invited_by_name: data.invited_by_name,
+          expires_at: data.expires_at,
+          accepted_at: null,
+          created_at: '',
+          updated_at: '',
+        };
+
+        setInvitation(transformedInvitation);
         form.setValue('email', data.email);
         setValidatingInvite(false);
       } catch (error) {
@@ -132,7 +147,7 @@ export const InviteSignupForm = () => {
         };
 
         await supabase
-          .from('user_invitations' as any)
+          .from('user_invitations')
           .update(updateData)
           .eq('id', invitation.id);
 
