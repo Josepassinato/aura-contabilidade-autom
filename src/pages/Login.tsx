@@ -58,7 +58,7 @@ const Login = () => {
         </div>
         
         <div className="text-center mb-8">
-          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight">ContaFácil</h1>
+          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight">contaflows</h1>
           <p className="text-muted-foreground mt-3 text-3xl sm:text-4xl">Sistema de gestão contábil</p>
         </div>
         
