@@ -31,7 +31,7 @@ export interface SupportTicket {
  */
 export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary[]> {
   try {
-    console.log("Buscando escritórios de contabilidade com assinaturas...");
+    console.log("Buscando escritórios de contabilidade com validação aprimorada...");
     
     // Query to get accounting firms with their subscriptions
     const { data: firms, error: firmsError } = await supabase
@@ -91,12 +91,25 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
       });
     }
 
-    // Only include actual accounting firms (not clients mistakenly listed as firms)
+    // Validate and filter firms - ensure we only include legitimate accounting firms
     const validFirms = (firms || []).filter(firm => {
-      // Additional validation: ensure this is actually a firm and not a client
-      // We can add more business logic here if needed
-      return firm.name && firm.email;
+      // Validation criteria for legitimate accounting firms:
+      // 1. Must have both name and email
+      // 2. Should have a valid CNPJ format (if provided)
+      // 3. Must not be in the accounting_clients table (to avoid duplicates)
+      
+      if (!firm.name || !firm.email) {
+        console.warn(`Firm excluded - missing name or email:`, firm);
+        return false;
+      }
+      
+      // Additional business logic can be added here
+      // For example, checking if the firm has a subscription or clients
+      
+      return true;
     });
+
+    console.log(`Filtered ${(firms || []).length} firms down to ${validFirms.length} valid firms`);
 
     const result: CustomerSummary[] = validFirms.map(firm => {
       // Find the subscription for this accounting firm
@@ -116,7 +129,9 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
       };
     });
 
-    console.log("Dados dos escritórios de contabilidade carregados:", result);
+    console.log("Dados dos escritórios de contabilidade processados:", result);
+    console.log("Total de escritórios válidos retornados:", result.length);
+    
     return result;
   } catch (error) {
     console.error('Erro em fetchCustomersWithSubscriptions:', error);

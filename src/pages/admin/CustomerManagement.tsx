@@ -39,30 +39,46 @@ const CustomerManagement = () => {
     setIsLoading(true);
     
     try {
-      console.log("Carregando dados das contabilidades após correção...");
+      console.log("=== INÍCIO DO CARREGAMENTO DE DADOS ===");
+      console.log("Carregando dados com validação aprimorada...");
+      
       const [customersData, ticketsData] = await Promise.all([
         fetchCustomersWithSubscriptions(),
         fetchSupportTickets()
       ]);
       
+      console.log("=== RESULTADOS DO CARREGAMENTO ===");
+      console.log("Escritórios de contabilidade carregados:", customersData.length);
+      console.log("Detalhes dos escritórios:", customersData);
+      console.log("Tickets de suporte carregados:", ticketsData.length);
+      
       setCustomers(customersData);
       setTickets(ticketsData);
-      console.log("Dados carregados - contabilidades válidas:", customersData.length);
-      console.log("Estrutura corrigida - apenas escritórios de contabilidade reais:", customersData);
+      
+      // Validação adicional no frontend
+      if (customersData.length === 0) {
+        console.warn("⚠️  ATENÇÃO: Nenhum escritório de contabilidade foi carregado!");
+      } else if (customersData.length === 1) {
+        console.log("✅ Resultado esperado: Apenas 1 escritório de contabilidade encontrado");
+      } else {
+        console.warn(`⚠️  POSSÍVEL PROBLEMA: ${customersData.length} escritórios encontrados - verificar se são todos legítimos`);
+      }
+      
+      console.log("=== FIM DO CARREGAMENTO ===");
     } catch (error) {
-      console.error("Erro ao carregar dados das contabilidades:", error);
+      console.error("❌ ERRO CRÍTICO no carregamento dos dados:", error);
     } finally {
       setIsLoading(false);
     }
   };
   
   const handleRefresh = () => {
-    console.log("Atualizando dados das contabilidades...");
+    console.log("🔄 Iniciando atualização manual dos dados...");
     loadData();
   };
   
   const handleSendMessage = (customerIds: string[]) => {
-    console.log("Enviando mensagem para contabilidades:", customerIds);
+    console.log("📧 Enviando mensagem para escritórios:", customerIds);
     setSelectedCustomerIds(customerIds);
     setBulkEmailOpen(true);
   };
@@ -110,6 +126,12 @@ const CustomerManagement = () => {
             <p className="text-muted-foreground">
               Gerencie assinaturas e comunicação com os escritórios de contabilidade parceiros
             </p>
+            {/* Debug info for development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
+                Debug: {customers.length} escritório(s) carregado(s)
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2">
@@ -122,7 +144,9 @@ const CustomerManagement = () => {
         
         <Tabs defaultValue="customers" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="customers">Contabilidades</TabsTrigger>
+            <TabsTrigger value="customers">
+              Contabilidades ({customers.length})
+            </TabsTrigger>
             <TabsTrigger value="support">Suporte</TabsTrigger>
           </TabsList>
           
