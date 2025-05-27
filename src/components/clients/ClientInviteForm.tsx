@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +56,7 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
         .select('token')
         .eq('email', client.email)
         .eq('status', 'pending')
-        .maybeSingle(); // Changed from .single() to .maybeSingle() to handle no results
+        .maybeSingle();
 
       console.log('Existing invite check result:', { data: existingInvite, error: checkError });
 
