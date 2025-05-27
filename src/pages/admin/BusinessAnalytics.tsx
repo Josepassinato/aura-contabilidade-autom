@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { MetricsOverview } from "@/components/admin/analytics/MetricsOverview";
@@ -15,7 +14,7 @@ import {
   MonthlyGrowth,
   RevenueTrend,
   PlanDistribution
-} from "@/services/supabase/businessAnalyticsService";
+} from "@/services/supabase/analytics";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Download, LogOut, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
