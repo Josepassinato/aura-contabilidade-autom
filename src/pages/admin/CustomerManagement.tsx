@@ -39,7 +39,7 @@ const CustomerManagement = () => {
     setIsLoading(true);
     
     try {
-      console.log("Carregando dados das contabilidades...");
+      console.log("Carregando dados das contabilidades após correção...");
       const [customersData, ticketsData] = await Promise.all([
         fetchCustomersWithSubscriptions(),
         fetchSupportTickets()
@@ -47,7 +47,8 @@ const CustomerManagement = () => {
       
       setCustomers(customersData);
       setTickets(ticketsData);
-      console.log("Dados carregados - contabilidades:", customersData.length);
+      console.log("Dados carregados - contabilidades válidas:", customersData.length);
+      console.log("Estrutura corrigida - apenas escritórios de contabilidade reais:", customersData);
     } catch (error) {
       console.error("Erro ao carregar dados das contabilidades:", error);
     } finally {

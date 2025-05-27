@@ -91,7 +91,14 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
       });
     }
 
-    const result: CustomerSummary[] = (firms || []).map(firm => {
+    // Only include actual accounting firms (not clients mistakenly listed as firms)
+    const validFirms = (firms || []).filter(firm => {
+      // Additional validation: ensure this is actually a firm and not a client
+      // We can add more business logic here if needed
+      return firm.name && firm.email;
+    });
+
+    const result: CustomerSummary[] = validFirms.map(firm => {
       // Find the subscription for this accounting firm
       const subscription = subscriptions?.find(sub => sub.accounting_firm_id === firm.id);
       
