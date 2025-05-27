@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkForAuthLimboState();
     
     // 1. Set up auth event listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log('Auth state changed:', event);
       
       // Update session and user states immediately (synchronous)
@@ -116,9 +116,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      const profile = await getUserProfile(userId);
-      if (profile) {
-        setUserProfile(profile);
+      // Fetch real profile from user_profiles table
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      if (data) {
+        setUserProfile({
+          id: data.id,
+          email: data.email,
+          name: data.full_name,
+          role: data.role as UserRole,
+          full_name: data.full_name,
+          company_id: data.company_id
+        });
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -166,50 +184,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(false);
   };
 
-  // Login
+  // Login with real authentication
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // For test/demo environment
-      if (email && password) {
-        let role = 'accountant';
-        let name = 'Contador Teste';
-        
-        if (email.includes('cliente')) {
-          role = 'client';
-          name = 'Empresa Cliente';
-        } else if (email.includes('admin')) {
-          role = 'admin';
-          name = 'Admin Contaflix';
+      // Clear previous auth state
+      cleanupAuthState();
+      
+      // Use real Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        // Check if it's a demo login
+        if (email && password) {
+          let role = 'accountant';
+          let name = 'Contador Teste';
+          
+          if (email.includes('cliente')) {
+            role = 'client';
+            name = 'Empresa Cliente';
+          } else if (email.includes('admin')) {
+            role = 'admin';
+            name = 'Admin Contaflix';
+          }
+          
+          // Setup mock session for demo
+          localStorage.setItem('mock_session', 'true');
+          localStorage.setItem('user_role', role);
+          
+          setupMockSession(role);
+          
+          toast({
+            title: "Login bem-sucedido (Demo)",
+            description: `Bem-vindo, ${name}!`,
+          });
+          
+          return { success: true, error: null };
         }
         
-        // Clear previous auth state
-        cleanupAuthState();
-        
-        // Setup mock session
-        localStorage.setItem('mock_session', 'true');
-        localStorage.setItem('user_role', role);
-        
-        // Create mock user and session
-        setupMockSession(role);
-        
+        throw error;
+      }
+      
+      if (data.user) {
         toast({
           title: "Login bem-sucedido",
-          description: `Bem-vindo, ${name}!`,
+          description: "Bem-vindo de volta!",
         });
         
         return { success: true, error: null };
       }
+      
       return { success: false, error: 'Credenciais inválidas' };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in login:', error);
       toast({
         title: "Falha no login",
-        description: "Não foi possível efetuar o login",
+        description: error.message || "Não foi possível efetuar o login",
         variant: "destructive"
       });
-      return { success: false, error: 'Falha na autenticação' };
+      return { success: false, error: error.message || 'Falha na autenticação' };
     } finally {
       setIsLoading(false);
     }
@@ -222,6 +259,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Clear mock session data
       cleanupAuthState();
+      
+      // Try real Supabase logout
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        // Continue even if this fails
+      }
       
       // Reset states
       setIsAuthenticated(false);
@@ -267,30 +311,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      // Mock signup for tests
-      if (email && password) {
+      // Use real Supabase signup
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: userData.full_name || userData.name,
+            role: userData.role || 'client',
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
         toast({
           title: "Conta criada",
           description: "Sua conta foi criada com sucesso",
         });
-        
-        await login(email, password);
         return { error: null };
       }
-      toast({
-        title: "Erro no cadastro",
-        description: "Credenciais inválidas",
-        variant: "destructive"
-      });
-      return { error: new Error('Credenciais inválidas') };
-    } catch (error) {
+
+      return { error: new Error('Falha ao criar conta') };
+    } catch (error: any) {
       console.error('Error in SignUp:', error);
       toast({
         title: "Erro no cadastro",
-        description: error instanceof Error ? error.message : "Não foi possível criar sua conta",
+        description: error.message || "Não foi possível criar sua conta",
         variant: "destructive"
       });
-      return { error: new Error('Falha no cadastro') };
+      return { error: new Error(error.message || 'Falha no cadastro') };
     }
   };
 

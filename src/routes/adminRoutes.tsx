@@ -6,6 +6,7 @@ import BusinessAnalytics from '../pages/admin/BusinessAnalytics';
 import CustomerManagement from '../pages/admin/CustomerManagement';
 import UsageMetrics from '../pages/admin/UsageMetrics';
 import OpenAIManagement from '../pages/admin/OpenAIManagement';
+import UserManagement from '../pages/UserManagement';
 
 // Export an array of Route elements
 export const adminRoutes = [
@@ -32,6 +33,11 @@ export const adminRoutes = [
   <Route key="admin-openai-management" path="/admin/openai-management" element={
     <AdminRoute>
       <OpenAIManagement />
+    </AdminRoute>
+  } />,
+  <Route key="admin-user-management" path="/admin/user-management" element={
+    <AdminRoute>
+      <UserManagement />
     </AdminRoute>
   } />,
 ];

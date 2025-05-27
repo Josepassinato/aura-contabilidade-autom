@@ -9,6 +9,7 @@ import OnboardingWelcome from '../pages/OnboardingWelcome';
 import Onboarding from '../pages/Onboarding';
 import ClientAccess from '../pages/ClientAccess';
 import ClientPortal from '../pages/ClientPortal';
+import InviteSignup from '../pages/InviteSignup';
 import NotFound from '../pages/NotFound';
 
 // Export an array of Route elements instead of a component
@@ -20,6 +21,7 @@ export const publicRoutes = [
   <Route key="onboarding-welcome" path="/onboarding-welcome" element={<OnboardingWelcome />} />,
   <Route key="onboarding" path="/onboarding" element={<Onboarding />} />,
   <Route key="client-access" path="/client-access" element={<ClientAccess />} />,
+  <Route key="invite-signup" path="/invite-signup" element={<InviteSignup />} />,
   
   /* Client portal routes */
   <Route key="client-portal" path="/client-portal/*" element={<ClientPortal />} />,

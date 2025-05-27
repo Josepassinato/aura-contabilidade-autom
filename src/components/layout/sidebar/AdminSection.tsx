@@ -1,64 +1,78 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  BarChart2, 
-  Users, 
-  Activity,
-  Settings,
-  Brain
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BarChart3, Settings, Users, TrendingUp, Activity, Brain } from 'lucide-react';
 
-export function AdminSection() {
-  const { pathname } = useLocation();
+export const AdminSection = () => {
+  const location = useLocation();
+  
+  const isActive = (path: string) => location.pathname === path;
   
   return (
     <div className="space-y-1">
-      <Link
-        to="/admin/business-analytics"
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
-          pathname === '/admin/business-analytics' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
-        }`}
-      >
-        <BarChart2 className="h-4 w-4" />
-        <span>Indicadores de Negócio</span>
-      </Link>
-      <Link
-        to="/admin/customer-management"
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
-          pathname === '/admin/customer-management' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
-        }`}
-      >
-        <Users className="h-4 w-4" />
-        <span>Gerenciar Clientes</span>
-      </Link>
-      <Link
-        to="/admin/usage-metrics"
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
-          pathname === '/admin/usage-metrics' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
-        }`}
-      >
-        <Activity className="h-4 w-4" />
-        <span>Métricas de Uso</span>
-      </Link>
-      <Link
-        to="/admin/openai-management"
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
-          pathname === '/admin/openai-management' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
-        }`}
-      >
-        <Brain className="h-4 w-4" />
-        <span>Gerenciar IA</span>
-      </Link>
-      <Link
-        to="/settings"
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:text-primary ${
-          pathname === '/settings' ? 'bg-muted font-medium text-primary' : 'text-muted-foreground'
-        }`}
-      >
-        <Settings className="h-4 w-4" />
-        <span>Configurações</span>
-      </Link>
+      <div className="px-3 py-2">
+        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          Administração
+        </h2>
+      </div>
+      
+      <div className="px-3 space-y-1">
+        <Button 
+          variant={isActive('/admin/business-analytics') ? 'secondary' : 'ghost'} 
+          className="w-full justify-start" 
+          asChild
+        >
+          <Link to="/admin/business-analytics">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics
+          </Link>
+        </Button>
+        
+        <Button 
+          variant={isActive('/admin/customer-management') ? 'secondary' : 'ghost'} 
+          className="w-full justify-start" 
+          asChild
+        >
+          <Link to="/admin/customer-management">
+            <Users className="mr-2 h-4 w-4" />
+            Clientes
+          </Link>
+        </Button>
+        
+        <Button 
+          variant={isActive('/admin/usage-metrics') ? 'secondary' : 'ghost'} 
+          className="w-full justify-start" 
+          asChild
+        >
+          <Link to="/admin/usage-metrics">
+            <Activity className="mr-2 h-4 w-4" />
+            Métricas de Uso
+          </Link>
+        </Button>
+        
+        <Button 
+          variant={isActive('/admin/openai-management') ? 'secondary' : 'ghost'} 
+          className="w-full justify-start" 
+          asChild
+        >
+          <Link to="/admin/openai-management">
+            <Brain className="mr-2 h-4 w-4" />
+            Gerenciar OpenAI
+          </Link>
+        </Button>
+        
+        <Button 
+          variant={isActive('/admin/user-management') ? 'secondary' : 'ghost'} 
+          className="w-full justify-start" 
+          asChild
+        >
+          <Link to="/admin/user-management">
+            <Settings className="mr-2 h-4 w-4" />
+            Usuários
+          </Link>
+        </Button>
+      </div>
     </div>
   );
-}
+};

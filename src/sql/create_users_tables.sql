@@ -1,13 +1,13 @@
 
 -- Create tables for user authentication and profiles
 
--- User profiles table
+-- User profiles table (updated to use the enum)
 CREATE TABLE IF NOT EXISTS user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name TEXT NOT NULL,
     email TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('accountant', 'client', 'admin')),
+    role user_role NOT NULL DEFAULT 'client',
     company_id TEXT,
     avatar_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -23,15 +23,15 @@ ON user_profiles
 FOR SELECT 
 USING (auth.uid() = user_id);
 
--- Allow accountants to read all profiles
-CREATE POLICY "Accountants can view all profiles" 
+-- Allow admins to read all profiles
+CREATE POLICY "Admins can view all profiles" 
 ON user_profiles 
 FOR SELECT 
 USING (
   EXISTS (
     SELECT 1 FROM user_profiles 
     WHERE user_id = auth.uid() 
-    AND role = 'accountant'
+    AND role = 'admin'
   )
 );
 
@@ -47,13 +47,18 @@ ON user_profiles
 FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
--- Create function to trigger on new user signup
+-- Create function to trigger on new user signup (updated)
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS TRIGGER AS $$
 BEGIN
   -- Ensure user is in the user_profiles table
   INSERT INTO public.user_profiles (user_id, full_name, email, role)
-  VALUES (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.email), new.email, coalesce(new.raw_user_meta_data->>'role', 'client'))
+  VALUES (
+    new.id, 
+    coalesce(new.raw_user_meta_data->>'full_name', new.email), 
+    new.email, 
+    coalesce((new.raw_user_meta_data->>'role')::user_role, 'client')
+  )
   ON CONFLICT (user_id) DO NOTHING;
   
   RETURN new;
