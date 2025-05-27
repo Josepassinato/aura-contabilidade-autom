@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { Loader2, Mail, Copy, Trash2 } from 'lucide-react';
+import { UserInvitation, CreateInvitationData, UpdateInvitationData } from '@/types/invitations';
 
 const inviteFormSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -23,22 +24,11 @@ const inviteFormSchema = z.object({
 
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
-interface Invitation {
-  id: string;
-  email: string;
-  role: 'admin' | 'accountant' | 'client';
-  status: 'pending' | 'accepted' | 'expired';
-  created_at: string;
-  expires_at: string;
-  token: string;
-  invited_by_name: string;
-}
-
 export const UserInvitations = () => {
   const { toast } = useToast();
   const { userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [invitations, setInvitations] = useState<UserInvitation[]>([]);
   const [loadingInvitations, setLoadingInvitations] = useState(true);
 
   const form = useForm<InviteFormValues>({
@@ -52,12 +42,12 @@ export const UserInvitations = () => {
   const loadInvitations = async () => {
     try {
       const { data, error } = await supabase
-        .from('user_invitations')
+        .from('user_invitations' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvitations(data || []);
+      setInvitations((data as UserInvitation[]) || []);
     } catch (error) {
       console.error('Erro ao carregar convites:', error);
       toast({
@@ -81,7 +71,7 @@ export const UserInvitations = () => {
     try {
       // Verificar se já existe um convite pendente para este email
       const { data: existingInvite } = await supabase
-        .from('user_invitations')
+        .from('user_invitations' as any)
         .select('id')
         .eq('email', data.email)
         .eq('status', 'pending')
@@ -103,16 +93,18 @@ export const UserInvitations = () => {
       expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
 
       // Criar convite
+      const invitationData: CreateInvitationData = {
+        email: data.email,
+        role: data.role,
+        token,
+        expires_at: expiresAt.toISOString(),
+        invited_by: userProfile.id,
+        invited_by_name: userProfile.full_name,
+      };
+
       const { error } = await supabase
-        .from('user_invitations')
-        .insert({
-          email: data.email,
-          role: data.role,
-          token,
-          expires_at: expiresAt.toISOString(),
-          invited_by: userProfile.id,
-          invited_by_name: userProfile.full_name,
-        });
+        .from('user_invitations' as any)
+        .insert(invitationData);
 
       if (error) throw error;
 
@@ -147,7 +139,7 @@ export const UserInvitations = () => {
   const deleteInvitation = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('user_invitations')
+        .from('user_invitations' as any)
         .delete()
         .eq('id', id);
 

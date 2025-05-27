@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { UserInvitation, UpdateInvitationData } from '@/types/invitations';
 
 const inviteSignupSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -24,21 +25,13 @@ const inviteSignupSchema = z.object({
 
 type InviteSignupFormValues = z.infer<typeof inviteSignupSchema>;
 
-interface InvitationData {
-  id: string;
-  email: string;
-  role: 'admin' | 'accountant' | 'client';
-  invited_by_name: string;
-  expires_at: string;
-}
-
 export const InviteSignupForm = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [validatingInvite, setValidatingInvite] = useState(true);
-  const [invitation, setInvitation] = useState<InvitationData | null>(null);
+  const [invitation, setInvitation] = useState<UserInvitation | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
   const token = searchParams.get('token');
@@ -63,7 +56,7 @@ export const InviteSignupForm = () => {
 
       try {
         const { data, error } = await supabase
-          .from('user_invitations')
+          .from('user_invitations' as any)
           .select('id, email, role, invited_by_name, expires_at')
           .eq('token', token)
           .eq('status', 'pending')
@@ -82,7 +75,7 @@ export const InviteSignupForm = () => {
           return;
         }
 
-        setInvitation(data);
+        setInvitation(data as UserInvitation);
         form.setValue('email', data.email);
         setValidatingInvite(false);
       } catch (error) {
@@ -133,12 +126,14 @@ export const InviteSignupForm = () => {
         }
 
         // Marcar convite como aceito
+        const updateData: UpdateInvitationData = {
+          status: 'accepted',
+          accepted_at: new Date().toISOString()
+        };
+
         await supabase
-          .from('user_invitations')
-          .update({ 
-            status: 'accepted',
-            accepted_at: new Date().toISOString()
-          })
+          .from('user_invitations' as any)
+          .update(updateData)
           .eq('id', invitation.id);
 
         toast({
