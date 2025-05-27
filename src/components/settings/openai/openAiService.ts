@@ -1,5 +1,5 @@
 
-import { OpenAiConfigFormValues } from "./schema";
+import { OpenAiConfigFormValues, OpenAiConfigWithApiKey } from "./schema";
 
 // Interface para estatísticas de uso da API
 interface OpenAiUsageStats {
@@ -12,22 +12,22 @@ interface OpenAiUsageStats {
 export const getOpenAiStoredValues = (): OpenAiConfigFormValues => {
   return typeof window !== "undefined" 
     ? {
-        apiKey: localStorage.getItem("openai-api-key") || "",
         model: localStorage.getItem("openai-model") || "gpt-4o-mini",
         temperature: parseFloat(localStorage.getItem("openai-temperature") || "0.7"),
         maxTokens: parseInt(localStorage.getItem("openai-max-tokens") || "4000"),
       }
     : {
-        apiKey: "",
         model: "gpt-4o-mini",
         temperature: 0.7,
         maxTokens: 4000,
       };
 };
 
-export const saveOpenAiConfig = async (data: OpenAiConfigFormValues): Promise<void> => {
+export const saveOpenAiConfig = async (data: OpenAiConfigWithApiKey): Promise<void> => {
   // Store all values in localStorage
-  localStorage.setItem("openai-api-key", data.apiKey);
+  if (data.apiKey) {
+    localStorage.setItem("openai-api-key", data.apiKey);
+  }
   localStorage.setItem("openai-model", data.model);
   localStorage.setItem("openai-temperature", data.temperature.toString());
   localStorage.setItem("openai-max-tokens", data.maxTokens.toString());
@@ -130,9 +130,10 @@ export const resetTokenUsage = (): void => {
 export const getOpenAiConfig = () => {
   const values = getOpenAiStoredValues();
   const usage = getTokenUsageStats();
+  const apiKey = localStorage.getItem("openai-api-key") || "";
   
   return {
-    apiKey: values.apiKey,
+    apiKey,
     model: values.model,
     temperature: values.temperature,
     maxTokens: values.maxTokens,

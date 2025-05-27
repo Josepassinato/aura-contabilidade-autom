@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
 import { useAuth } from '@/contexts/auth';
-import { isOpenAIConfigured } from '@/components/settings/openai/openAiService';
+import { isOpenAIConfigured } from '@/components/settings/openai/supabaseOpenAiService';
 import { useReportGeneration } from './voice-assistant/useReportGeneration';
 import { useCommandProcessor } from './voice-assistant/useCommandProcessor';
 import { VoiceAssistantContainer } from './voice-assistant/VoiceAssistantContainer';

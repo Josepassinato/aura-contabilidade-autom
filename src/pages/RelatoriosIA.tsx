@@ -9,7 +9,7 @@ import { GeracaoRelatorioPorVoz } from '@/components/relatorios/GeracaoRelatorio
 import { ReportsList } from '@/components/relatorios/ReportsList';
 import { VoiceAssistantConfig } from '@/components/dashboard/voice-assistant/VoiceAssistantConfig';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { isOpenAIConfigured } from '@/components/settings/openai/openAiService';
+import { isOpenAIConfigured } from '@/components/settings/openai/supabaseOpenAiService';
 
 const RelatoriosIA = () => {
   const [isProcessing, setIsProcessing] = useState(false);
