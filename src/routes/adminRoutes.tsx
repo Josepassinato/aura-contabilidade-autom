@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AdminRoute } from '@/components/auth/AdminRoute';
@@ -8,15 +9,13 @@ import UserManagement from '@/pages/admin/UserManagement';
 import OpenAIKeys from '@/pages/admin/OpenAIKeys';
 import PaymentAlerts from '@/pages/admin/PaymentAlerts';
 
-const AdminRoutes = () => (
-  <Routes>
-    <Route path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />
-    <Route path="/admin/business-analytics" element={<AdminRoute component={BusinessAnalytics} />} />
-    <Route path="/admin/usage-metrics" element={<AdminRoute component={UsageMetrics} />} />
-    <Route path="/user-management" element={<AdminRoute component={UserManagement} />} />
-    <Route path="/admin/openai-management" element={<AdminRoute component={OpenAIKeys} />} />
-    <Route path="/admin/payment-alerts" element={<AdminRoute component={PaymentAlerts} />} />
-  </Routes>
-);
+const adminRoutes = [
+  <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
+  <Route key="business-analytics" path="/admin/business-analytics" element={<AdminRoute component={BusinessAnalytics} />} />,
+  <Route key="usage-metrics" path="/admin/usage-metrics" element={<AdminRoute component={UsageMetrics} />} />,
+  <Route key="user-management" path="/user-management" element={<AdminRoute component={UserManagement} />} />,
+  <Route key="openai-management" path="/admin/openai-management" element={<AdminRoute component={OpenAIKeys} />} />,
+  <Route key="payment-alerts" path="/admin/payment-alerts" element={<AdminRoute component={PaymentAlerts} />} />,
+];
 
-export default AdminRoutes;
+export { adminRoutes };
