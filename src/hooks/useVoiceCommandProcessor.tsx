@@ -19,6 +19,7 @@ type Conversation = Array<{type: MessageType, text: string}>;
 export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   
   // Use the hook of natural language processing
@@ -27,6 +28,63 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
   // Add a bot response to the conversation
   const addBotResponse = (text: string, setConversations: React.Dispatch<React.SetStateAction<Conversation>>) => {
     setConversations(prev => [...prev, { type: 'bot', text }]);
+  };
+
+  // Real voice recognition using browser API
+  const startRealVoiceRecognition = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast({
+        title: "Não suportado",
+        description: "Reconhecimento de voz não é suportado neste navegador.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'pt-BR';
+    
+    recognition.onstart = () => {
+      setIsListening(true);
+      setTranscript('Ouvindo...');
+      toast({
+        title: "Reconhecimento de Voz",
+        description: "Ouvindo... Fale agora.",
+      });
+    };
+    
+    recognition.onresult = (event: any) => {
+      const result = event.results[0][0].transcript;
+      setTranscript(result);
+      console.log('Reconhecimento de voz resultado:', result);
+      
+      // Process the recognized speech
+      setTimeout(() => {
+        setIsListening(false);
+        return result;
+      }, 500);
+    };
+    
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      setTranscript('');
+      console.error('Erro no reconhecimento de voz:', event.error);
+      toast({
+        title: "Erro no reconhecimento",
+        description: "Não foi possível reconhecer sua voz. Tente novamente.",
+        variant: "destructive"
+      });
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    return recognition;
   };
 
   // Process voice or text command using NLP with access to client-specific data
@@ -50,6 +108,8 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
     setManualInput('');
     
     try {
+      console.log('Processando comando com NLP:', command);
+      
       // Use natural language processor to identify intent
       const nlpResult = await processCommand(command);
       console.log('NLP Result:', nlpResult);
@@ -71,6 +131,8 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
       // Add bot response to conversation history
       setConversations(prev => [...prev, {type: 'bot', text: responseText}]);
       
+      console.log('Resposta gerada:', responseText);
+      
       // Notify the user
       toast({
         title: "AI Assistant",
@@ -87,7 +149,7 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
     }
   };
 
-  // Start voice recognition simulation
+  // Start voice recognition - real implementation
   const startVoiceRecognition = (
     openAIConfigured: boolean,
     addBotResponse: (text: string) => void,
@@ -98,43 +160,22 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
       return;
     }
     
-    toast({
-      title: "Reconhecimento de Voz",
-      description: "Ouvindo... Diga o que você precisa.",
-    });
+    const recognition = startRealVoiceRecognition();
+    if (!recognition) return;
     
-    // Simulate recognition after 3 seconds
-    setTimeout(() => {
-      // Contextual commands based on client
-      let simulatedCommands;
+    recognition.onresult = (event: any) => {
+      const recognizedText = event.results[0][0].transcript;
+      setTranscript(recognizedText);
+      console.log('Texto reconhecido:', recognizedText);
       
-      if (clientInfo) {
-        simulatedCommands = [
-          "Quais são minhas obrigações fiscais deste mês?",
-          "Qual foi meu faturamento no último trimestre?",
-          "Mostre meus documentos contábeis recentes",
-          "Qual a situação dos meus impostos?",
-          "Detecte anomalias nos meus lançamentos contábeis",
-          "Faça uma previsão do meu fluxo de caixa",
-          "Simule o melhor regime tributário para minha empresa"
-        ];
-      } else {
-        simulatedCommands = [
-          "Quais são as obrigações fiscais deste mês?",
-          "Qual foi o faturamento do último trimestre?",
-          "Mostre a situação da folha de pagamento",
-          "Quantos clientes estão com documentação pendente?",
-          "Detecte anomalias contábeis",
-          "Analise o fluxo de caixa projetado",
-          "Simule cenários tributários"
-        ];
-      }
-      
-      // Choose a random command
-      const randomCommand = simulatedCommands[Math.floor(Math.random() * simulatedCommands.length)];
-      setTranscript(randomCommand);
-      handleProcessCommand(randomCommand);
-    }, 3000);
+      // Process the recognized command
+      setTimeout(() => {
+        handleProcessCommand(recognizedText);
+        setTranscript('');
+      }, 1000);
+    };
+    
+    recognition.start();
   };
 
   return {
@@ -142,6 +183,7 @@ export function useVoiceCommandProcessor(clientInfo?: ClientInfo) {
     setTranscript,
     isProcessing,
     isNlpProcessing,
+    isListening,
     handleProcessCommand,
     startVoiceRecognition,
     addBotResponse
