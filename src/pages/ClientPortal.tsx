@@ -5,13 +5,12 @@ import { ClientHeader } from "@/components/client-portal/ClientHeader";
 import { ClientPortalTabs } from "@/components/client-portal/ClientPortalTabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Mic } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { VoiceAssistantButton } from "@/components/layout/VoiceAssistantButton";
 import { ClientDocumentUpload } from "@/components/client-portal/ClientDocumentUpload";
 import { ExternalIntegrations } from "@/components/client-portal/ExternalIntegrations";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { BackButton } from "@/components/navigation/BackButton";
 
 const ClientPortal = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -69,6 +68,10 @@ const ClientPortal = () => {
     
     checkClientAccess();
   }, [clientId, navigate, toast]);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
   
   const handleLogout = () => {
     // Limpar dados da sessão do cliente
@@ -116,15 +119,23 @@ const ClientPortal = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <BackButton />
+            <div className="flex items-center gap-2 mb-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBack}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
               <Button 
                 variant="destructive" 
                 size="sm" 
-                className="flex items-center"
+                className="flex items-center gap-2"
                 onClick={handleLogout}
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-4 w-4" />
                 Sair
               </Button>
             </div>
