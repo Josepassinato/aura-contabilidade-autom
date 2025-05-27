@@ -9,17 +9,17 @@ export async function fetchBusinessMetrics(): Promise<BusinessMetrics> {
   try {
     console.log("Buscando métricas reais do banco de dados...");
     
-    // Get total number of firms from real data
+    // Get total number of accounting firms (not clients) from real data
     const { count: totalFirms, error: firmsError } = await supabase
-      .from('accounting_clients')
+      .from('accounting_firms')
       .select('*', { count: 'exact', head: true });
     
     if (firmsError) {
-      console.error('Erro ao buscar total de contabilidades:', firmsError);
+      console.error('Erro ao buscar total de escritórios de contabilidade:', firmsError);
       throw firmsError;
     }
     
-    console.log("Total de contabilidades reais:", totalFirms);
+    console.log("Total de escritórios de contabilidade reais:", totalFirms);
     
     // Get active subscriptions from real data
     const { data: activeSubscriptions, error: subsError } = await supabase
