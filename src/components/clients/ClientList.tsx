@@ -17,6 +17,7 @@ import { Building2, AlertCircle, Plus } from "lucide-react";
 import { fetchAllClients } from '@/services/supabase/clientsService';
 import { AccountingClient } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
+import { ClientInviteForm } from './ClientInviteForm';
 
 interface ClientListProps {
   refreshKey?: number;
@@ -52,6 +53,13 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
 
     fetchClients();
   }, [refreshKey]);
+
+  const handleInviteSent = () => {
+    toast({
+      title: "Convite enviado",
+      description: "O convite foi gerado com sucesso!",
+    });
+  };
   
   return (
     <div className="space-y-6">
@@ -106,9 +114,15 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/clientes/${client.id}`}>Ver detalhes</Link>
-                        </Button>
+                        <div className="flex gap-2 justify-end">
+                          <ClientInviteForm 
+                            client={client} 
+                            onInviteSent={handleInviteSent}
+                          />
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link to={`/clientes/${client.id}`}>Ver detalhes</Link>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
