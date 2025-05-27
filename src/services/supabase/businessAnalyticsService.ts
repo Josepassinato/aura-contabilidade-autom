@@ -30,70 +30,106 @@ export interface PlanDistribution {
 }
 
 /**
- * Fetch high-level business analytics data
+ * Fetch high-level business analytics data from real database
  */
 export async function fetchBusinessMetrics(): Promise<BusinessMetrics> {
   try {
-    // Get total number of firms
-    const { count: totalFirms } = await supabase
+    console.log("Buscando métricas reais do banco de dados...");
+    
+    // Get total number of firms from real data
+    const { count: totalFirms, error: firmsError } = await supabase
       .from('accounting_clients')
       .select('*', { count: 'exact', head: true });
     
-    // Get active subscriptions
-    const { data: activeSubscriptions } = await supabase
+    if (firmsError) {
+      console.error('Erro ao buscar total de contabilidades:', firmsError);
+      throw firmsError;
+    }
+    
+    console.log("Total de contabilidades reais:", totalFirms);
+    
+    // Get active subscriptions from real data
+    const { data: activeSubscriptions, error: subsError } = await supabase
       .from('accounting_firm_subscriptions')
-      .select('monthly_fee')
+      .select('monthly_fee, plan_type')
       .eq('status', 'active');
       
-    // Calculate monthly revenue
-    const monthlyRevenue = activeSubscriptions?.reduce((sum, sub) => sum + Number(sub.monthly_fee), 0) || 0;
+    if (subsError) {
+      console.error('Erro ao buscar assinaturas ativas:', subsError);
+      throw subsError;
+    }
     
-    // Calculate retention and churn rates
-    const { data: allSubscriptions } = await supabase
+    console.log("Assinaturas ativas reais:", activeSubscriptions?.length || 0);
+      
+    // Calculate monthly revenue from real data
+    const monthlyRevenue = activeSubscriptions?.reduce((sum, sub) => sum + Number(sub.monthly_fee || 0), 0) || 0;
+    console.log("Receita mensal real:", monthlyRevenue);
+    
+    // Get all subscriptions to calculate retention
+    const { data: allSubscriptions, error: allSubsError } = await supabase
       .from('accounting_firm_subscriptions')
       .select('status');
+      
+    if (allSubsError) {
+      console.error('Erro ao buscar todas as assinaturas:', allSubsError);
+      throw allSubsError;
+    }
       
     const totalSubs = allSubscriptions?.length || 0;
     const activeSubs = activeSubscriptions?.length || 0;
     
+    // Calculate real retention and churn rates
     const retentionRate = totalSubs > 0 ? (activeSubs / totalSubs) * 100 : 0;
     const churnRate = 100 - retentionRate;
     
-    // Calculate average revenue per firm
+    console.log("Taxa de retenção real:", retentionRate);
+    console.log("Taxa de cancelamento real:", churnRate);
+    
+    // Calculate average revenue per firm from real data
     const averageRevenuePerFirm = activeSubs > 0 ? monthlyRevenue / activeSubs : 0;
     
-    // Calculate growth rate (last month vs. current month)
+    // Calculate growth rate from real statistics data
     const currentMonth = startOfMonth(new Date());
     const lastMonth = startOfMonth(addMonths(new Date(), -1));
     
-    const { data: currentMonthData } = await supabase
+    const { data: currentMonthData, error: currentError } = await supabase
       .from('firm_monthly_statistics')
       .select('revenue_amount')
       .eq('month', format(currentMonth, 'yyyy-MM-dd'));
     
-    const { data: lastMonthData } = await supabase
+    const { data: lastMonthData, error: lastError } = await supabase
       .from('firm_monthly_statistics')
       .select('revenue_amount')
       .eq('month', format(lastMonth, 'yyyy-MM-dd'));
     
-    const currentMonthRevenue = currentMonthData?.reduce((sum, item) => sum + Number(item.revenue_amount), 0) || 0;
-    const lastMonthRevenue = lastMonthData?.reduce((sum, item) => sum + Number(item.revenue_amount), 0) || 0;
+    if (currentError) console.warn('Aviso ao buscar dados do mês atual:', currentError);
+    if (lastError) console.warn('Aviso ao buscar dados do mês anterior:', lastError);
+    
+    const currentMonthRevenue = currentMonthData?.reduce((sum, item) => sum + Number(item.revenue_amount || 0), 0) || 0;
+    const lastMonthRevenue = lastMonthData?.reduce((sum, item) => sum + Number(item.revenue_amount || 0), 0) || 0;
     
     const growthRate = lastMonthRevenue > 0 
       ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
       : 0;
     
-    return {
+    console.log("Taxa de crescimento real:", growthRate);
+    
+    const metrics = {
       totalFirms: totalFirms || 0,
       growthRate,
       monthlyRevenue,
-      annualRevenue: monthlyRevenue * 12, // Simple annual projection
+      annualRevenue: monthlyRevenue * 12,
       retentionRate,
       churnRate,
       averageRevenuePerFirm
     };
+    
+    console.log("Métricas finais calculadas:", metrics);
+    return metrics;
+    
   } catch (error) {
-    console.error('Error fetching business metrics:', error);
+    console.error('Erro ao buscar métricas de negócio:', error);
+    // Return empty metrics instead of mock data
     return {
       totalFirms: 0,
       growthRate: 0,
@@ -107,10 +143,12 @@ export async function fetchBusinessMetrics(): Promise<BusinessMetrics> {
 }
 
 /**
- * Fetch monthly growth data for the last 12 months
+ * Fetch monthly growth data from real database
  */
 export async function fetchMonthlyGrowth(): Promise<MonthlyGrowth[]> {
   try {
+    console.log("Buscando dados de crescimento mensal reais...");
+    
     // Get the last 12 months
     const months: Date[] = [];
     for (let i = 11; i >= 0; i--) {
@@ -121,10 +159,14 @@ export async function fetchMonthlyGrowth(): Promise<MonthlyGrowth[]> {
     
     for (const month of months) {
       const monthString = format(month, 'yyyy-MM-dd');
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('firm_monthly_statistics')
         .select('firm_id')
         .eq('month', monthString);
+      
+      if (error) {
+        console.warn(`Aviso ao buscar dados para ${monthString}:`, error);
+      }
       
       result.push({
         month: format(month, 'MMM yyyy'),
@@ -132,18 +174,21 @@ export async function fetchMonthlyGrowth(): Promise<MonthlyGrowth[]> {
       });
     }
     
+    console.log("Dados de crescimento mensal reais:", result);
     return result;
   } catch (error) {
-    console.error('Error fetching monthly growth:', error);
+    console.error('Erro ao buscar crescimento mensal:', error);
     return [];
   }
 }
 
 /**
- * Fetch monthly revenue trends for the last 12 months
+ * Fetch monthly revenue trends from real database
  */
 export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
   try {
+    console.log("Buscando tendências de receita reais...");
+    
     // Get the last 12 months
     const months: Date[] = [];
     for (let i = 11; i >= 0; i--) {
@@ -154,12 +199,16 @@ export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
     
     for (const month of months) {
       const monthString = format(month, 'yyyy-MM-dd');
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('firm_monthly_statistics')
         .select('revenue_amount')
         .eq('month', monthString);
       
-      const revenue = data?.reduce((sum, item) => sum + Number(item.revenue_amount), 0) || 0;
+      if (error) {
+        console.warn(`Aviso ao buscar receita para ${monthString}:`, error);
+      }
+      
+      const revenue = data?.reduce((sum, item) => sum + Number(item.revenue_amount || 0), 0) || 0;
       
       result.push({
         month: format(month, 'MMM yyyy'),
@@ -167,31 +216,41 @@ export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
       });
     }
     
+    console.log("Tendências de receita reais:", result);
     return result;
   } catch (error) {
-    console.error('Error fetching revenue trends:', error);
+    console.error('Erro ao buscar tendências de receita:', error);
     return [];
   }
 }
 
 /**
- * Fetch distribution of firms by subscription plan
+ * Fetch distribution of firms by subscription plan from real data
  */
 export async function fetchPlanDistribution(): Promise<PlanDistribution[]> {
   try {
-    const { data: subscriptions } = await supabase
+    console.log("Buscando distribuição de planos reais...");
+    
+    const { data: subscriptions, error } = await supabase
       .from('accounting_firm_subscriptions')
       .select('plan_type')
       .eq('status', 'active');
     
+    if (error) {
+      console.error('Erro ao buscar assinaturas para distribuição:', error);
+      throw error;
+    }
+    
     if (!subscriptions || subscriptions.length === 0) {
+      console.log("Nenhuma assinatura ativa encontrada");
       return [];
     }
     
-    // Count occurrences of each plan type
+    // Count occurrences of each plan type from real data
     const planCounts: Record<string, number> = {};
     subscriptions.forEach(sub => {
-      planCounts[sub.plan_type] = (planCounts[sub.plan_type] || 0) + 1;
+      const planType = sub.plan_type || 'undefined';
+      planCounts[planType] = (planCounts[planType] || 0) + 1;
     });
     
     // Calculate percentages and format as PlanDistribution[]
@@ -201,9 +260,10 @@ export async function fetchPlanDistribution(): Promise<PlanDistribution[]> {
       percentage: (count / subscriptions.length) * 100
     }));
     
+    console.log("Distribuição de planos real:", result);
     return result;
   } catch (error) {
-    console.error('Error fetching plan distribution:', error);
+    console.error('Erro ao buscar distribuição de planos:', error);
     return [];
   }
 }
