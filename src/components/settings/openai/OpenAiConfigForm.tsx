@@ -18,7 +18,7 @@ import { openAiConfigSchema, OpenAiConfigFormValues } from "./schema";
 type OpenAiConfigFormProps = {
   onSubmit: (data: OpenAiConfigFormValues) => Promise<void>;
   initialValues: OpenAiConfigFormValues;
-  children?: React.ReactNode; // Add support for children prop
+  children?: React.ReactNode;
 };
 
 export function OpenAiConfigForm({ onSubmit, initialValues, children }: OpenAiConfigFormProps) {
@@ -30,35 +30,6 @@ export function OpenAiConfigForm({ onSubmit, initialValues, children }: OpenAiCo
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="apiKey"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Chave API da OpenAI (Supabase Secret)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder="sk-..." 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Insira sua chave API da OpenAI. Será armazenada como segredo no Supabase. Obtenha uma em{" "}
-                <a 
-                  href="https://platform.openai.com/api-keys" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="text-primary underline"
-                >
-                  platform.openai.com
-                </a>
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <FormField
           control={form.control}
           name="model"

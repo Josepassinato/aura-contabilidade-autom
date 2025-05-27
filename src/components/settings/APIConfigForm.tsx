@@ -13,24 +13,26 @@ import {
   saveOpenAiConfig, 
   testOpenAiConnection, 
   getTokenUsageStats,
-  resetTokenUsage
-} from "./openai/openAiService";
+  resetTokenUsage,
+  isOpenAIConfigured
+} from "./openai/supabaseOpenAiService";
 
 export function APIConfigForm() {
   const { isAdmin } = useAuth();
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{success: boolean; message: string} | null>(null);
   const [usageStats, setUsageStats] = useState({ totalTokens: 0, lastReset: '', requests: 0 });
+  const [showApiKeyForm, setShowApiKeyForm] = useState(false);
 
   // Get stored values
   const storedValues = getOpenAiStoredValues();
   
-  // Carregar estatísticas de uso
+  // Load usage statistics
   useEffect(() => {
     const stats = getTokenUsageStats();
     setUsageStats(stats);
     
-    // Atualizar estatísticas a cada 5 segundos se a página estiver aberta
+    // Update stats every 5 seconds
     const interval = setInterval(() => {
       const updatedStats = getTokenUsageStats();
       setUsageStats(updatedStats);
@@ -50,7 +52,7 @@ export function APIConfigForm() {
 
       toast({
         title: "Configuração salva",
-        description: "As configurações da API OpenAI foram atualizadas com sucesso no armazenamento local.",
+        description: "As configurações da API OpenAI foram atualizadas com sucesso.",
       });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
@@ -62,16 +64,13 @@ export function APIConfigForm() {
     }
   }
 
-  // Função para testar a configuração da API da OpenAI
+  // Test API connection function
   const testApiConnection = async () => {
     setIsTesting(true);
     setTestResult(null);
 
     try {
-      const result = await testOpenAiConnection(
-        storedValues.apiKey,
-        storedValues.model
-      );
+      const result = await testOpenAiConnection(storedValues.model);
       
       setTestResult(result);
       
@@ -96,7 +95,7 @@ export function APIConfigForm() {
     }
   };
   
-  // Função para resetar o contador de tokens
+  // Reset usage counter function
   const handleResetUsage = () => {
     resetTokenUsage();
     setUsageStats({ totalTokens: 0, lastReset: new Date().toISOString(), requests: 0 });
@@ -107,7 +106,7 @@ export function APIConfigForm() {
     });
   };
   
-  // Formatador de data
+  // Date formatter
   const formatDate = (isoString: string) => {
     try {
       return new Date(isoString).toLocaleString();
@@ -116,17 +115,27 @@ export function APIConfigForm() {
     }
   };
 
+  const openAiConfigured = isOpenAIConfigured();
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-medium">Configuração da API OpenAI (Central)</h2>
+        <h2 className="text-lg font-medium">Configuração da API OpenAI (Supabase)</h2>
         <p className="text-sm text-muted-foreground">
-          Configure os parâmetros de conexão com a API da OpenAI para utilização do assistente de voz
-          e análise de dados contábeis. Esta configuração será utilizada para todo o sistema.
+          Configure os parâmetros de conexão com a API da OpenAI. A chave da API é armazenada de forma segura no Supabase.
         </p>
       </div>
+
+      {!openAiConfigured && (
+        <Alert>
+          <AlertTitle>Configuração necessária</AlertTitle>
+          <AlertDescription>
+            A chave da API OpenAI não foi configurada. Use o botão abaixo para configurar de forma segura no Supabase.
+          </AlertDescription>
+        </Alert>
+      )}
       
-      {/* Estatísticas de uso */}
+      {/* Usage statistics */}
       <div className="bg-muted/50 p-4 rounded-lg border">
         <h3 className="text-sm font-medium mb-2">Estatísticas de uso da API</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -143,9 +152,16 @@ export function APIConfigForm() {
             <p className="text-sm">{formatDate(usageStats.lastReset)}</p>
           </div>
         </div>
-        <div className="mt-3 text-right">
+        <div className="mt-3 flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={handleResetUsage}>
             Zerar contadores
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowApiKeyForm(true)}
+          >
+            {openAiConfigured ? "Atualizar" : "Configurar"} Chave API
           </Button>
         </div>
       </div>
@@ -160,7 +176,7 @@ export function APIConfigForm() {
             type="button" 
             onClick={testApiConnection} 
             variant="outline"
-            disabled={isTesting}
+            disabled={isTesting || !openAiConfigured}
           >
             {isTesting ? "Validando..." : "Validar Configuração"}
           </Button>
@@ -170,10 +186,10 @@ export function APIConfigForm() {
       <TestResultDisplay testResult={testResult} />
       
       <Alert>
-        <AlertTitle>Sobre o uso compartilhado</AlertTitle>
+        <AlertTitle>Sobre o armazenamento seguro</AlertTitle>
         <AlertDescription>
-          Esta API OpenAI é compartilhada por todo o sistema. No futuro, será adicionada a opção para que cada escritório 
-          contábil configure sua própria API para seus clientes, mantendo um controle de custo individualizado.
+          A chave da API OpenAI é armazenada de forma segura nos secrets do Supabase, não no navegador. 
+          Isso garante maior segurança para suas credenciais.
         </AlertDescription>
       </Alert>
     </div>
