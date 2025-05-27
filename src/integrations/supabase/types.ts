@@ -1063,6 +1063,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       initiate_pix_payment: {
         Args: {
           p_client_id: string

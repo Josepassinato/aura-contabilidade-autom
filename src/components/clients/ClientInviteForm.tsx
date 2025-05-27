@@ -32,30 +32,59 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
   const [copied, setCopied] = useState(false);
 
   const generateClientInvite = async () => {
-    if (!userProfile) return;
+    console.log('Starting invitation generation process');
+    console.log('User profile:', userProfile);
+    console.log('Client data:', client);
+    
+    if (!userProfile) {
+      console.error('No user profile available');
+      toast({
+        title: "Erro",
+        description: "Perfil do usuário não encontrado",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsGenerating(true);
     try {
+      console.log('Checking for existing invitation for email:', client.email);
+      
       // Verificar se já existe um convite pendente para este cliente
-      const { data: existingInvite } = await supabase
+      const { data: existingInvite, error: checkError } = await supabase
         .from('user_invitations')
         .select('token')
         .eq('email', client.email)
         .eq('status', 'pending')
         .single();
 
+      console.log('Existing invite check result:', { data: existingInvite, error: checkError });
+
       let token;
-      if (existingInvite) {
+      if (existingInvite && !checkError) {
         token = existingInvite.token;
+        console.log('Using existing invitation token:', token);
         toast({
           title: "Convite existente",
           description: "Já existe um convite pendente para este cliente. Link atualizado.",
         });
       } else {
+        console.log('Creating new invitation');
         // Gerar novo token
         token = crypto.randomUUID();
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30); // Expira em 30 dias
+
+        console.log('Generated token:', token);
+        console.log('Expires at:', expiresAt);
+        console.log('Creating invitation with data:', {
+          email: client.email,
+          role: 'client',
+          token,
+          expires_at: expiresAt.toISOString(),
+          invited_by: userProfile.id,
+          invited_by_name: userProfile.full_name,
+        });
 
         // Criar convite para o cliente
         const { error } = await supabase
@@ -69,8 +98,12 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
             invited_by_name: userProfile.full_name,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating invitation:', error);
+          throw error;
+        }
 
+        console.log('Invitation created successfully');
         toast({
           title: "Convite gerado!",
           description: `Convite para ${client.name} foi criado com sucesso`,
@@ -79,9 +112,11 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
 
       // Gerar link do convite
       const link = `${window.location.origin}/invite-signup?token=${token}`;
+      console.log('Generated invite link:', link);
       setInviteLink(link);
 
       if (onInviteSent) {
+        console.log('Calling onInviteSent callback');
         onInviteSent();
       }
     } catch (error: any) {
