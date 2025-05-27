@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useClientDataFetcher() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -15,14 +16,48 @@ export function useClientDataFetcher() {
     setIsLoading(true);
     
     try {
-      // Em produção, aqui fariam as chamadas para APIs ou banco de dados reais
       console.log(`Buscando dados reais do cliente ${clientId}: ${dataType}`);
       
-      // Simulação de tempo de processamento
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Retorna null pois não há dados reais configurados ainda
-      return null;
+      switch (dataType) {
+        case 'financial': {
+          // Buscar dados financeiros reais do Supabase
+          // Como não temos uma tabela específica ainda, retornar null
+          return null;
+        }
+          
+        case 'taxes': {
+          const { data, error } = await supabase
+            .from('obrigacoes_fiscais')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('prazo', { ascending: true });
+          
+          if (error) {
+            console.error('Erro ao buscar obrigações fiscais:', error);
+            return null;
+          }
+          
+          return data;
+        }
+          
+        case 'documents': {
+          const { data, error } = await supabase
+            .from('client_documents')
+            .select('*')
+            .eq('client_id', clientId)
+            .order('created_at', { ascending: false });
+          
+          if (error) {
+            console.error('Erro ao buscar documentos:', error);
+            return null;
+          }
+          
+          return data;
+        }
+          
+        default:
+          return null;
+      }
     } catch (error) {
       console.error(`Erro ao buscar dados do cliente ${clientId}:`, error);
       toast({

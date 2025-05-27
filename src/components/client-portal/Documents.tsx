@@ -4,10 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
-import { fetchClientDocuments, ClientDocument } from "@/services/supabase/documentosService";
+import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentsProps {
   clientId: string;
+}
+
+interface ClientDocument {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  created_at: string;
 }
 
 export const Documents = ({ clientId }: DocumentsProps) => {
@@ -20,9 +28,31 @@ export const Documents = ({ clientId }: DocumentsProps) => {
 
       setIsLoading(true);
       try {
-        // Buscar documentos do Supabase (limitando a 3 documentos)
-        const documentos = await fetchClientDocuments(clientId, 3);
-        setDocuments(documentos);
+        const { data, error } = await supabase
+          .from('client_documents')
+          .select('id, name, type, created_at')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (error) {
+          console.error('Erro ao buscar documentos:', error);
+          setDocuments([]);
+          return;
+        }
+
+        if (data) {
+          const formattedDocs = data.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: doc.type,
+            date: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            created_at: doc.created_at
+          }));
+          setDocuments(formattedDocs);
+        } else {
+          setDocuments([]);
+        }
       } catch (error) {
         console.error('Erro ao buscar documentos:', error);
         setDocuments([]);

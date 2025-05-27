@@ -27,7 +27,14 @@ export const useClientDocuments = (clientId: string | null) => {
         const result = await query.limit(100);
         
         if (result.error) {
-          throw result.error;
+          console.error("Erro ao carregar documentos:", result.error);
+          setDocuments([]);
+          toast({
+            title: "Erro ao carregar documentos",
+            description: "Não foi possível carregar a lista de documentos.",
+            variant: "destructive"
+          });
+          return;
         }
         
         if (result.data) {
@@ -37,7 +44,7 @@ export const useClientDocuments = (clientId: string | null) => {
             title: doc.title,
             name: doc.name,
             type: doc.type,
-            size: doc.size || 0, // Ensure size is a number
+            size: doc.size || 0,
             date: new Date(doc.created_at || doc.updated_at).toLocaleDateString('pt-BR'),
             status: doc.status as 'pendente' | 'processado' | 'rejeitado',
             file_path: doc.file_path,
@@ -46,85 +53,24 @@ export const useClientDocuments = (clientId: string | null) => {
           }));
           
           setDocuments(formattedDocs);
+        } else {
+          setDocuments([]);
         }
       } else {
-        // Fallback to mock data when Supabase is not available
-        const mockDocuments: Document[] = [
-          { 
-            id: '1', 
-            client_id: clientId || '', 
-            name: 'NFe-2025-001245.pdf', 
-            title: 'NFe-2025-001245.pdf',
-            type: 'nota-fiscal', 
-            size: 420000, 
-            date: '15/05/2025', 
-            status: 'processado',
-            created_at: '2025-05-15T12:00:00Z'
-          },
-          { 
-            id: '2', 
-            client_id: clientId || '',
-            name: 'Recibo-Aluguel-Maio.pdf', 
-            title: 'Recibo-Aluguel-Maio.pdf',
-            type: 'recibo', 
-            size: 180000,
-            date: '10/05/2025', 
-            status: 'processado',
-            created_at: '2025-05-10T12:00:00Z'
-          },
-          { 
-            id: '3', 
-            client_id: clientId || '',
-            name: 'Extrato-BancoXYZ-Maio.pdf', 
-            title: 'Extrato-BancoXYZ-Maio.pdf',
-            type: 'extrato', 
-            size: 310000,
-            date: '05/05/2025', 
-            status: 'pendente',
-            created_at: '2025-05-05T12:00:00Z'
-          },
-          { 
-            id: '4', 
-            client_id: clientId || '',
-            name: 'Contrato-Prestacao-Servicos.pdf', 
-            title: 'Contrato-Prestacao-Servicos.pdf',
-            type: 'contrato', 
-            size: 1200000,
-            date: '01/05/2025', 
-            status: 'processado',
-            created_at: '2025-05-01T12:00:00Z'
-          },
-          { 
-            id: '5', 
-            client_id: clientId || '',
-            name: 'NFe-2025-001189.pdf', 
-            title: 'NFe-2025-001189.pdf',
-            type: 'nota-fiscal', 
-            size: 390000,
-            date: '28/04/2025', 
-            status: 'processado',
-            created_at: '2025-04-28T12:00:00Z'
-          },
-          { 
-            id: '6', 
-            client_id: clientId || '',
-            name: 'Folha-Pagamento-Abril.pdf', 
-            title: 'Folha-Pagamento-Abril.pdf',
-            type: 'outro', 
-            size: 280000,
-            date: '25/04/2025', 
-            status: 'rejeitado',
-            created_at: '2025-04-25T12:00:00Z'
-          },
-        ];
-        
-        setDocuments(mockDocuments);
+        console.error("Supabase client não disponível");
+        setDocuments([]);
+        toast({
+          title: "Erro de conexão",
+          description: "Não foi possível conectar ao banco de dados.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Erro ao carregar documentos:", error);
+      setDocuments([]);
       toast({
         title: "Erro ao carregar documentos",
-        description: "Não foi possível carregar a lista de documentos. Por favor, tente novamente.",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -135,6 +81,9 @@ export const useClientDocuments = (clientId: string | null) => {
   useEffect(() => {
     if (clientId) {
       loadDocuments(clientId);
+    } else {
+      setDocuments([]);
+      setIsLoading(false);
     }
   }, [clientId]);
 
@@ -149,7 +98,6 @@ export const useClientDocuments = (clientId: string | null) => {
     }
     
     try {
-      // Use the storage service to get a signed URL
       const signedUrl = await getFileUrl(document.file_path);
       
       if (signedUrl) {
@@ -165,12 +113,6 @@ export const useClientDocuments = (clientId: string | null) => {
         variant: "destructive"
       });
     }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} bytes`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   // Filter documents based on search term

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 
 interface FinancialSummaryProps {
   clientId: string;
@@ -24,31 +25,24 @@ export const FinancialSummary = ({ clientId }: FinancialSummaryProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Carregar dados financeiros do cliente
     const loadFinancialData = async () => {
+      if (!clientId) return;
+
       setIsLoading(true);
       try {
-        // Em um cenário real, aqui seria feita uma chamada à API para buscar os dados
-        // Por enquanto, vamos simular com dados baseados no clientId para tornar dinâmico
-        const clientIdNum = parseInt(clientId.replace(/\D/g, '').substring(0, 5) || '0');
-        
-        // Gerar valores baseados no ID do cliente para simular dados reais e variados
-        const baseRevenue = 65000 + (clientIdNum * 234) % 45000;
-        const baseExpenses = baseRevenue * (0.3 + (clientIdNum % 10) / 100);
-        const baseProfit = baseRevenue - baseExpenses;
-        const baseTaxesDue = baseProfit * 0.15;
-        
-        // Formatar para exibição como valores monetários brasileiros
+        // Buscar dados financeiros reais do cliente
+        // Como não temos uma tabela específica de dados financeiros ainda,
+        // vamos mostrar valores zerados até que seja implementada
         const formatter = new Intl.NumberFormat('pt-BR', {
           style: 'currency',
           currency: 'BRL'
         });
         
         setData({
-          revenue: formatter.format(baseRevenue),
-          expenses: formatter.format(baseExpenses),
-          profit: formatter.format(baseProfit),
-          taxesDue: formatter.format(baseTaxesDue)
+          revenue: formatter.format(0),
+          expenses: formatter.format(0),
+          profit: formatter.format(0),
+          taxesDue: formatter.format(0)
         });
       } catch (error) {
         console.error("Erro ao carregar dados financeiros:", error);
@@ -57,9 +51,7 @@ export const FinancialSummary = ({ clientId }: FinancialSummaryProps) => {
       }
     };
 
-    if (clientId) {
-      loadFinancialData();
-    }
+    loadFinancialData();
   }, [clientId]);
 
   return (
