@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { getOpenAiConfig } from "@/components/settings/openai/openAiService";
+import { getOpenAiConfig } from "@/components/settings/openai/supabaseOpenAiService";
 
 export function useOpenAIConfig() {
   const [isConfigured, setIsConfigured] = useState(false);
@@ -9,8 +9,7 @@ export function useOpenAIConfig() {
   useEffect(() => {
     // Check if OpenAI is configured
     const isOpenAIConfigured = () => {
-      return localStorage.getItem("openai-api-key") !== null &&
-             localStorage.getItem("openai-api-key") !== "";
+      return localStorage.getItem("openai-configured") === "true";
     };
 
     setIsConfigured(isOpenAIConfigured());

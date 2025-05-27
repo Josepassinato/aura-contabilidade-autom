@@ -5,7 +5,7 @@ import { useNaturalLanguage, NLPResult } from '@/hooks/useNaturalLanguage';
 import { 
   isOpenAIConfigured, 
   registerTokenUsage 
-} from '@/components/settings/openai/openAiService';
+} from '@/components/settings/openai/supabaseOpenAiService';
 
 type ClientInfo = {
   id: string;

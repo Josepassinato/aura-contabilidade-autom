@@ -6,7 +6,7 @@ import { useClientDataFetcher } from '@/hooks/useClientDataFetcher';
 import { 
   isOpenAIConfigured, 
   getOpenAiConfig
-} from '@/components/settings/openai/openAiService';
+} from '@/components/settings/openai/supabaseOpenAiService';
 
 type ClientInfo = {
   id: string;

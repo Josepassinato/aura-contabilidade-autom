@@ -8,3 +8,8 @@ export const openAiConfigSchema = z.object({
 });
 
 export type OpenAiConfigFormValues = z.infer<typeof openAiConfigSchema>;
+
+// Extended type for internal use that includes apiKey when needed
+export type OpenAiConfigWithApiKey = OpenAiConfigFormValues & {
+  apiKey?: string;
+};

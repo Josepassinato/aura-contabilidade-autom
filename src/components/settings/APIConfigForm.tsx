@@ -48,7 +48,13 @@ export function APIConfigForm() {
 
   async function onSubmit(data: OpenAiConfigFormValues) {
     try {
-      await saveOpenAiConfig(data);
+      // Save config without apiKey since it's handled by Supabase
+      await saveOpenAiConfig({
+        apiKey: "", // Empty since it's stored in Supabase secrets
+        model: data.model,
+        temperature: data.temperature,
+        maxTokens: data.maxTokens
+      });
 
       toast({
         title: "Configuração salva",

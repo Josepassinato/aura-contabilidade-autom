@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { processNaturalLanguage, generateNLPResponse } from './nlpProcessingService';
 import { NLPResult, ClientSpecificContext } from './types';
-import { registerTokenUsage } from '@/components/settings/openai/openAiService';
+import { registerTokenUsage } from '@/components/settings/openai/supabaseOpenAiService';
 import { useClientDataFetcher } from '../useClientDataFetcher';
 
 export function useNLPProcessor() {
