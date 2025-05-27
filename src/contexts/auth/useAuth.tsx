@@ -10,11 +10,13 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   if (context === undefined) {
+    console.error("useAuth deve ser usado dentro de um AuthProvider");
     throw new Error("useAuth deve ser usado dentro de um AuthProvider");
   }
 
   // Navegação consistente para página de login
   const navigateToLogin = () => {
+    console.log("Navegando para página de login...");
     try {
       // Tentar usar o hook navigate do React Router para transições suaves
       navigate("/login", { replace: true });
@@ -27,6 +29,7 @@ export const useAuth = () => {
 
   // Logout aprimorado com feedback
   const enhancedLogout = async () => {
+    console.log("Iniciando processo de logout...");
     try {
       toast({
         title: "Saindo...",
@@ -46,6 +49,8 @@ export const useAuth = () => {
         title: "Sessão encerrada",
         description: "Você saiu com sucesso",
       });
+      
+      console.log("Logout realizado com sucesso");
     } catch (error) {
       console.error("Erro durante logout:", error);
       toast({
@@ -62,6 +67,7 @@ export const useAuth = () => {
 
   // Login aprimorado com feedback e navegação inteligente
   const enhancedLogin = async (email: string, password: string) => {
+    console.log("Iniciando processo de login para:", email);
     try {
       // Limpar possíveis estados de autenticação anteriores
       cleanupAuthState();
@@ -72,6 +78,7 @@ export const useAuth = () => {
       const result = await context.login?.(email, password);
       
       if (result?.success) {
+        console.log("Login bem-sucedido para:", email);
         toast({
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
@@ -79,9 +86,10 @@ export const useAuth = () => {
         
         // Navegação apropriada com base no perfil
         const role = localStorage.getItem('user_role');
+        console.log("Role do usuário:", role);
         
         if (role === 'admin') {
-          navigate('/admin/analytics', { replace: true });
+          navigate('/admin/business-analytics', { replace: true });
         } else if (role === 'client') {
           navigate('/client-portal', { replace: true });
         } else if (role === 'accountant') {
@@ -93,6 +101,7 @@ export const useAuth = () => {
         
         return { success: true, error: null };
       } else {
+        console.error("Falha no login:", result?.error);
         toast({
           title: "Falha no login",
           description: result?.error || "Credenciais inválidas",
@@ -113,6 +122,8 @@ export const useAuth = () => {
 
   // Verificação de autenticação com feedback
   const requireAuth = (redirectPath = '/login') => {
+    console.log("Verificando autenticação...");
+    
     // Check for auth limbo state and clean it up if found
     if (checkForAuthLimboState()) {
       console.warn("Auth limbo state detected in requireAuth, cleaning up");
@@ -122,6 +133,7 @@ export const useAuth = () => {
     }
     
     if (context.isLoading) {
+      console.log("Autenticação ainda carregando...");
       return { loading: true, authenticated: false };
     }
     
@@ -137,11 +149,13 @@ export const useAuth = () => {
       return { authenticated: false, loading: false };
     }
     
+    console.log("Usuário autenticado com sucesso");
     return { authenticated: true, loading: false };
   };
 
   // Verificar se o usuário tem um determinado papel
   const checkRole = (role: 'admin' | 'accountant' | 'client', redirectPath = '/') => {
+    console.log("Verificando role:", role);
     const { authenticated, loading } = requireAuth();
     
     if (loading) return { hasRole: false, loading: true };
@@ -153,7 +167,10 @@ export const useAuth = () => {
       (role === 'client' && context.isClient)
     );
     
+    console.log("Usuário tem role?", hasRole);
+    
     if (!hasRole) {
+      console.log("Usuário não tem permissão para role:", role);
       toast({
         title: "Acesso negado",
         description: "Você não tem permissão para acessar esta página",

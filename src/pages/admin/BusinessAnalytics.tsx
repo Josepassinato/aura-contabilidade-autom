@@ -17,7 +17,7 @@ import {
   PlanDistribution
 } from "@/services/supabase/businessAnalyticsService";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Download, ArrowLeft, LogOut } from "lucide-react";
+import { RefreshCcw, Download, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 import { AccessRestriction } from "@/components/settings/AccessRestriction";
 import { BackButton } from "@/components/navigation/BackButton";
@@ -31,6 +31,7 @@ const BusinessAnalytics = () => {
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
+    console.log("Carregando dados de análise de negócios...");
     setLoading(true);
     try {
       const [metricsData, growthData, revenueData, planData] = await Promise.all([
@@ -40,27 +41,31 @@ const BusinessAnalytics = () => {
         fetchPlanDistribution()
       ]);
       
+      console.log("Dados carregados:", { metricsData, growthData, revenueData, planData });
+      
       setMetrics(metricsData);
       setMonthlyGrowth(growthData);
       setRevenueTrends(revenueData);
       setPlanDistribution(planData);
     } catch (error) {
-      console.error('Error loading business analytics data:', error);
+      console.error('Erro ao carregar dados de análise de negócios:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("BusinessAnalytics montado, carregando dados...");
     loadData();
   }, []);
 
   const handleRefresh = () => {
+    console.log("Atualizando dados...");
     loadData();
   };
 
   const handleExport = () => {
-    // Simple CSV export of data
+    console.log("Exportando dados...");
     try {
       // Create CSV content for metrics
       const metricsCSV = metrics ? 
@@ -95,13 +100,18 @@ const BusinessAnalytics = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      console.log("Dados exportados com sucesso");
     } catch (error) {
-      console.error('Error exporting data:', error);
+      console.error('Erro ao exportar dados:', error);
     }
   };
 
+  console.log("BusinessAnalytics renderizando. isAdmin:", isAdmin, "loading:", loading);
+
   // Show access restriction if user is not admin
   if (!isAdmin) {
+    console.log("Usuário não é admin, mostrando restrição de acesso");
     return (
       <DashboardLayout>
         <AccessRestriction />

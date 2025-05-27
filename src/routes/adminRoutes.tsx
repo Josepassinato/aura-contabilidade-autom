@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 import CustomerManagement from '@/pages/admin/CustomerManagement';
 import BusinessAnalytics from '@/pages/admin/BusinessAnalytics';
