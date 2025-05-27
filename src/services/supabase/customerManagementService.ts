@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -62,7 +61,8 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
         plan_type,
         monthly_fee,
         end_date
-      `);
+      `)
+      .not('accounting_firm_id', 'is', null);
       
     if (subscriptionsError) {
       console.error('Erro ao buscar assinaturas:', subscriptionsError);

@@ -64,7 +64,6 @@ export type Database = {
           accounting_firm_id: string | null
           created_at: string
           end_date: string | null
-          firm_id: string | null
           id: string
           monthly_fee: number
           plan_type: string
@@ -77,7 +76,6 @@ export type Database = {
           accounting_firm_id?: string | null
           created_at?: string
           end_date?: string | null
-          firm_id?: string | null
           id?: string
           monthly_fee: number
           plan_type: string
@@ -90,7 +88,6 @@ export type Database = {
           accounting_firm_id?: string | null
           created_at?: string
           end_date?: string | null
-          firm_id?: string | null
           id?: string
           monthly_fee?: number
           plan_type?: string
@@ -105,13 +102,6 @@ export type Database = {
             columns: ["accounting_firm_id"]
             isOneToOne: false
             referencedRelation: "accounting_firms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "accounting_firm_subscriptions_firm_id_fkey"
-            columns: ["firm_id"]
-            isOneToOne: false
-            referencedRelation: "accounting_clients"
             referencedColumns: ["id"]
           },
         ]
