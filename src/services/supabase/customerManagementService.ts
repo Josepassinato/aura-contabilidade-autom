@@ -11,7 +11,8 @@ export interface CustomerSummary {
   subscriptionPlan: string;
   monthlyFee: number;
   subscriptionEndDate: string | null;
-  accountingFirmName?: string; // Adicionado para mostrar a contabilidade responsável
+  accountingFirmName?: string;
+  clientsCount?: number; // Number of clients this accounting firm serves
 }
 
 export interface SupportTicket {
@@ -26,37 +27,37 @@ export interface SupportTicket {
 }
 
 /**
- * Fetches all accounting clients with their subscription details and responsible accounting firm
+ * Fetches all accounting firms with their subscription details and client count
  */
 export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary[]> {
   try {
-    console.log("Buscando clientes com informações das contabilidades responsáveis...");
+    console.log("Buscando escritórios de contabilidade com assinaturas...");
     
-    // Query to get clients with their subscriptions and the accounting firm they belong to
-    // Note: We need to identify which accounting firm each client belongs to
-    // For now, we'll fetch clients and later associate them with accounting firms
-    const { data: clients, error: clientsError } = await supabase
-      .from('accounting_clients')
+    // Query to get accounting firms with their subscriptions
+    const { data: firms, error: firmsError } = await supabase
+      .from('accounting_firms')
       .select(`
         id, 
         name, 
         email, 
         status,
-        cnpj
+        cnpj,
+        phone,
+        address
       `)
       .order('name');
       
-    if (clientsError) {
-      console.error('Erro ao buscar clientes:', clientsError);
-      throw clientsError;
+    if (firmsError) {
+      console.error('Erro ao buscar escritórios de contabilidade:', firmsError);
+      throw firmsError;
     }
 
-    // Get subscription data for each client
+    // Get subscription data for each firm
     const { data: subscriptions, error: subscriptionsError } = await supabase
       .from('accounting_firm_subscriptions')
       .select(`
         id,
-        firm_id,
+        accounting_firm_id,
         status,
         plan_type,
         monthly_fee,
@@ -68,33 +69,52 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
       throw subscriptionsError;
     }
 
-    // Since we need to properly associate clients with accounting firms,
-    // and the current schema seems to have accounting_clients as the firms themselves,
-    // we'll map the data correctly
-    const result: CustomerSummary[] = (clients || []).map(client => {
-      // Find the subscription for this accounting firm (client in this context is actually an accounting firm)
-      const subscription = subscriptions?.find(sub => sub.firm_id === client.id);
+    // Get client count for each firm
+    const { data: clientCounts, error: clientCountsError } = await supabase
+      .from('accounting_clients')
+      .select('accounting_firm_id')
+      .not('accounting_firm_id', 'is', null);
+      
+    if (clientCountsError) {
+      console.error('Erro ao buscar contagem de clientes:', clientCountsError);
+    }
+
+    // Count clients per firm
+    const clientCountMap = new Map<string, number>();
+    if (clientCounts) {
+      clientCounts.forEach(client => {
+        if (client.accounting_firm_id) {
+          const count = clientCountMap.get(client.accounting_firm_id) || 0;
+          clientCountMap.set(client.accounting_firm_id, count + 1);
+        }
+      });
+    }
+
+    const result: CustomerSummary[] = (firms || []).map(firm => {
+      // Find the subscription for this accounting firm
+      const subscription = subscriptions?.find(sub => sub.accounting_firm_id === firm.id);
       
       return {
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        status: client.status,
+        id: firm.id,
+        name: firm.name,
+        email: firm.email,
+        status: firm.status,
         subscriptionStatus: subscription?.status || 'none',
         subscriptionPlan: subscription?.plan_type || 'none',
         monthlyFee: subscription?.monthly_fee || 0,
         subscriptionEndDate: subscription?.end_date || null,
-        accountingFirmName: client.name // O próprio cliente é a contabilidade
+        accountingFirmName: firm.name, // The firm itself
+        clientsCount: clientCountMap.get(firm.id) || 0
       };
     });
 
-    console.log("Dados dos clientes (contabilidades) carregados:", result);
+    console.log("Dados dos escritórios de contabilidade carregados:", result);
     return result;
   } catch (error) {
     console.error('Erro em fetchCustomersWithSubscriptions:', error);
     toast({
-      title: "Erro ao buscar clientes",
-      description: "Não foi possível carregar a lista de clientes e assinaturas.",
+      title: "Erro ao buscar escritórios de contabilidade",
+      description: "Não foi possível carregar a lista de escritórios e assinaturas.",
       variant: "destructive"
     });
     return [];
@@ -102,10 +122,10 @@ export async function fetchCustomersWithSubscriptions(): Promise<CustomerSummary
 }
 
 /**
- * Updates a customer's subscription status
+ * Updates an accounting firm's subscription status
  */
 export async function updateCustomerSubscription(
-  customerId: string, 
+  firmId: string, 
   subscriptionData: {
     status?: string;
     plan_type?: string;
@@ -114,13 +134,13 @@ export async function updateCustomerSubscription(
   }
 ): Promise<boolean> {
   try {
-    console.log("Atualizando assinatura da contabilidade:", customerId, subscriptionData);
+    console.log("Atualizando assinatura do escritório de contabilidade:", firmId, subscriptionData);
     
     // First check if the accounting firm has a subscription
     const { data: existingSubscriptions } = await supabase
       .from('accounting_firm_subscriptions')
       .select('id')
-      .eq('firm_id', customerId)
+      .eq('accounting_firm_id', firmId)
       .limit(1);
       
     let success = false;
@@ -142,7 +162,7 @@ export async function updateCustomerSubscription(
       const { error } = await supabase
         .from('accounting_firm_subscriptions')
         .insert({
-          firm_id: customerId,
+          accounting_firm_id: firmId,
           status: subscriptionData.status || 'active',
           plan_type: subscriptionData.plan_type || 'basic',
           monthly_fee: subscriptionData.monthly_fee || 0,
@@ -160,7 +180,7 @@ export async function updateCustomerSubscription(
     if (success) {
       toast({
         title: "Assinatura atualizada",
-        description: "As informações da assinatura da contabilidade foram atualizadas com sucesso."
+        description: "As informações da assinatura do escritório de contabilidade foram atualizadas com sucesso."
       });
     }
     
@@ -188,7 +208,7 @@ export async function fetchSupportTickets(): Promise<SupportTicket[]> {
     {
       id: '1',
       customerId: '123',
-      customerName: 'Empresa ABC Ltda',
+      customerName: 'Escritório Contábil ABC',
       subject: 'Problema com integração fiscal',
       status: 'open',
       priority: 'high',
@@ -198,7 +218,7 @@ export async function fetchSupportTickets(): Promise<SupportTicket[]> {
     {
       id: '2',
       customerId: '456',
-      customerName: 'Consultoria XYZ',
+      customerName: 'Consultoria Contábil XYZ',
       subject: 'Dúvida sobre relatórios',
       status: 'in-progress',
       priority: 'medium',
@@ -208,7 +228,7 @@ export async function fetchSupportTickets(): Promise<SupportTicket[]> {
     {
       id: '3',
       customerId: '789',
-      customerName: 'Comércio Rápido SA',
+      customerName: 'Contabilidade Rápida SA',
       subject: 'Solicitação de nova funcionalidade',
       status: 'closed',
       priority: 'low',
@@ -234,7 +254,7 @@ export async function sendBulkEmail(
     
     toast({
       title: "Emails enviados",
-      description: `${recipients} contabilidades receberam a mensagem com sucesso.`
+      description: `${recipients} escritórios de contabilidade receberam a mensagem com sucesso.`
     });
     
     return true;
@@ -242,7 +262,7 @@ export async function sendBulkEmail(
     console.error('Error sending bulk email:', error);
     toast({
       title: "Erro ao enviar emails",
-      description: "Não foi possível enviar os emails para as contabilidades selecionadas.",
+      description: "Não foi possível enviar os emails para os escritórios de contabilidade selecionados.",
       variant: "destructive"
     });
     return false;

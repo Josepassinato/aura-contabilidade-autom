@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       accounting_clients: {
         Row: {
+          accounting_firm_id: string | null
           address: string | null
           cnpj: string
           created_at: string
@@ -23,6 +24,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accounting_firm_id?: string | null
           address?: string | null
           cnpj: string
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accounting_firm_id?: string | null
           address?: string | null
           cnpj?: string
           created_at?: string
@@ -46,10 +49,19 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "accounting_clients_accounting_firm_id_fkey"
+            columns: ["accounting_firm_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_firms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       accounting_firm_subscriptions: {
         Row: {
+          accounting_firm_id: string | null
           created_at: string
           end_date: string | null
           firm_id: string | null
@@ -62,6 +74,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accounting_firm_id?: string | null
           created_at?: string
           end_date?: string | null
           firm_id?: string | null
@@ -74,6 +87,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accounting_firm_id?: string | null
           created_at?: string
           end_date?: string | null
           firm_id?: string | null
@@ -87,6 +101,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "accounting_firm_subscriptions_accounting_firm_id_fkey"
+            columns: ["accounting_firm_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_firms"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "accounting_firm_subscriptions_firm_id_fkey"
             columns: ["firm_id"]
             isOneToOne: false
@@ -94,6 +115,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      accounting_firms: {
+        Row: {
+          address: string | null
+          cnpj: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cnpj: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cnpj?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       atualizacoes_parametros_log: {
         Row: {
