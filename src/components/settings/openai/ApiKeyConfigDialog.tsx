@@ -48,13 +48,23 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
     setIsLoading(true);
 
     try {
+      console.log("Iniciando validação da chave da API...");
+      
       // Store the API key securely in Supabase secrets
-      const { error } = await supabase.functions.invoke('store-openai-key', {
+      const { data, error } = await supabase.functions.invoke('store-openai-key', {
         body: { apiKey: apiKey.trim() }
       });
 
+      console.log("Resposta da função:", { data, error });
+
       if (error) {
-        throw error;
+        console.error("Erro da função:", error);
+        throw new Error(error.message || "Erro ao validar chave da API");
+      }
+
+      if (data?.error) {
+        console.error("Erro retornado pela função:", data.error);
+        throw new Error(data.error);
       }
 
       // Mark as configured locally
@@ -63,6 +73,8 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
       // Dispatch event to notify other components
       window.dispatchEvent(new Event('openai-config-updated'));
 
+      console.log("Chave da API configurada com sucesso!");
+
       toast({
         title: "Sucesso",
         description: "Chave da API OpenAI configurada com sucesso!",
@@ -70,11 +82,13 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
 
       setApiKey("");
       onSuccess();
+      onOpenChange(false);
+      
     } catch (error) {
       console.error("Erro ao configurar chave da API:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível configurar a chave da API. Verifique se a chave é válida.",
+        description: error instanceof Error ? error.message : "Não foi possível configurar a chave da API. Verifique se a chave é válida.",
         variant: "destructive"
       });
     } finally {
@@ -94,7 +108,7 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
           <DialogHeader>
             <DialogTitle>Configurar Chave da API OpenAI</DialogTitle>
             <DialogDescription>
-              Insira sua chave da API OpenAI. Ela será armazenada de forma segura no Supabase.
+              Insira sua chave da API OpenAI. Ela será validada e armazenada de forma segura no Supabase.
             </DialogDescription>
           </DialogHeader>
           
@@ -110,7 +124,7 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                Sua chave da API OpenAI que começa com "sk-"
+                Sua chave da API OpenAI que começa com "sk-". Será testada antes de salvar.
               </p>
             </div>
           </div>
@@ -125,7 +139,7 @@ export function ApiKeyConfigDialog({ open, onOpenChange, onSuccess }: ApiKeyConf
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Configurando..." : "Configurar"}
+              {isLoading ? "Validando..." : "Validar e Configurar"}
             </Button>
           </DialogFooter>
         </form>

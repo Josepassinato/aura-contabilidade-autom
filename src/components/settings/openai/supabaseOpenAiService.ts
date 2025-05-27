@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Interface para estatísticas de uso da API
@@ -19,6 +20,8 @@ export const getOpenAiStoredValues = () => {
 
 export const saveOpenAiConfig = async (data: { apiKey: string; model: string; temperature: number; maxTokens: number }) => {
   try {
+    console.log("Salvando configurações OpenAI...");
+    
     // Store non-sensitive values in localStorage
     localStorage.setItem("openai-model", data.model);
     localStorage.setItem("openai-temperature", data.temperature.toString());
@@ -39,6 +42,8 @@ export const saveOpenAiConfig = async (data: { apiKey: string; model: string; te
       localStorage.setItem("openai-usage-stats", JSON.stringify(initialStats));
     }
     
+    console.log("Configurações salvas com sucesso");
+    
     // Dispatch event to notify other components
     window.dispatchEvent(new Event('openai-config-updated'));
     
@@ -51,23 +56,38 @@ export const saveOpenAiConfig = async (data: { apiKey: string; model: string; te
 
 export const testOpenAiConnection = async (model: string): Promise<{ success: boolean; message: string }> => {
   try {
+    console.log("Testando conexão OpenAI...");
+    
+    // Check if OpenAI is configured first
+    const configured = isOpenAIConfigured();
+    if (!configured) {
+      return {
+        success: false,
+        message: "Chave da API OpenAI não configurada. Configure a chave nas configurações do sistema."
+      };
+    }
+    
     // Call edge function to test the connection using the stored secret
     const { data, error } = await supabase.functions.invoke('test-openai-connection', {
       body: { model }
     });
     
     if (error) {
+      console.error("Erro na validação:", error);
       return {
         success: false,
         message: `Erro na validação: ${error.message}`
       };
     }
     
+    console.log("Teste de conexão concluído:", data);
+    
     return data || {
       success: true,
       message: "Configuração validada com sucesso. A IA está pronta para uso no sistema!"
     };
   } catch (error) {
+    console.error("Erro na validação:", error);
     return {
       success: false,
       message: `Erro na validação: ${error instanceof Error ? error.message : "Erro desconhecido"}`
