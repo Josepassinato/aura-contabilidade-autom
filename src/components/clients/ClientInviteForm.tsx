@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +31,7 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
   const [copied, setCopied] = useState(false);
 
   const generateClientInvite = async () => {
-    console.log('Starting invitation generation process');
+    console.log('=== Starting invitation generation process ===');
     console.log('User profile:', userProfile);
     console.log('Client data:', client);
     
@@ -56,7 +55,7 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
         .select('token')
         .eq('email', client.email)
         .eq('status', 'pending')
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle() to handle no results
 
       console.log('Existing invite check result:', { data: existingInvite, error: checkError });
 
@@ -77,33 +76,30 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
 
         console.log('Generated token:', token);
         console.log('Expires at:', expiresAt);
-        console.log('Creating invitation with data:', {
+        
+        const invitationData = {
           email: client.email,
           role: 'client',
           token,
           expires_at: expiresAt.toISOString(),
           invited_by: userProfile.id,
           invited_by_name: userProfile.full_name,
-        });
+        };
+        
+        console.log('Creating invitation with data:', invitationData);
 
         // Criar convite para o cliente
-        const { error } = await supabase
+        const { data: insertData, error } = await supabase
           .from('user_invitations')
-          .insert({
-            email: client.email,
-            role: 'client',
-            token,
-            expires_at: expiresAt.toISOString(),
-            invited_by: userProfile.id,
-            invited_by_name: userProfile.full_name,
-          });
+          .insert(invitationData)
+          .select();
 
         if (error) {
           console.error('Error creating invitation:', error);
           throw error;
         }
 
-        console.log('Invitation created successfully');
+        console.log('Invitation created successfully:', insertData);
         toast({
           title: "Convite gerado!",
           description: `Convite para ${client.name} foi criado com sucesso`,
@@ -120,7 +116,11 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
         onInviteSent();
       }
     } catch (error: any) {
-      console.error('Erro ao gerar convite:', error);
+      console.error('=== Erro ao gerar convite ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      
       toast({
         title: "Erro",
         description: error.message || "Não foi possível gerar o convite",
