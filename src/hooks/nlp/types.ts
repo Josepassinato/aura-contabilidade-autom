@@ -6,6 +6,7 @@ export type NLPIntent =
   | 'tax_calculation'
   | 'payment'
   | 'document_request'
+  | 'cash_flow_prediction'
   | 'greeting'
   | 'help'
   | 'unknown';
