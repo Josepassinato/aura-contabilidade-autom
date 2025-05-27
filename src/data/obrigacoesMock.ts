@@ -1,7 +1,7 @@
 
 import { Obrigacao } from "@/types/obrigacoes";
 
-// Arquivo limpo - sem dados simulados
+// Arquivo sem dados mock - apenas dados reais do Supabase devem ser usados
 export const obrigacoesMock: Obrigacao[] = [];
 
 // Função mantida para compatibilidade com código existente

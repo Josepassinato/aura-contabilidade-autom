@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -197,45 +198,52 @@ export async function updateCustomerSubscription(
 }
 
 /**
- * Fetches mock support tickets (to be implemented with real data later)
+ * Fetches real support tickets from payment alerts table
  */
 export async function fetchSupportTickets(): Promise<SupportTicket[]> {
-  // This is a mock implementation - in a real app, you would fetch from Supabase
-  await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
-  
-  // Return mock data
-  return [
-    {
-      id: '1',
-      customerId: '123',
-      customerName: 'Escritório Contábil ABC',
-      subject: 'Problema com integração fiscal',
-      status: 'open',
-      priority: 'high',
-      createdAt: '2023-05-10T10:30:00Z',
-      lastUpdated: '2023-05-10T10:30:00Z'
-    },
-    {
-      id: '2',
-      customerId: '456',
-      customerName: 'Consultoria Contábil XYZ',
-      subject: 'Dúvida sobre relatórios',
-      status: 'in-progress',
-      priority: 'medium',
-      createdAt: '2023-05-08T14:20:00Z',
-      lastUpdated: '2023-05-09T09:15:00Z'
-    },
-    {
-      id: '3',
-      customerId: '789',
-      customerName: 'Contabilidade Rápida SA',
-      subject: 'Solicitação de nova funcionalidade',
-      status: 'closed',
-      priority: 'low',
-      createdAt: '2023-05-05T16:45:00Z',
-      lastUpdated: '2023-05-07T11:30:00Z'
+  try {
+    console.log("Buscando tickets de suporte reais...");
+    
+    const { data: alerts, error } = await supabase
+      .from('payment_alerts')
+      .select(`
+        id,
+        client_id,
+        alert_type,
+        alert_sent_date,
+        payment_due_date,
+        accounting_clients!inner(name, email)
+      `)
+      .order('alert_sent_date', { ascending: false });
+    
+    if (error) {
+      console.error('Erro ao buscar alertas de pagamento:', error);
+      throw error;
     }
-  ];
+    
+    // Convert payment alerts to support tickets format
+    const tickets: SupportTicket[] = (alerts || []).map(alert => ({
+      id: alert.id,
+      customerId: alert.client_id,
+      customerName: alert.accounting_clients?.name || 'Cliente não identificado',
+      subject: `Alerta de Pagamento - ${alert.alert_type}`,
+      status: 'open' as const,
+      priority: alert.alert_type === 'final_notice' ? 'high' as const : 'medium' as const,
+      createdAt: alert.alert_sent_date || new Date().toISOString(),
+      lastUpdated: alert.alert_sent_date || new Date().toISOString()
+    }));
+    
+    console.log("Tickets de suporte carregados:", tickets);
+    return tickets;
+  } catch (error) {
+    console.error('Erro ao buscar tickets de suporte:', error);
+    toast({
+      title: "Erro ao buscar tickets",
+      description: "Não foi possível carregar os tickets de suporte.",
+      variant: "destructive"
+    });
+    return [];
+  }
 }
 
 export async function sendBulkEmail(
