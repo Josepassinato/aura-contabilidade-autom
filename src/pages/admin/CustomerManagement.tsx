@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Filter, RefreshCcw, LogOut } from "lucide-react";
+import { Filter, RefreshCcw, LogOut, Building2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomersList } from "@/components/admin/customers/CustomersList";
 import { SupportTicketsList } from "@/components/admin/customers/SupportTicketsList";
@@ -39,6 +39,7 @@ const CustomerManagement = () => {
     setIsLoading(true);
     
     try {
+      console.log("Carregando dados das contabilidades...");
       const [customersData, ticketsData] = await Promise.all([
         fetchCustomersWithSubscriptions(),
         fetchSupportTickets()
@@ -46,18 +47,21 @@ const CustomerManagement = () => {
       
       setCustomers(customersData);
       setTickets(ticketsData);
+      console.log("Dados carregados - contabilidades:", customersData.length);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Erro ao carregar dados das contabilidades:", error);
     } finally {
       setIsLoading(false);
     }
   };
   
   const handleRefresh = () => {
+    console.log("Atualizando dados das contabilidades...");
     loadData();
   };
   
   const handleSendMessage = (customerIds: string[]) => {
+    console.log("Enviando mensagem para contabilidades:", customerIds);
     setSelectedCustomerIds(customerIds);
     setBulkEmailOpen(true);
   };
@@ -98,9 +102,12 @@ const CustomerManagement = () => {
                 Sair
               </Button>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Gestão de Clientes</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <Building2 className="h-6 w-6 text-blue-600" />
+              <h1 className="text-2xl font-bold tracking-tight">Gestão de Contabilidades</h1>
+            </div>
             <p className="text-muted-foreground">
-              Gerencie assinaturas, tickets de suporte e comunicação com clientes
+              Gerencie assinaturas e comunicação com os escritórios de contabilidade parceiros
             </p>
           </div>
           
@@ -114,23 +121,26 @@ const CustomerManagement = () => {
         
         <Tabs defaultValue="customers" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="customers">Assinaturas</TabsTrigger>
+            <TabsTrigger value="customers">Contabilidades</TabsTrigger>
             <TabsTrigger value="support">Suporte</TabsTrigger>
           </TabsList>
           
           <TabsContent value="customers" className="space-y-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle>Clientes e Assinaturas</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Escritórios de Contabilidade Parceiros
+                </CardTitle>
                 <CardDescription>
-                  Visualize e gerencie as assinaturas e planos dos escritórios de contabilidade
+                  Visualize e gerencie as assinaturas dos escritórios de contabilidade que utilizam o sistema
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center pb-4">
                   <div className="relative flex-1 max-w-sm">
                     <Input
-                      placeholder="Pesquisar cliente..."
+                      placeholder="Pesquisar contabilidade..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-8"
@@ -154,7 +164,7 @@ const CustomerManagement = () => {
               <CardHeader className="pb-3">
                 <CardTitle>Tickets de Suporte</CardTitle>
                 <CardDescription>
-                  Gerencie os tickets de suporte abertos pelos clientes
+                  Gerencie os tickets de suporte abertos pelas contabilidades parceiras
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -171,7 +181,7 @@ const CustomerManagement = () => {
       <Dialog open={bulkEmailOpen} onOpenChange={setBulkEmailOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Enviar Email</DialogTitle>
+            <DialogTitle>Enviar Email para Contabilidades</DialogTitle>
           </DialogHeader>
           <BulkEmailForm
             selectedCustomerIds={selectedCustomerIds}

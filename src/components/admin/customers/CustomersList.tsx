@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Pencil, MessageSquare } from "lucide-react";
+import { MoreHorizontal, Pencil, MessageSquare, Building2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomerSubscriptionForm } from "./CustomerSubscriptionForm";
 
@@ -86,7 +86,7 @@ export function CustomersList({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
-        <p className="text-muted-foreground">Carregando clientes...</p>
+        <p className="text-muted-foreground">Carregando contabilidades...</p>
       </div>
     );
   }
@@ -94,7 +94,11 @@ export function CustomersList({
   if (customers.length === 0) {
     return (
       <div className="text-center p-6 border rounded-md">
-        <p className="text-muted-foreground">Nenhum cliente encontrado</p>
+        <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-2">Nenhuma contabilidade encontrada</h3>
+        <p className="text-muted-foreground">
+          Não há contabilidades cadastradas no sistema ainda
+        </p>
       </div>
     );
   }
@@ -109,7 +113,7 @@ export function CustomersList({
             onClick={() => onSendMessage(selectedCustomers)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Enviar mensagem ({selectedCustomers.length})
+            Enviar mensagem para {selectedCustomers.length} contabilidade(s)
           </Button>
         </div>
       )}
@@ -133,7 +137,12 @@ export function CustomersList({
                   className="h-4 w-4"
                 />
               </TableHead>
-              <TableHead>Nome</TableHead>
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Escritório de Contabilidade
+                </div>
+              </TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Assinatura</TableHead>
               <TableHead>Plano</TableHead>
@@ -154,8 +163,9 @@ export function CustomersList({
                 </TableCell>
                 <TableCell className="font-medium">
                   <div>
-                    {customer.name}
+                    <div className="font-semibold">{customer.name}</div>
                     <div className="text-xs text-muted-foreground">{customer.email}</div>
+                    <div className="text-xs text-blue-600">Escritório de Contabilidade</div>
                   </div>
                 </TableCell>
                 <TableCell>{getStatusBadge(customer.status)}</TableCell>
@@ -197,7 +207,7 @@ export function CustomersList({
         {editingCustomer && (
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Gerenciar Assinatura</DialogTitle>
+              <DialogTitle>Gerenciar Assinatura - {editingCustomer.name}</DialogTitle>
             </DialogHeader>
             <CustomerSubscriptionForm 
               customer={editingCustomer}

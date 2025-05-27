@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Building2 } from "lucide-react";
 
 interface CustomerSubscriptionFormProps {
   customer: CustomerSummary;
@@ -53,6 +54,7 @@ export function CustomerSubscriptionForm({
   });
   
   const onSubmit = async (values: FormValues) => {
+    console.log("Atualizando assinatura da contabilidade:", customer.name, values);
     const success = await updateCustomerSubscription(customer.id, {
       status: values.status,
       plan_type: values.plan_type,
@@ -68,9 +70,13 @@ export function CustomerSubscriptionForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="mb-4">
-          <h3 className="text-sm font-medium">Cliente: {customer.name}</h3>
-          <p className="text-sm text-muted-foreground">{customer.email}</p>
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Building2 className="h-4 w-4 text-blue-600" />
+            <h3 className="text-sm font-medium text-blue-900">Escritório de Contabilidade</h3>
+          </div>
+          <p className="text-sm font-semibold text-blue-800">{customer.name}</p>
+          <p className="text-xs text-blue-600">{customer.email}</p>
         </div>
         
         <FormField
@@ -105,7 +111,7 @@ export function CustomerSubscriptionForm({
           name="plan_type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Plano</FormLabel>
+              <FormLabel>Plano de Assinatura</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
