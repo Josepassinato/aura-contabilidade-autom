@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +21,12 @@ interface ClientInviteFormProps {
   client: AccountingClient;
   onInviteSent?: () => void;
 }
+
+// Helper function to validate UUID format
+const isValidUUID = (str: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
 
 export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps) {
   const { toast } = useToast();
@@ -78,14 +83,22 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
         console.log('Generated token:', token);
         console.log('Expires at:', expiresAt);
         
-        const invitationData = {
+        // Prepare invitation data - handle potentially invalid UUID
+        const invitationData: any = {
           email: client.email,
           role: 'client',
           token,
           expires_at: expiresAt.toISOString(),
-          invited_by: userProfile.id,
           invited_by_name: userProfile.full_name,
         };
+
+        // Only include invited_by if we have a valid UUID
+        if (userProfile.id && isValidUUID(userProfile.id)) {
+          invitationData.invited_by = userProfile.id;
+          console.log('Using valid UUID for invited_by:', userProfile.id);
+        } else {
+          console.log('Skipping invited_by due to invalid UUID format:', userProfile.id);
+        }
         
         console.log('Creating invitation with data:', invitationData);
 
