@@ -741,6 +741,47 @@ export type Database = {
           },
         ]
       }
+      payment_alerts: {
+        Row: {
+          alert_sent_date: string | null
+          alert_type: string
+          client_id: string
+          created_at: string | null
+          email_sent: boolean | null
+          id: string
+          payment_due_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_sent_date?: string | null
+          alert_type: string
+          client_id: string
+          created_at?: string | null
+          email_sent?: boolean | null
+          id?: string
+          payment_due_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_sent_date?: string | null
+          alert_type?: string
+          client_id?: string
+          created_at?: string | null
+          email_sent?: boolean | null
+          id?: string
+          payment_due_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_alerts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pix_payments: {
         Row: {
           amount: string
@@ -1063,9 +1104,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_overdue_payments: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_pending_payment_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          alert_id: string
+          client_id: string
+          client_name: string
+          client_email: string
+          alert_type: string
+          payment_due_date: string
+          days_until_due: number
+          alert_sent_date: string
+        }[]
       }
       initiate_pix_payment: {
         Args: {

@@ -1,78 +1,72 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { BarChart3, Settings, Users, TrendingUp, Activity, Brain } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { 
+  Users, 
+  BarChart, 
+  Settings, 
+  Mail, 
+  CreditCard,
+  AlertTriangle 
+} from 'lucide-react';
 
-export const AdminSection = () => {
+export function AdminSection() {
   const location = useLocation();
-  
-  const isActive = (path: string) => location.pathname === path;
-  
+
+  const adminItems = [
+    {
+      title: "Gestão de Clientes",
+      href: "/admin/customer-management",
+      icon: Users,
+    },
+    {
+      title: "Análises de Negócio",
+      href: "/admin/business-analytics",
+      icon: BarChart,
+    },
+    {
+      title: "Métricas de Uso",
+      href: "/admin/usage-metrics",
+      icon: Settings,
+    },
+    {
+      title: "Convites de Usuário",
+      href: "/user-management",
+      icon: Mail,
+    },
+    {
+      title: "Alertas de Pagamento",
+      href: "/admin/payment-alerts",
+      icon: AlertTriangle,
+    },
+    {
+      title: "Gestão OpenAI",
+      href: "/admin/openai-management",
+      icon: CreditCard,
+    },
+  ];
+
   return (
     <div className="space-y-1">
-      <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Administração
-        </h2>
-      </div>
-      
-      <div className="px-3 space-y-1">
-        <Button 
-          variant={isActive('/admin/business-analytics') ? 'secondary' : 'ghost'} 
-          className="w-full justify-start" 
-          asChild
+      <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Administração
+      </h3>
+      {adminItems.map((item) => (
+        <Link
+          key={item.href}
+          to={item.href}
+          className={cn(
+            "flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            location.pathname === item.href
+              ? "bg-secondary text-secondary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+          )}
         >
-          <Link to="/admin/business-analytics">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Analytics
-          </Link>
-        </Button>
-        
-        <Button 
-          variant={isActive('/admin/customer-management') ? 'secondary' : 'ghost'} 
-          className="w-full justify-start" 
-          asChild
-        >
-          <Link to="/admin/customer-management">
-            <Users className="mr-2 h-4 w-4" />
-            Clientes
-          </Link>
-        </Button>
-        
-        <Button 
-          variant={isActive('/admin/usage-metrics') ? 'secondary' : 'ghost'} 
-          className="w-full justify-start" 
-          asChild
-        >
-          <Link to="/admin/usage-metrics">
-            <Activity className="mr-2 h-4 w-4" />
-            Métricas de Uso
-          </Link>
-        </Button>
-        
-        <Button 
-          variant={isActive('/admin/openai-management') ? 'secondary' : 'ghost'} 
-          className="w-full justify-start" 
-          asChild
-        >
-          <Link to="/admin/openai-management">
-            <Brain className="mr-2 h-4 w-4" />
-            Gerenciar OpenAI
-          </Link>
-        </Button>
-        
-        <Button 
-          variant={isActive('/admin/user-management') ? 'secondary' : 'ghost'} 
-          className="w-full justify-start" 
-          asChild
-        >
-          <Link to="/admin/user-management">
-            <Settings className="mr-2 h-4 w-4" />
-            Usuários
-          </Link>
-        </Button>
-      </div>
+          <item.icon className="mr-3 h-4 w-4" />
+          {item.title}
+        </Link>
+      ))}
     </div>
   );
-};
+}
