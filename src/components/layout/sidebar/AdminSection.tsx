@@ -16,7 +16,7 @@ export function AdminSection() {
 
   const adminItems = [
     {
-      title: "Gestão de Clientes",
+      title: "Gestão de Contabilidades",
       href: "/admin/customer-management",
       icon: Users,
     },
