@@ -16,13 +16,14 @@ import {
   resetTokenUsage,
   isOpenAIConfigured
 } from "./openai/supabaseOpenAiService";
+import { ApiKeyConfigDialog } from "./openai/ApiKeyConfigDialog";
 
 export function APIConfigForm() {
   const { isAdmin } = useAuth();
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{success: boolean; message: string} | null>(null);
   const [usageStats, setUsageStats] = useState({ totalTokens: 0, lastReset: '', requests: 0 });
-  const [showApiKeyForm, setShowApiKeyForm] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
 
   // Get stored values
   const storedValues = getOpenAiStoredValues();
@@ -141,6 +142,28 @@ export function APIConfigForm() {
         </Alert>
       )}
       
+      {/* API Key Configuration Section */}
+      <div className="bg-muted/50 p-4 rounded-lg border">
+        <h3 className="text-sm font-medium mb-2">Chave da API OpenAI</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">
+              {openAiConfigured 
+                ? "Chave da API configurada e armazenada de forma segura no Supabase"
+                : "Chave da API não configurada"
+              }
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowApiKeyDialog(true)}
+          >
+            {openAiConfigured ? "Atualizar" : "Configurar"} Chave API
+          </Button>
+        </div>
+      </div>
+      
       {/* Usage statistics */}
       <div className="bg-muted/50 p-4 rounded-lg border">
         <h3 className="text-sm font-medium mb-2">Estatísticas de uso da API</h3>
@@ -161,13 +184,6 @@ export function APIConfigForm() {
         <div className="mt-3 flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={handleResetUsage}>
             Zerar contadores
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowApiKeyForm(true)}
-          >
-            {openAiConfigured ? "Atualizar" : "Configurar"} Chave API
           </Button>
         </div>
       </div>
@@ -198,6 +214,16 @@ export function APIConfigForm() {
           Isso garante maior segurança para suas credenciais.
         </AlertDescription>
       </Alert>
+
+      <ApiKeyConfigDialog 
+        open={showApiKeyDialog}
+        onOpenChange={setShowApiKeyDialog}
+        onSuccess={() => {
+          setShowApiKeyDialog(false);
+          // Trigger a re-check of the configuration
+          window.dispatchEvent(new Event('openai-config-updated'));
+        }}
+      />
     </div>
   );
 }
