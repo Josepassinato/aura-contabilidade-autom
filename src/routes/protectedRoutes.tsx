@@ -22,6 +22,9 @@ import Notifications from '../pages/Notifications';
 import ClassificacaoReconciliacao from '../pages/ClassificacaoReconciliacao';
 import DadosTeste from '../pages/DadosTeste';
 import MonitorAnomalias from '../pages/MonitorAnomalias';
+import AlertasPagamento from '../pages/AlertasPagamento';
+import AuditoriaInteligente from '../pages/AuditoriaInteligente';
+import GestaoRiscos from '../pages/GestaoRiscos';
 
 // Export an array of Route elements
 export const protectedRoutes = [
@@ -128,6 +131,21 @@ export const protectedRoutes = [
   <Route key="monitor-anomalias" path="/monitor-anomalias" element={
     <ProtectedRoute>
       <MonitorAnomalias />
+    </ProtectedRoute>
+  } />,
+  <Route key="alertas-pagamento" path="/alertas-pagamento" element={
+    <ProtectedRoute>
+      <AlertasPagamento />
+    </ProtectedRoute>
+  } />,
+  <Route key="auditoria-inteligente" path="/auditoria-inteligente" element={
+    <ProtectedRoute>
+      <AuditoriaInteligente />
+    </ProtectedRoute>
+  } />,
+  <Route key="gestao-riscos" path="/gestao-riscos" element={
+    <ProtectedRoute>
+      <GestaoRiscos />
     </ProtectedRoute>
   } />,
 ];

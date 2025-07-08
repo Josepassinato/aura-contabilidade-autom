@@ -44,6 +44,30 @@ export function CommonSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/alertas-pagamento')}>
+              <Link to="/alertas-pagamento">
+                <BellIcon className="h-4 w-4 mr-2" />
+                <span>Alertas de Pagamento</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/auditoria-inteligente')}>
+              <Link to="/auditoria-inteligente">
+                <Settings2Icon className="h-4 w-4 mr-2" />
+                <span>Auditoria Inteligente</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/gestao-riscos')}>
+              <Link to="/gestao-riscos">
+                <Settings2Icon className="h-4 w-4 mr-2" />
+                <span>Gestão de Riscos</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/dados-teste')}>
               <Link to="/dados-teste">
                 <TestTubeIcon className="h-4 w-4 mr-2" />
