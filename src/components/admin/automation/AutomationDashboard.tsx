@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SystemHealthChecker } from "./SystemHealthChecker";
 
 interface AutomationLog {
   id: string;
@@ -59,6 +60,44 @@ export function AutomationDashboard() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Trigger de testes de estresse
+  const triggerStressTest = async (testType: string) => {
+    setTriggeringProcess('stress_test');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('stress-test-automation', {
+        body: { 
+          testType,
+          duration: testType === 'load' ? 30 : undefined,
+          concurrency: testType === 'concurrent' ? 10 : undefined,
+          dataVolume: testType === 'volume' ? 500 : undefined
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Teste de estresse iniciado",
+        description: `Teste ${testType} foi executado com sucesso.`
+      });
+
+      // Recarregar logs após um breve delay
+      setTimeout(() => {
+        loadAutomationLogs();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Erro ao executar teste de estresse:', error);
+      toast({
+        title: "Erro no teste de estresse",
+        description: error.message || "Não foi possível executar o teste.",
+        variant: "destructive"
+      });
+    } finally {
+      setTriggeringProcess(null);
     }
   };
 
@@ -229,6 +268,7 @@ export function AutomationDashboard() {
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="controls">Controles Manuais</TabsTrigger>
+          <TabsTrigger value="health">Verificação de Saúde</TabsTrigger>
           <TabsTrigger value="logs">Logs Detalhados</TabsTrigger>
         </TabsList>
 
@@ -312,6 +352,55 @@ export function AutomationDashboard() {
         </TabsContent>
 
         <TabsContent value="controls">
+          {/* Seção de Testes de Estresse */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Testes de Estresse do Sistema
+              </CardTitle>
+              <CardDescription>
+                Execute testes simulados para verificar a robustez do sistema antes do deploy em produção
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => triggerStressTest('load')}
+                  disabled={triggeringProcess === 'stress_test'}
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Teste de Carga
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => triggerStressTest('concurrent')}
+                  disabled={triggeringProcess === 'stress_test'}
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Teste de Concorrência
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => triggerStressTest('volume')}
+                  disabled={triggeringProcess === 'stress_test'}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Teste de Volume
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => triggerStressTest('full')}
+                  disabled={triggeringProcess === 'stress_test'}
+                >
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Teste Completo
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Processamento Diário */}
             <Card>
@@ -439,6 +528,10 @@ export function AutomationDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="health">
+          <SystemHealthChecker />
         </TabsContent>
 
         <TabsContent value="logs">
