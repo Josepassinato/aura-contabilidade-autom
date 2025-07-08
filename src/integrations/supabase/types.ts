@@ -189,6 +189,59 @@ export type Database = {
           },
         ]
       }
+      automation_logs: {
+        Row: {
+          client_id: string | null
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          error_details: Json | null
+          errors_count: number | null
+          id: string
+          metadata: Json | null
+          process_type: string
+          records_processed: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          metadata?: Json | null
+          process_type: string
+          records_processed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          metadata?: Json | null
+          process_type?: string
+          records_processed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificados_digitais: {
         Row: {
           arquivo: string

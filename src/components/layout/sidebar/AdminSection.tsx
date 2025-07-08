@@ -8,7 +8,8 @@ import {
   Settings, 
   Mail, 
   CreditCard,
-  AlertTriangle 
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 
 export function AdminSection() {
@@ -44,6 +45,11 @@ export function AdminSection() {
       title: "Gestão OpenAI",
       href: "/admin/openai-management",
       icon: CreditCard,
+    },
+    {
+      title: "Dashboard de Automação",
+      href: "/admin/automation",
+      icon: Activity,
     },
   ];
 

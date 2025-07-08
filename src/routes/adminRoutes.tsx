@@ -8,6 +8,7 @@ import UsageMetrics from '@/pages/admin/UsageMetrics';
 import UserManagement from '@/pages/admin/UserManagement';
 import OpenAIKeys from '@/pages/admin/OpenAIKeys';
 import PaymentAlerts from '@/pages/admin/PaymentAlerts';
+import AutomationDashboard from '@/pages/AutomationDashboard';
 
 const adminRoutes = [
   <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
@@ -16,6 +17,7 @@ const adminRoutes = [
   <Route key="user-management" path="/user-management" element={<AdminRoute component={UserManagement} />} />,
   <Route key="openai-management" path="/admin/openai-management" element={<AdminRoute component={OpenAIKeys} />} />,
   <Route key="payment-alerts" path="/admin/payment-alerts" element={<AdminRoute component={PaymentAlerts} />} />,
+  <Route key="automation-dashboard" path="/admin/automation" element={<AdminRoute component={AutomationDashboard} />} />,
 ];
 
 export { adminRoutes };
