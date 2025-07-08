@@ -12,13 +12,14 @@ import { TabsEmDesenvolvimento } from "@/components/fiscal/calculadora/TabsEmDes
 import { usePagamentoImposto } from "@/components/fiscal/calculadora/usePagamentoImposto";
 import { TipoImposto, ResultadoCalculo } from "@/services/fiscal/types";
 import WorkflowOrquestrador from "@/components/fiscal/workflow/WorkflowOrquestrador";
+import { ProcessamentoAutomatico } from "@/components/contabil/ProcessamentoAutomatico";
 import { checkForAuthLimboState, cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const CalculosFiscais = () => {
   const { isAuthenticated, isAccountant, isLoading, navigateToLogin } = useAuth();
-  const [activeTab, setActiveTab] = useState("calculadora");
+  const [activeTab, setActiveTab] = useState("processamento");
   const [cnpj, setCnpj] = useState("");
   const [periodo, setPeriodo] = useState("");
   const [regimeTributario, setRegimeTributario] = useState<"Simples" | "LucroPresumido" | "LucroReal">("LucroPresumido");
@@ -87,6 +88,7 @@ const CalculosFiscais = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="mb-4">
+          <TabsTrigger value="processamento">Processamento Automático</TabsTrigger>
           <TabsTrigger value="calculadora">Calculadora Fiscal</TabsTrigger>
           <TabsTrigger value="notas">Cálculo por Notas Fiscais</TabsTrigger>
           <TabsTrigger value="lancamentos">Cálculo por Lançamentos</TabsTrigger>
@@ -94,6 +96,10 @@ const CalculosFiscais = () => {
           <TabsTrigger value="workflow">Workflow Fiscal</TabsTrigger>
           <TabsTrigger value="retencoes">Retenções</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="processamento">
+          <ProcessamentoAutomatico />
+        </TabsContent>
 
         <TabsContent value="calculadora">
           <CalculadoraFiscal />
