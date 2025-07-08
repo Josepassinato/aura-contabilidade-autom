@@ -21,6 +21,7 @@ import AutomacaoBancaria from '../pages/AutomacaoBancaria';
 import Notifications from '../pages/Notifications';
 import ClassificacaoReconciliacao from '../pages/ClassificacaoReconciliacao';
 import DadosTeste from '../pages/DadosTeste';
+import MonitorAnomalias from '../pages/MonitorAnomalias';
 
 // Export an array of Route elements
 export const protectedRoutes = [
@@ -122,6 +123,11 @@ export const protectedRoutes = [
   <Route key="dados-teste" path="/dados-teste" element={
     <ProtectedRoute>
       <DadosTeste />
+    </ProtectedRoute>
+  } />,
+  <Route key="monitor-anomalias" path="/monitor-anomalias" element={
+    <ProtectedRoute>
+      <MonitorAnomalias />
     </ProtectedRoute>
   } />,
 ];
