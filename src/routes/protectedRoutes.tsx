@@ -20,6 +20,7 @@ import Colaboradores from '../pages/Colaboradores';
 import AutomacaoBancaria from '../pages/AutomacaoBancaria';
 import Notifications from '../pages/Notifications';
 import ClassificacaoReconciliacao from '../pages/ClassificacaoReconciliacao';
+import DadosTeste from '../pages/DadosTeste';
 
 // Export an array of Route elements
 export const protectedRoutes = [
@@ -116,6 +117,11 @@ export const protectedRoutes = [
   <Route key="classificacao-reconciliacao" path="/classificacao-reconciliacao" element={
     <ProtectedRoute>
       <ClassificacaoReconciliacao />
+    </ProtectedRoute>
+  } />,
+  <Route key="dados-teste" path="/dados-teste" element={
+    <ProtectedRoute>
+      <DadosTeste />
     </ProtectedRoute>
   } />,
 ];
