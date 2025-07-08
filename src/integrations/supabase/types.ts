@@ -242,6 +242,134 @@ export type Database = {
           },
         ]
       }
+      balancetes: {
+        Row: {
+          client_id: string
+          created_at: string
+          data_geracao: string
+          gerado_por: string | null
+          id: string
+          observacoes: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          data_geracao?: string
+          gerado_por?: string | null
+          id?: string
+          observacoes?: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          data_geracao?: string
+          gerado_por?: string | null
+          id?: string
+          observacoes?: string | null
+          periodo_fim?: string
+          periodo_inicio?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balancetes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      balancetes_itens: {
+        Row: {
+          balancete_id: string
+          conta_id: string
+          created_at: string
+          creditos_periodo: number
+          debitos_periodo: number
+          id: string
+          saldo_anterior: number
+          saldo_atual: number
+        }
+        Insert: {
+          balancete_id: string
+          conta_id: string
+          created_at?: string
+          creditos_periodo?: number
+          debitos_periodo?: number
+          id?: string
+          saldo_anterior?: number
+          saldo_atual?: number
+        }
+        Update: {
+          balancete_id?: string
+          conta_id?: string
+          created_at?: string
+          creditos_periodo?: number
+          debitos_periodo?: number
+          id?: string
+          saldo_anterior?: number
+          saldo_atual?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balancetes_itens_balancete_id_fkey"
+            columns: ["balancete_id"]
+            isOneToOne: false
+            referencedRelation: "balancetes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "balancetes_itens_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "plano_contas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      centro_custos: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certificados_digitais: {
         Row: {
           arquivo: string
@@ -755,6 +883,126 @@ export type Database = {
           },
         ]
       }
+      lancamentos_contabeis: {
+        Row: {
+          client_id: string
+          created_at: string
+          data_competencia: string
+          data_lancamento: string
+          data_lancamento_sistema: string
+          historico: string
+          id: string
+          numero_documento: string | null
+          numero_lancamento: string
+          observacoes: string | null
+          origem: string
+          status: string
+          tipo_documento: string | null
+          updated_at: string
+          usuario_lancamento: string | null
+          valor_total: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          data_competencia: string
+          data_lancamento: string
+          data_lancamento_sistema?: string
+          historico: string
+          id?: string
+          numero_documento?: string | null
+          numero_lancamento: string
+          observacoes?: string | null
+          origem?: string
+          status?: string
+          tipo_documento?: string | null
+          updated_at?: string
+          usuario_lancamento?: string | null
+          valor_total: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          data_competencia?: string
+          data_lancamento?: string
+          data_lancamento_sistema?: string
+          historico?: string
+          id?: string
+          numero_documento?: string | null
+          numero_lancamento?: string
+          observacoes?: string | null
+          origem?: string
+          status?: string
+          tipo_documento?: string | null
+          updated_at?: string
+          usuario_lancamento?: string | null
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_contabeis_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lancamentos_itens: {
+        Row: {
+          centro_custo_id: string | null
+          conta_id: string
+          created_at: string
+          historico_complementar: string | null
+          id: string
+          lancamento_id: string
+          tipo_movimento: string
+          valor: number
+        }
+        Insert: {
+          centro_custo_id?: string | null
+          conta_id: string
+          created_at?: string
+          historico_complementar?: string | null
+          id?: string
+          lancamento_id: string
+          tipo_movimento: string
+          valor: number
+        }
+        Update: {
+          centro_custo_id?: string | null
+          conta_id?: string
+          created_at?: string
+          historico_complementar?: string | null
+          id?: string
+          lancamento_id?: string
+          tipo_movimento?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_itens_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centro_custos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_itens_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "plano_contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_itens_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos_contabeis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obrigacoes_fiscais: {
         Row: {
           client_id: string | null
@@ -936,6 +1184,62 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plano_contas: {
+        Row: {
+          aceita_lancamento: boolean
+          ativo: boolean
+          codigo: string
+          conta_pai_id: string | null
+          created_at: string
+          grau: number
+          id: string
+          natureza: string
+          nome: string
+          observacoes: string | null
+          subtipo: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          aceita_lancamento?: boolean
+          ativo?: boolean
+          codigo: string
+          conta_pai_id?: string | null
+          created_at?: string
+          grau?: number
+          id?: string
+          natureza?: string
+          nome: string
+          observacoes?: string | null
+          subtipo?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          aceita_lancamento?: boolean
+          ativo?: boolean
+          codigo?: string
+          conta_pai_id?: string | null
+          created_at?: string
+          grau?: number
+          id?: string
+          natureza?: string
+          nome?: string
+          observacoes?: string | null
+          subtipo?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plano_contas_conta_pai_id_fkey"
+            columns: ["conta_pai_id"]
+            isOneToOne: false
+            referencedRelation: "plano_contas"
             referencedColumns: ["id"]
           },
         ]
