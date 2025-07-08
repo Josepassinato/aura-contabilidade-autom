@@ -887,6 +887,56 @@ export type Database = {
           },
         ]
       }
+      processed_accounting_data: {
+        Row: {
+          calculated_taxes: Json
+          client_id: string
+          created_at: string
+          expenses: number
+          id: string
+          net_income: number
+          period: string
+          processed_documents: Json
+          revenue: number
+          taxable_income: number
+          updated_at: string
+        }
+        Insert: {
+          calculated_taxes?: Json
+          client_id: string
+          created_at?: string
+          expenses?: number
+          id?: string
+          net_income?: number
+          period: string
+          processed_documents?: Json
+          revenue?: number
+          taxable_income?: number
+          updated_at?: string
+        }
+        Update: {
+          calculated_taxes?: Json
+          client_id?: string
+          created_at?: string
+          expenses?: number
+          id?: string
+          net_income?: number
+          period?: string
+          processed_documents?: Json
+          revenue?: number
+          taxable_income?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processed_accounting_data_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       procuracoes_eletronicas: {
         Row: {
           certificado_id: string | null

@@ -153,13 +153,25 @@ export const dataProcessingService = {
    */
   async saveProcessedData(data: ProcessedAccountingData) {
     try {
-      // Salvar no histórico de processamento (você pode criar uma tabela específica)
-      console.log('Dados contábeis processados:', data);
-      
-      // Aqui você salvaria em uma tabela como 'processed_accounting_data'
-      // Por enquanto apenas log para demonstração
+      const { error } = await supabase
+        .from('processed_accounting_data')
+        .insert({
+          client_id: data.clientId,
+          period: data.period,
+          revenue: data.revenue,
+          expenses: data.expenses,
+          net_income: data.netIncome,
+          taxable_income: data.taxableIncome,
+          calculated_taxes: data.taxes,
+          processed_documents: data.documents
+        });
+
+      if (error) throw error;
+
+      console.log('Dados contábeis salvos com sucesso');
     } catch (error) {
       console.error('Erro ao salvar dados processados:', error);
+      throw error;
     }
   },
 
