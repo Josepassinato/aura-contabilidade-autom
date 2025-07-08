@@ -55,39 +55,73 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
     setIsSubmitting(true);
     
     try {
+      console.log("=== INICIANDO CADASTRO DE CLIENTE ===");
       console.log("Dados do cliente:", data);
+      
+      // Preparar dados para inserção
+      const clientData = {
+        name: data.name,
+        cnpj: data.cnpj,
+        email: data.email,
+        phone: data.phone || null,
+        address: data.address || null,
+        regime: data.regime,
+        status: "active" as const,
+        accounting_firm_id: null // Cliente não tem escritório associado por padrão
+      };
+      
+      console.log("Dados preparados para inserção:", clientData);
       
       // Inserir cliente no Supabase
       const { data: insertedData, error } = await supabase
         .from('accounting_clients')
-        .insert([{
-          name: data.name,
-          cnpj: data.cnpj,
-          email: data.email,
-          phone: data.phone || null,
-          address: data.address || null,
-          regime: data.regime,
-          status: "active"
-        }])
+        .insert([clientData])
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erro na inserção:", error);
+        throw error;
+      }
       
-      // Exibir mensagem de sucesso
-      toast({
-        title: "Cliente cadastrado",
-        description: `${data.name} foi cadastrado com sucesso.`,
-      });
+      console.log("Cliente inserido com sucesso:", insertedData);
       
-      // Limpar formulário
-      form.reset();
-      
-      // Chamar callback de sucesso
-      if (onSuccess) {
-        onSuccess();
+      // Verificar se realmente foi inserido
+      if (insertedData && insertedData.length > 0) {
+        const clientId = insertedData[0].id;
+        console.log(`✅ Cliente cadastrado com ID: ${clientId}`);
+        
+        // Verificar se o cliente pode ser encontrado
+        const { data: verificationData, error: verificationError } = await supabase
+          .from('accounting_clients')
+          .select('*')
+          .eq('id', clientId)
+          .single();
+          
+        if (verificationError) {
+          console.warn("Aviso: Erro na verificação:", verificationError);
+        } else {
+          console.log("✅ Verificação: Cliente encontrado no banco:", verificationData);
+        }
+        
+        // Exibir mensagem de sucesso
+        toast({
+          title: "Cliente cadastrado com sucesso",
+          description: `${data.name} foi cadastrado e está disponível no sistema.`,
+        });
+        
+        // Limpar formulário
+        form.reset();
+        
+        // Chamar callback de sucesso
+        if (onSuccess) {
+          console.log("Chamando callback de sucesso...");
+          onSuccess();
+        }
+      } else {
+        throw new Error("Nenhum dado foi retornado após a inserção");
       }
     } catch (error: any) {
-      console.error("Erro ao salvar cliente:", error);
+      console.error("❌ ERRO NO CADASTRO:", error);
       toast({
         title: "Erro ao cadastrar cliente",
         description: error.message || "Ocorreu um erro ao salvar os dados do cliente.",
@@ -95,6 +129,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       });
     } finally {
       setIsSubmitting(false);
+      console.log("=== FIM DO CADASTRO ===");
     }
   };
 

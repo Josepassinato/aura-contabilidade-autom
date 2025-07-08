@@ -14,7 +14,7 @@ import { Tables } from "@/integrations/supabase/types";
 export interface ClientSelectorProps {
   onClientSelect?: (client: { id: string; name: string }) => void;
   onSelectClient?: (clientId: string) => void;
-  onClientChange?: (client: any) => void; // Adicionado esta prop
+  onClientChange?: (client: any) => void;
   defaultValue?: string;
 }
 
@@ -26,34 +26,41 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
   const [isLoading, setIsLoading] = useState(false);
   
   // Buscar clientes do Supabase quando o componente inicializar
-  useEffect(() => {
-    const loadClients = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchAllClients();
-        
-        // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
-        if (data && data.length > 0) {
-          const clientsData = [
-            { id: '', name: 'Visão Geral' },
-            ...data.map(client => ({
-              id: client.id,
-              name: client.name
-            }))
-          ];
-          setClients(clientsData);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar clientes:', error);
-      } finally {
-        setIsLoading(false);
+  const loadClients = async () => {
+    console.log("ClientSelector: Carregando clientes...");
+    setIsLoading(true);
+    try {
+      const data = await fetchAllClients();
+      
+      console.log(`ClientSelector: ${data.length} clientes encontrados`);
+      
+      // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
+      if (data && data.length > 0) {
+        const clientsData = [
+          { id: '', name: 'Visão Geral' },
+          ...data.map(client => ({
+            id: client.id,
+            name: client.name
+          }))
+        ];
+        setClients(clientsData);
+        console.log("ClientSelector: Lista atualizada:", clientsData);
+      } else {
+        console.log("ClientSelector: Nenhum cliente encontrado, mantendo apenas 'Visão Geral'");
       }
-    };
-    
+    } catch (error) {
+      console.error('ClientSelector: Erro ao buscar clientes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadClients();
   }, []);
   
   const handleChange = (value: string) => {
+    console.log(`ClientSelector: Cliente selecionado: ${value}`);
     setSelectedClient(value);
     
     // Encontrar o cliente selecionado pelo nome
