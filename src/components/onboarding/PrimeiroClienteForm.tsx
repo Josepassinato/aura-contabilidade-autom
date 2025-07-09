@@ -18,6 +18,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { formatCNPJ } from "@/components/client-access/formatCNPJ";
 import { validateCNPJ } from "@/utils/validators";
+import { consultarCNPJ } from "@/services/governamental/apiIntegration";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -50,6 +51,7 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
 
   const handleSubmit = async (data: FormValues) => {
     try {
@@ -87,6 +89,38 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedCNPJ = formatCNPJ(e.target.value);
     form.setValue("cnpj", formattedCNPJ);
+  };
+
+  const handleCNPJBlur = async () => {
+    const cnpj = form.getValues("cnpj");
+    if (cnpj && validateCNPJ(cnpj)) {
+      setIsLoadingCNPJ(true);
+      try {
+        const resultado = await consultarCNPJ(cnpj.replace(/\D/g, ''));
+        if (resultado.sucesso && resultado.dados) {
+          // Auto-preencher dados encontrados
+          if (resultado.dados.nome) {
+            form.setValue("name", resultado.dados.nome);
+          }
+          if (resultado.dados.email) {
+            form.setValue("email", resultado.dados.email);
+          }
+          if (resultado.dados.telefone) {
+            form.setValue("phone", resultado.dados.telefone);
+          }
+          
+          toast({
+            title: "Dados encontrados",
+            description: "Informações da empresa foram preenchidas automaticamente."
+          });
+        }
+      } catch (error) {
+        console.log("Erro ao consultar CNPJ:", error);
+        // Não mostrar erro ao usuário, apenas não preencher automaticamente
+      } finally {
+        setIsLoadingCNPJ(false);
+      }
+    }
   };
   
   // Simulações de chamadas à API para demonstrar o Promise.all
@@ -126,14 +160,23 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
               <FormItem>
                 <FormLabel>CNPJ</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="00.000.000/0000-00" 
-                    {...field}
-                    onChange={handleCNPJChange} 
-                  />
+                  <div className="relative">
+                    <Input 
+                      placeholder="00.000.000/0000-00" 
+                      {...field}
+                      onChange={handleCNPJChange}
+                      onBlur={handleCNPJBlur}
+                      disabled={isLoadingCNPJ}
+                    />
+                    {isLoadingCNPJ && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormDescription>
-                  Digite um CNPJ válido no formato XX.XXX.XXX/XXXX-XX
+                  Digite um CNPJ válido - os dados serão preenchidos automaticamente
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -199,8 +242,8 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Limpar
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Adicionando..." : "Adicionar Cliente"}
+          <Button type="submit" disabled={isSubmitting || isLoadingCNPJ}>
+            {isSubmitting ? "Adicionando..." : isLoadingCNPJ ? "Carregando..." : "Adicionar Cliente"}
           </Button>
         </div>
       </form>

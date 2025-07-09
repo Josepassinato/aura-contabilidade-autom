@@ -17,10 +17,15 @@ import {
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { consultarCNPJ } from "@/services/governamental/apiIntegration";
+import { formatCNPJ } from "@/components/client-access/formatCNPJ";
+import { validateCNPJ } from "@/utils/validators";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
-  cnpj: z.string().min(14, { message: "CNPJ deve ter 14 dígitos" }),
+  cnpj: z.string()
+    .min(14, { message: "CNPJ deve ter 14 dígitos" })
+    .refine(val => validateCNPJ(val), { message: "CNPJ inválido" }),
   email: z.string().email({ message: "Email inválido" }),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -38,6 +43,7 @@ interface ClientFormProps {
 export function ClientForm({ onSuccess }: ClientFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -133,6 +139,46 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
     }
   };
 
+  const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedCNPJ = formatCNPJ(e.target.value);
+    form.setValue("cnpj", formattedCNPJ);
+  };
+
+  const handleCNPJBlur = async () => {
+    const cnpj = form.getValues("cnpj");
+    if (cnpj && validateCNPJ(cnpj)) {
+      setIsLoadingCNPJ(true);
+      try {
+        const resultado = await consultarCNPJ(cnpj.replace(/\D/g, ''));
+        if (resultado.sucesso && resultado.dados) {
+          // Auto-preencher dados encontrados
+          if (resultado.dados.nome) {
+            form.setValue("name", resultado.dados.nome);
+          }
+          if (resultado.dados.email) {
+            form.setValue("email", resultado.dados.email);
+          }
+          if (resultado.dados.telefone) {
+            form.setValue("phone", resultado.dados.telefone);
+          }
+          if (resultado.dados.endereco) {
+            form.setValue("address", resultado.dados.endereco);
+          }
+          
+          toast({
+            title: "Dados encontrados",
+            description: "Informações da empresa foram preenchidas automaticamente."
+          });
+        }
+      } catch (error) {
+        console.log("Erro ao consultar CNPJ:", error);
+        // Não mostrar erro ao usuário, apenas não preencher automaticamente
+      } finally {
+        setIsLoadingCNPJ(false);
+      }
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -155,13 +201,26 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
             control={form.control}
             name="cnpj"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>CNPJ</FormLabel>
-                <FormControl>
-                  <Input placeholder="00.000.000/0000-00" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            <FormItem>
+              <FormLabel>CNPJ</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input 
+                    placeholder="00.000.000/0000-00" 
+                    {...field}
+                    onChange={handleCNPJChange}
+                    onBlur={handleCNPJBlur}
+                    disabled={isLoadingCNPJ}
+                  />
+                  {isLoadingCNPJ && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
             )}
           />
         </div>
@@ -247,9 +306,9 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
           </Button>
           <Button 
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoadingCNPJ}
           >
-            {isSubmitting ? "Cadastrando..." : "Cadastrar Cliente"}
+            {isSubmitting ? "Cadastrando..." : isLoadingCNPJ ? "Carregando..." : "Cadastrar Cliente"}
           </Button>
         </div>
       </form>
