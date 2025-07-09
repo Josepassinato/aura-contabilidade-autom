@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calculator, FileText, BarChart3, DollarSign, TrendingUp } from "lucide-react";
 import { PlanoContasManager } from "@/components/contabil/PlanoContasManager";
 import { LancamentosContabeis } from "@/components/contabil/LancamentosContabeis";
+import { BalancetesManager } from "@/components/contabil/BalancetesManager";
+import { CentroCustosManager } from "@/components/contabil/CentroCustosManager";
+import { RelatoriosContabeis } from "@/components/contabil/RelatoriosContabeis";
+import { AnaliseFinanceira } from "@/components/contabil/AnaliseFinanceira";
 
 export default function Contabilidade() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -196,31 +200,19 @@ export default function Contabilidade() {
         </TabsContent>
 
         <TabsContent value="balancetes" className="mt-6">
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold">Balancetes</h3>
-            <p className="text-muted-foreground">Em desenvolvimento</p>
-          </div>
+          <BalancetesManager />
         </TabsContent>
 
         <TabsContent value="centro-custos" className="mt-6">
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold">Centro de Custos</h3>
-            <p className="text-muted-foreground">Em desenvolvimento</p>
-          </div>
+          <CentroCustosManager />
         </TabsContent>
 
         <TabsContent value="relatorios" className="mt-6">
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold">Relatórios Contábeis</h3>
-            <p className="text-muted-foreground">Em desenvolvimento</p>
-          </div>
+          <RelatoriosContabeis />
         </TabsContent>
 
         <TabsContent value="analises" className="mt-6">
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold">Análises Financeiras</h3>
-            <p className="text-muted-foreground">Em desenvolvimento</p>
-          </div>
+          <AnaliseFinanceira />
         </TabsContent>
       </Tabs>
     </DashboardLayout>
