@@ -38,10 +38,12 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
       if (data && data.length > 0) {
         const clientsData = [
           { id: 'overview', name: 'Visão Geral' },
-          ...data.map(client => ({
-            id: client.id,
-            name: client.name
-          }))
+          ...data
+            .filter(client => client.name && client.name.trim() !== '')
+            .map(client => ({
+              id: client.id,
+              name: client.name
+            }))
         ];
         setClients(clientsData);
         console.log("ClientSelector: Lista atualizada:", clientsData);
@@ -88,11 +90,13 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
           <SelectValue placeholder={isLoading ? "Carregando..." : "Selecione um cliente"} />
         </SelectTrigger>
         <SelectContent>
-          {clients.map(client => (
-            <SelectItem key={client.id || client.name} value={client.name}>
-              {client.name}
-            </SelectItem>
-          ))}
+          {clients
+            .filter(client => client.name && client.name.trim() !== '')
+            .map(client => (
+              <SelectItem key={client.id} value={client.name}>
+                {client.name}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </div>
