@@ -128,10 +128,27 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
-        <AnomalyDetector 
-          clientId={clientId} 
-          onAnomalySelected={handleAnomalySelected} 
-        />
+        {clientId ? (
+          <AnomalyDetector 
+            clientId={clientId} 
+            onAnomalySelected={handleAnomalySelected} 
+          />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Detector de Anomalias</CardTitle>
+              <CardDescription>
+                Análise automática de inconsistências contábeis e fiscais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                <AlertTriangle className="h-12 w-12 mb-4 opacity-30 mx-auto" />
+                <p>Selecione um cliente para detectar anomalias contábeis</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <Card>
