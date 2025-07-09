@@ -310,3 +310,61 @@ async function scheduleMeeting(supabase: any, clientId: string, details: string)
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
+
+async function generateReport(supabase: any, clientId: string, details: string) {
+  try {
+    // Detectar tipo de relatório da mensagem
+    const reportTypes = {
+      'balancete': ['balancete', 'patrimônio', 'patrimonial'],
+      'dre': ['dre', 'resultado', 'demonstração'],
+      'obrigacoes': ['obrigações', 'obrigacoes', 'fiscais', 'vencimentos'],
+      'resumo_fiscal': ['resumo', 'fiscal', 'geral', 'completo']
+    };
+    
+    let reportType = 'resumo_fiscal'; // Default
+    
+    for (const [type, keywords] of Object.entries(reportTypes)) {
+      if (keywords.some(keyword => details.toLowerCase().includes(keyword))) {
+        reportType = type;
+        break;
+      }
+    }
+    
+    // Gerar relatório via edge function
+    const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-pdf-report', {
+      body: {
+        reportType,
+        clientId,
+        parameters: {
+          period: 'current_month'
+        },
+        clientEmail: null,
+        sendEmail: false
+      }
+    });
+    
+    if (reportError) {
+      throw new Error(`Erro ao gerar relatório: ${reportError.message}`);
+    }
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Relatório de ${reportType} gerado com sucesso! Você pode acessá-lo através do sistema.`,
+        reportId: reportData?.reportId,
+        downloadUrl: reportData?.downloadUrl
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+    
+  } catch (error) {
+    console.error('❌ Erro ao gerar relatório:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        message: 'Desculpe, não foi possível gerar o relatório no momento. Tente novamente mais tarde.'
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
