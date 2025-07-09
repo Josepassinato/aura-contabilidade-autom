@@ -25,7 +25,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const { isAdmin, isAccountant } = useSidebarPermissions();
 
   return (
-    <Sidebar>
+    <Sidebar data-tour="dashboard-sidebar">
       <HeaderSection />
 
       <SidebarContent className="p-2 flex-1 overflow-auto">
