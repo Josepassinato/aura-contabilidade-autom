@@ -2,6 +2,7 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
 import { AdminRoute } from '@/components/auth/AdminRoute';
+import { VoiceAgentConfig } from '@/components/admin/voice-agent/VoiceAgentConfig';
 import CustomerManagement from '@/pages/admin/CustomerManagement';
 import BusinessAnalytics from '@/pages/admin/BusinessAnalytics';
 import UsageMetrics from '@/pages/admin/UsageMetrics';
@@ -18,6 +19,7 @@ const adminRoutes = [
   <Route key="openai-management" path="/admin/openai-management" element={<AdminRoute component={OpenAIKeys} />} />,
   <Route key="payment-alerts" path="/admin/payment-alerts" element={<AdminRoute component={PaymentAlerts} />} />,
   <Route key="automation-dashboard" path="/admin/automation" element={<AdminRoute component={AutomationDashboard} />} />,
+  <Route key="voice-agent-config" path="/admin/voice-agent" element={<AdminRoute component={() => <VoiceAgentConfig />} />} />,
 ];
 
 export { adminRoutes };
