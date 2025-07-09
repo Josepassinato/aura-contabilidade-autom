@@ -24,14 +24,9 @@ function App() {
     <QueryProvider>
       <GlobalErrorBoundary>
         <LoadingProvider>
-          <AuthProvider>
-            <OnboardingProvider>
-              <RouterProvider router={router} />
-              <Toaster />
-              <GlobalLoadingIndicator />
-              <OnboardingModal />
-            </OnboardingProvider>
-          </AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+          <GlobalLoadingIndicator />
         </LoadingProvider>
       </GlobalErrorBoundary>
     </QueryProvider>
