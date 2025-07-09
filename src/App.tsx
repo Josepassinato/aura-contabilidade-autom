@@ -4,6 +4,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/auth";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryProvider } from "./hooks/useSupabaseQuery";
+import { GlobalErrorBoundary } from "./components/layout/GlobalErrorBoundary";
+import { LoadingProvider } from "./hooks/useLoadingState";
+import { OnboardingProvider } from "./components/onboarding/OnboardingProvider";
+import { OnboardingModal } from "./components/onboarding/OnboardingModal";
+import { GlobalLoadingIndicator } from "./components/layout/GlobalLoadingIndicator";
 import AppRoutes from "./routes";
 
 // Create the router using createBrowserRouter
@@ -17,10 +22,18 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </AuthProvider>
+      <GlobalErrorBoundary>
+        <LoadingProvider>
+          <AuthProvider>
+            <OnboardingProvider>
+              <RouterProvider router={router} />
+              <Toaster />
+              <GlobalLoadingIndicator />
+              <OnboardingModal />
+            </OnboardingProvider>
+          </AuthProvider>
+        </LoadingProvider>
+      </GlobalErrorBoundary>
     </QueryProvider>
   );
 }

@@ -6,8 +6,9 @@ import { DocumentsTable } from './DocumentsTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import { LogOut, Sparkles } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { Link } from 'react-router-dom';
 
 export const DashboardView = () => {
   const { enhancedLogout } = useAuth();
@@ -37,6 +38,12 @@ export const DashboardView = () => {
             Visão geral dos seus clientes e obrigações fiscais
           </p>
         </div>
+        <Link to="/ux-demo">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Demo UX
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
