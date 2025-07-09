@@ -1955,6 +1955,60 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_reports: {
+        Row: {
+          client_id: string
+          created_at: string
+          email_recipients: string[]
+          id: string
+          is_active: boolean
+          last_run: string | null
+          next_run: string | null
+          schedule_cron: string
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          email_recipients?: string[]
+          id?: string
+          is_active?: boolean
+          last_run?: string | null
+          next_run?: string | null
+          schedule_cron: string
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          email_recipients?: string[]
+          id?: string
+          is_active?: boolean
+          last_run?: string | null
+          next_run?: string | null
+          schedule_cron?: string
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_reports_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reports_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sefaz_sp_scrapes: {
         Row: {
           client_id: string

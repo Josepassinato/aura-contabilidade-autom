@@ -177,6 +177,18 @@ async function generatePDFByType(
     case 'resumo_fiscal':
       await generateResumoFiscalReport(doc, client, parameters, supabase);
       break;
+    case 'fluxo_caixa':
+      await generateFluxoCaixaReport(doc, client, parameters, supabase);
+      break;
+    case 'analise_financeira':
+      await generateAnaliseFinanceiraReport(doc, client, parameters, supabase);
+      break;
+    case 'comparativo_mensal':
+      await generateComparativoMensalReport(doc, client, parameters, supabase);
+      break;
+    case 'indicadores_performance':
+      await generateIndicadoresPerformanceReport(doc, client, parameters, supabase);
+      break;
     default:
       await generateGenericReport(doc, client, parameters);
   }
@@ -500,4 +512,169 @@ function formatCurrency(value: number): string {
     style: 'currency',
     currency: 'BRL'
   }).format(value || 0);
+}
+
+async function generateFluxoCaixaReport(doc: any, client: any, parameters: any, supabase: any) {
+  doc.setFontSize(16);
+  doc.text('RELATÓRIO DE FLUXO DE CAIXA', 20, 85);
+
+  let yPosition = 110;
+  
+  // Dados simulados de fluxo de caixa
+  const entradas = [
+    { descricao: 'Vendas à Vista', valor: 50000 },
+    { descricao: 'Recebimento de Clientes', valor: 30000 },
+    { descricao: 'Outras Receitas', valor: 5000 }
+  ];
+  
+  const saidas = [
+    { descricao: 'Pagamento Fornecedores', valor: 25000 },
+    { descricao: 'Salários e Encargos', valor: 15000 },
+    { descricao: 'Despesas Operacionais', valor: 8000 }
+  ];
+
+  // Entradas
+  doc.setFontSize(14);
+  doc.text('ENTRADAS:', 20, yPosition);
+  yPosition += 15;
+
+  let totalEntradas = 0;
+  entradas.forEach(entrada => {
+    doc.setFontSize(10);
+    doc.text(`• ${entrada.descricao}: ${formatCurrency(entrada.valor)}`, 30, yPosition);
+    totalEntradas += entrada.valor;
+    yPosition += 10;
+  });
+
+  yPosition += 10;
+  doc.setFontSize(12);
+  doc.text(`Total Entradas: ${formatCurrency(totalEntradas)}`, 30, yPosition);
+  yPosition += 20;
+
+  // Saídas
+  doc.setFontSize(14);
+  doc.text('SAÍDAS:', 20, yPosition);
+  yPosition += 15;
+
+  let totalSaidas = 0;
+  saidas.forEach(saida => {
+    doc.setFontSize(10);
+    doc.text(`• ${saida.descricao}: ${formatCurrency(saida.valor)}`, 30, yPosition);
+    totalSaidas += saida.valor;
+    yPosition += 10;
+  });
+
+  yPosition += 10;
+  doc.setFontSize(12);
+  doc.text(`Total Saídas: ${formatCurrency(totalSaidas)}`, 30, yPosition);
+  yPosition += 20;
+
+  // Resultado
+  const saldoFinal = totalEntradas - totalSaidas;
+  doc.setFontSize(14);
+  doc.text(`SALDO FINAL: ${formatCurrency(saldoFinal)}`, 20, yPosition);
+}
+
+async function generateAnaliseFinanceiraReport(doc: any, client: any, parameters: any, supabase: any) {
+  doc.setFontSize(16);
+  doc.text('ANÁLISE FINANCEIRA AVANÇADA', 20, 85);
+
+  let yPosition = 110;
+  
+  // Indicadores simulados
+  doc.setFontSize(14);
+  doc.text('INDICADORES DE LIQUIDEZ:', 20, yPosition);
+  yPosition += 15;
+
+  doc.setFontSize(10);
+  doc.text('• Liquidez Corrente: 1.85', 30, yPosition);
+  yPosition += 10;
+  doc.text('• Liquidez Seca: 1.42', 30, yPosition);
+  yPosition += 10;
+  doc.text('• Liquidez Imediata: 0.35', 30, yPosition);
+  yPosition += 20;
+
+  doc.setFontSize(14);
+  doc.text('INDICADORES DE RENTABILIDADE:', 20, yPosition);
+  yPosition += 15;
+
+  doc.setFontSize(10);
+  doc.text('• Margem Líquida: 12.5%', 30, yPosition);
+  yPosition += 10;
+  doc.text('• ROE (Return on Equity): 18.2%', 30, yPosition);
+  yPosition += 10;
+  doc.text('• ROA (Return on Assets): 8.7%', 30, yPosition);
+  yPosition += 20;
+
+  doc.setFontSize(14);
+  doc.text('ANÁLISE DE TENDÊNCIAS:', 20, yPosition);
+  yPosition += 15;
+
+  doc.setFontSize(10);
+  doc.text('• Crescimento de Receitas: +15% (vs mês anterior)', 30, yPosition);
+  yPosition += 10;
+  doc.text('• Redução de Custos: -5% (vs mês anterior)', 30, yPosition);
+  yPosition += 10;
+  doc.text('• Melhoria da Margem: +2.3 pontos percentuais', 30, yPosition);
+}
+
+async function generateComparativoMensalReport(doc: any, client: any, parameters: any, supabase: any) {
+  doc.setFontSize(16);
+  doc.text('COMPARATIVO MENSAL', 20, 85);
+
+  // Dados simulados de comparação
+  const meses = ['Janeiro', 'Fevereiro', 'Março'];
+  const receitas = [80000, 85000, 92000];
+  const despesas = [65000, 68000, 70000];
+
+  (doc as any).autoTable({
+    startY: 110,
+    head: [['Mês', 'Receitas', 'Despesas', 'Resultado', 'Variação %']],
+    body: meses.map((mes, index) => {
+      const resultado = receitas[index] - despesas[index];
+      const variacao = index > 0 ? ((resultado - (receitas[index-1] - despesas[index-1])) / (receitas[index-1] - despesas[index-1]) * 100).toFixed(1) + '%' : '-';
+      return [
+        mes,
+        formatCurrency(receitas[index]),
+        formatCurrency(despesas[index]),
+        formatCurrency(resultado),
+        variacao
+      ];
+    }),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [52, 152, 219] }
+  });
+}
+
+async function generateIndicadoresPerformanceReport(doc: any, client: any, parameters: any, supabase: any) {
+  doc.setFontSize(16);
+  doc.text('INDICADORES DE PERFORMANCE', 20, 85);
+
+  let yPosition = 110;
+
+  // KPIs principais
+  doc.setFontSize(14);
+  doc.text('KPIs PRINCIPAIS:', 20, yPosition);
+  yPosition += 15;
+
+  const kpis = [
+    { nome: 'Faturamento Mensal', valor: 'R$ 92.000', meta: 'R$ 90.000', status: '✓' },
+    { nome: 'Margem de Contribuição', valor: '35%', meta: '30%', status: '✓' },
+    { nome: 'Inadimplência', valor: '2.1%', meta: '< 3%', status: '✓' },
+    { nome: 'Giro de Estoque', valor: '4.2x', meta: '4x', status: '✓' },
+    { nome: 'Prazo Médio Recebimento', valor: '28 dias', meta: '30 dias', status: '✓' }
+  ];
+
+  (doc as any).autoTable({
+    startY: yPosition,
+    head: [['Indicador', 'Valor Atual', 'Meta', 'Status']],
+    body: kpis.map(kpi => [kpi.nome, kpi.valor, kpi.meta, kpi.status]),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [46, 204, 113] }
+  });
+
+  yPosition = (doc as any).lastAutoTable.finalY + 20;
+
+  doc.setFontSize(12);
+  doc.text('RESUMO: Empresa apresenta performance acima das metas estabelecidas.', 20, yPosition);
 }

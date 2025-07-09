@@ -57,39 +57,47 @@ export default function ReportScheduler() {
 
   const loadData = async () => {
     try {
-      const [schedulesRes, templatesRes, clientsRes] = await Promise.all([
-        supabase
-          .from('scheduled_reports')
-          .select(`
-            *,
-            report_templates(name),
-            accounting_clients(name)
-          `)
-          .order('created_at', { ascending: false }),
-        
-        supabase
-          .from('report_templates')
-          .select('id, name, template_type')
-          .eq('is_active', true),
-        
-        supabase
-          .from('accounting_clients')
-          .select('id, name')
-          .eq('status', 'active')
-      ]);
+      // Carregar agendamentos (usando função simples devido a limitações do tipo)
+      const { data: schedulesData, error: schedulesError } = await supabase
+        .from('scheduled_reports')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (schedulesRes.error) throw schedulesRes.error;
-      if (templatesRes.error) throw templatesRes.error;
-      if (clientsRes.error) throw clientsRes.error;
+      if (schedulesError) throw schedulesError;
 
-      setSchedules(schedulesRes.data?.map(s => ({
-        ...s,
-        template_name: s.report_templates?.name,
-        client_name: s.accounting_clients?.name
-      })) || []);
-      
-      setTemplates(templatesRes.data || []);
-      setClients(clientsRes.data || []);
+      // Carregar templates
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('report_templates')
+        .select('id, name, template_type')
+        .eq('is_active', true);
+
+      if (templatesError) throw templatesError;
+
+      // Carregar clientes
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('accounting_clients')
+        .select('id, name')
+        .eq('status', 'active');
+
+      if (clientsError) throw clientsError;
+
+      // Enriquecer dados dos agendamentos
+      const enrichedSchedules = await Promise.all(
+        (schedulesData || []).map(async (schedule: any) => {
+          const template = templatesData?.find(t => t.id === schedule.template_id);
+          const client = clientsData?.find(c => c.id === schedule.client_id);
+          
+          return {
+            ...schedule,
+            template_name: template?.name || 'Template não encontrado',
+            client_name: client?.name || 'Cliente não encontrado'
+          };
+        })
+      );
+
+      setSchedules(enrichedSchedules);
+      setTemplates(templatesData || []);
+      setClients(clientsData || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast({

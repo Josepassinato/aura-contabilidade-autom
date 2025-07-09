@@ -10,6 +10,8 @@ import UserManagement from '@/pages/admin/UserManagement';
 import OpenAIKeys from '@/pages/admin/OpenAIKeys';
 import PaymentAlerts from '@/pages/admin/PaymentAlerts';
 import AutomationDashboard from '@/pages/AutomationDashboard';
+import ReportTemplates from '@/pages/admin/ReportTemplates';
+import ReportScheduler from '@/pages/admin/ReportScheduler';
 
 const adminRoutes = [
   <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
@@ -20,6 +22,8 @@ const adminRoutes = [
   <Route key="payment-alerts" path="/admin/payment-alerts" element={<AdminRoute component={PaymentAlerts} />} />,
   <Route key="automation-dashboard" path="/admin/automation" element={<AdminRoute component={AutomationDashboard} />} />,
   <Route key="voice-agent-config" path="/admin/voice-agent" element={<AdminRoute component={() => <VoiceAgentConfig />} />} />,
+  <Route key="report-templates" path="/admin/report-templates" element={<AdminRoute component={ReportTemplates} />} />,
+  <Route key="report-scheduler" path="/admin/report-scheduler" element={<AdminRoute component={ReportScheduler} />} />,
 ];
 
 export { adminRoutes };
