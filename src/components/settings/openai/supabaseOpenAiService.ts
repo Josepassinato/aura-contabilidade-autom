@@ -96,7 +96,31 @@ export const testOpenAiConnection = async (model: string): Promise<{ success: bo
 };
 
 export const isOpenAIConfigured = (): boolean => {
+  // Check if OpenAI is configured via localStorage
   return localStorage.getItem("openai-configured") === "true";
+};
+
+// Check if OpenAI API key is configured in Supabase secrets
+export const checkSupabaseOpenAISecret = async (): Promise<{ isConfigured: boolean; message: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('check-openai-secret');
+    
+    if (error) {
+      console.error("Erro ao verificar secret do Supabase:", error);
+      return {
+        isConfigured: false,
+        message: `Erro ao verificar configuração: ${error.message}`
+      };
+    }
+    
+    return data || { isConfigured: false, message: "Resposta inválida" };
+  } catch (error) {
+    console.error("Erro ao verificar secret do Supabase:", error);
+    return {
+      isConfigured: false,
+      message: `Erro na verificação: ${error instanceof Error ? error.message : "Erro desconhecido"}`
+    };
+  }
 };
 
 // Token usage functions remain the same as they use localStorage

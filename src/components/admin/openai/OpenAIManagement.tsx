@@ -18,7 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function OpenAIManagement() {
-  const { isConfigured, config } = useOpenAIConfig();
+  const { isConfigured, config, supabaseConfigured } = useOpenAIConfig();
   const [tokenStats, setTokenStats] = useState(getEnhancedTokenUsageStats());
   const [tokenLimit, setTokenLimit] = useState(getTokenUsageLimit());
   const [newLimit, setNewLimit] = useState(tokenLimit.toString());
@@ -153,9 +153,19 @@ export function OpenAIManagement() {
                 <CardTitle className="text-sm font-medium">Configuração da API</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-sm">
-                    <span className="font-medium">Modelo:</span> {config?.model || "Não definido"}
+                    <span className="font-medium">Status:</span>{" "}
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      supabaseConfigured 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {supabaseConfigured ? "Configurada no Supabase" : "Configuração local"}
+                    </span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Modelo:</span> {config?.model || "gpt-4o-mini"}
                   </div>
                   <div className="text-sm">
                     <span className="font-medium">Temperatura:</span> {config?.temperature || "0.7"}
@@ -163,6 +173,11 @@ export function OpenAIManagement() {
                   <div className="text-sm">
                     <span className="font-medium">Max Tokens:</span> {config?.maxTokens || "4000"}
                   </div>
+                  {config?.message && (
+                    <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
+                      {config.message}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
