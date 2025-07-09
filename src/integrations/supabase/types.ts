@@ -1274,6 +1274,138 @@ export type Database = {
           },
         ]
       }
+      notification_escalation_rules: {
+        Row: {
+          category: string
+          created_at: string
+          escalate_after_minutes: number
+          escalate_to_role: string | null
+          escalate_to_user_id: string | null
+          id: string
+          is_active: boolean | null
+          priority: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          escalate_after_minutes: number
+          escalate_to_role?: string | null
+          escalate_to_user_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          escalate_after_minutes?: number
+          escalate_to_role?: string | null
+          escalate_to_user_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          categories_subscribed: string[] | null
+          created_at: string
+          email_enabled: boolean | null
+          id: string
+          priority_threshold: number | null
+          push_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories_subscribed?: string[] | null
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          priority_threshold?: number | null
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories_subscribed?: string[] | null
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          priority_threshold?: number | null
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          category: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_acknowledged: boolean | null
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          priority: number
+          source_id: string | null
+          source_type: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          category: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          priority?: number
+          source_id?: string | null
+          source_type?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          priority?: number
+          source_id?: string | null
+          source_type?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       obrigacoes_fiscais: {
         Row: {
           client_id: string | null
@@ -1868,6 +2000,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_notification_with_escalation: {
+        Args: {
+          p_user_id: string
+          p_title: string
+          p_message: string
+          p_type: string
+          p_priority: number
+          p_category: string
+          p_source_id?: string
+          p_source_type?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1897,6 +2043,10 @@ export type Database = {
       invoke_sefaz_scraper: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: boolean
       }
     }
     Enums: {
