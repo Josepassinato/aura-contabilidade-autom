@@ -11,6 +11,7 @@ import { BackButton } from '@/components/navigation/BackButton';
 import { Link } from 'react-router-dom';
 import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { EmptyState } from './EmptyState';
 import { getDemoData, clearDemoData } from '@/data/demoData';
 
 export const DashboardView = () => {
@@ -157,21 +158,7 @@ export const DashboardView = () => {
             </CardHeader>
             <CardContent>
               {mockEvents.length === 0 ? (
-                <div className="h-32 flex flex-col items-center justify-center text-muted-foreground">
-                  <Calendar className="h-8 w-8 mb-2 opacity-50" />
-                  <p>Nenhum evento cadastrado</p>
-                  {!isDemoMode && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={handleLoadDemo}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Carregar dados demo
-                    </Button>
-                  )}
-                </div>
+                <EmptyState type="events" onLoadDemo={handleLoadDemo} />
               ) : (
                 <FiscalCalendar events={mockEvents} />
               )}
@@ -187,21 +174,7 @@ export const DashboardView = () => {
             </CardHeader>
             <CardContent>
               {mockDocuments.length === 0 ? (
-                <div className="h-32 flex flex-col items-center justify-center text-muted-foreground">
-                  <FileText className="h-8 w-8 mb-2 opacity-50" />
-                  <p>Nenhum documento recente</p>
-                  {!isDemoMode && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={handleLoadDemo}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Carregar dados demo
-                    </Button>
-                  )}
-                </div>
+                <EmptyState type="documents" onLoadDemo={handleLoadDemo} />
               ) : (
                 <DocumentsTable documents={mockDocuments} />
               )}
