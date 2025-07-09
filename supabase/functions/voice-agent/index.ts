@@ -97,6 +97,9 @@ serve(async (req) => {
       case 'schedule_meeting':
         return await scheduleMeeting(supabase, client.id, message);
 
+      case 'generate_report':
+        return await generateReport(supabase, client.id, message);
+
       default:
         return new Response(
           JSON.stringify({ error: 'Ação não reconhecida' }),

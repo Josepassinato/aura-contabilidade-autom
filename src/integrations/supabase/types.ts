@@ -970,51 +970,80 @@ export type Database = {
       }
       generated_reports: {
         Row: {
+          client_email: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
+          download_count: number | null
+          email_sent: boolean | null
+          error_message: string | null
+          expires_at: string | null
           file_format: string
           file_path: string | null
           file_size: number | null
           file_url: string | null
+          generation_status: string | null
           id: string
           is_public: boolean
           report_type: string
           tags: string[] | null
+          template_id: string | null
           title: string
         }
         Insert: {
+          client_email?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          download_count?: number | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          expires_at?: string | null
           file_format?: string
           file_path?: string | null
           file_size?: number | null
           file_url?: string | null
+          generation_status?: string | null
           id?: string
           is_public?: boolean
           report_type: string
           tags?: string[] | null
+          template_id?: string | null
           title: string
         }
         Update: {
+          client_email?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          download_count?: number | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          expires_at?: string | null
           file_format?: string
           file_path?: string | null
           file_size?: number | null
           file_url?: string | null
+          generation_status?: string | null
           id?: string
           is_public?: boolean
           report_type?: string
           tags?: string[] | null
+          template_id?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generated_reports_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integracoes_estaduais: {
         Row: {
@@ -1893,6 +1922,39 @@ export type Database = {
           },
         ]
       }
+      report_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          template_config: Json
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          template_config?: Json
+          template_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          template_config?: Json
+          template_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sefaz_sp_scrapes: {
         Row: {
           client_id: string
@@ -2193,6 +2255,10 @@ export type Database = {
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_expired_reports: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       cleanup_offline_workers: {
         Args: Record<PropertyKey, never>
