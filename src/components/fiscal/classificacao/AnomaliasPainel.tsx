@@ -128,8 +128,8 @@ export function AnomaliasPainel({ clientId, onInspect }: AnomaliasPainelProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div>
-        {clientId ? (
-          <AnomalyDetector 
+        {clientId && clientId !== 'overview' ? (
+          <AnomalyDetector
             clientId={clientId} 
             onAnomalySelected={handleAnomalySelected} 
           />

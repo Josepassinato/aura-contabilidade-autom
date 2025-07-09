@@ -21,7 +21,7 @@ export interface ClientSelectorProps {
 export function ClientSelector({ onClientSelect, onSelectClient, onClientChange, defaultValue = 'Visão Geral' }: ClientSelectorProps) {
   const [selectedClient, setSelectedClient] = useState(defaultValue);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([
-    { id: '', name: 'Visão Geral' }
+    { id: 'overview', name: 'Visão Geral' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -37,7 +37,7 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
       // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
       if (data && data.length > 0) {
         const clientsData = [
-          { id: '', name: 'Visão Geral' },
+          { id: 'overview', name: 'Visão Geral' },
           ...data.map(client => ({
             id: client.id,
             name: client.name
@@ -64,7 +64,7 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
     setSelectedClient(value);
     
     // Encontrar o cliente selecionado pelo nome
-    const selectedClientData = clients.find(c => c.name === value) || { id: '', name: value };
+    const selectedClientData = clients.find(c => c.name === value) || { id: 'overview', name: value };
     
     // Call all available callback handlers
     if (onClientSelect) {
