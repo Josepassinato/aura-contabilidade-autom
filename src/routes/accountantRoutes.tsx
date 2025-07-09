@@ -6,6 +6,7 @@ import GerenciarClientes from '../pages/GerenciarClientes';
 import CalculosFiscais from '../pages/CalculosFiscais';
 import GerenciarParametrosFiscais from '../pages/GerenciarParametrosFiscais';
 import WorkflowDashboard from '../pages/WorkflowDashboard';
+import MonthlyClosing from '../pages/MonthlyClosing';
 
 // Export an array of Route elements
 export const accountantRoutes = [
@@ -27,6 +28,11 @@ export const accountantRoutes = [
   <Route key="workflow-dashboard" path="/workflow-dashboard" element={
     <AccountantRoute>
       <WorkflowDashboard />
+    </AccountantRoute>
+  } />,
+  <Route key="fechamento-mensal" path="/fechamento-mensal" element={
+    <AccountantRoute>
+      <MonthlyClosing />
     </AccountantRoute>
   } />,
 ];

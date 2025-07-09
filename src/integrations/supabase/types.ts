@@ -549,6 +549,65 @@ export type Database = {
           },
         ]
       }
+      closing_checklist_items: {
+        Row: {
+          actual_minutes: number | null
+          closing_id: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          error_message: string | null
+          estimated_minutes: number | null
+          id: string
+          item_name: string
+          item_type: string
+          metadata: Json | null
+          priority: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          actual_minutes?: number | null
+          closing_id: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          item_name: string
+          item_type: string
+          metadata?: Json | null
+          priority?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          actual_minutes?: number | null
+          closing_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          item_name?: string
+          item_type?: string
+          metadata?: Json | null
+          priority?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closing_checklist_items_closing_id_fkey"
+            columns: ["closing_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_closing_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultorias_fiscais: {
         Row: {
           api_key: string
@@ -1140,6 +1199,77 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos_contabeis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_closing_status: {
+        Row: {
+          assigned_to: string | null
+          blocking_issues: Json | null
+          client_id: string
+          completed_at: string | null
+          confidence_score: number | null
+          created_at: string
+          documents_processed: number | null
+          documents_total: number | null
+          id: string
+          last_activity: string | null
+          manual_adjustments_count: number | null
+          period_month: number
+          period_year: number
+          started_at: string | null
+          status: string
+          updated_at: string
+          validations_passed: number | null
+          validations_total: number | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          blocking_issues?: Json | null
+          client_id: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          documents_processed?: number | null
+          documents_total?: number | null
+          id?: string
+          last_activity?: string | null
+          manual_adjustments_count?: number | null
+          period_month: number
+          period_year: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          validations_passed?: number | null
+          validations_total?: number | null
+        }
+        Update: {
+          assigned_to?: string | null
+          blocking_issues?: Json | null
+          client_id?: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          documents_processed?: number | null
+          documents_total?: number | null
+          id?: string
+          last_activity?: string | null
+          manual_adjustments_count?: number | null
+          period_month?: number
+          period_year?: number
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          validations_passed?: number | null
+          validations_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_closing_status_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
             referencedColumns: ["id"]
           },
         ]
