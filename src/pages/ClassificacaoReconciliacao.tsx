@@ -10,7 +10,6 @@ import { Navigate } from 'react-router-dom';
 import { ClassificacaoLancamentos } from "@/components/fiscal/classificacao/ClassificacaoLancamentos";
 import { ReconciliacaoBancaria } from "@/components/fiscal/reconciliacao/ReconciliacaoBancaria";
 import { MonitorEventos } from "@/components/fiscal/mensageria/MonitorEventos";
-import { AnomaliasPainel } from "@/components/fiscal/classificacao/AnomaliasPainel";
 
 const ClassificacaoReconciliacao = () => {
   const { isAuthenticated, isAccountant } = useAuth();
@@ -50,7 +49,6 @@ const ClassificacaoReconciliacao = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="classificacao">Classificação ML</TabsTrigger>
           <TabsTrigger value="reconciliacao">Reconciliação Bancária</TabsTrigger>
-          <TabsTrigger value="anomalias">Detecção de Anomalias</TabsTrigger>
           <TabsTrigger value="eventos">Eventos do Sistema</TabsTrigger>
         </TabsList>
 
@@ -60,10 +58,6 @@ const ClassificacaoReconciliacao = () => {
         
         <TabsContent value="reconciliacao">
           <ReconciliacaoBancaria />
-        </TabsContent>
-        
-        <TabsContent value="anomalias">
-          <AnomaliasPainel clientId={selectedClientId} />
         </TabsContent>
         
         <TabsContent value="eventos">
