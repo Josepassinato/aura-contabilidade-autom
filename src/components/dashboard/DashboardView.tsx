@@ -12,6 +12,9 @@ import { Link } from 'react-router-dom';
 import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { EmptyState } from './EmptyState';
+import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
+import { DeleteConfirmation } from '@/components/ui/confirmation';
+import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toast';
 import { getDemoData, clearDemoData } from '@/data/demoData';
 
 export const DashboardView = () => {
@@ -19,6 +22,8 @@ export const DashboardView = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [demoData, setDemoData] = useState(getDemoData());
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   // Verificar se é primeira visita
   useEffect(() => {
@@ -32,6 +37,7 @@ export const DashboardView = () => {
     localStorage.setItem('contaflix_onboarding_completed', 'true');
     setShowOnboarding(false);
     setShowTour(false);
+    successToast('Onboarding concluído!', 'Você pode acessar a ajuda novamente pelo menu.');
   };
 
   const handleStartTour = () => {
@@ -39,9 +45,22 @@ export const DashboardView = () => {
     setShowTour(true);
   };
 
-  const handleLoadDemo = () => {
-    setDemoData(getDemoData());
-    setShowOnboarding(false);
+  const handleLoadDemo = async () => {
+    setIsLoadingDemo(true);
+    const toastId = actionToasts.upload.loading();
+    
+    try {
+      // Simular carregamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setDemoData(getDemoData());
+      setShowOnboarding(false);
+      
+      successToast('Dados demo carregados!', 'Explore os recursos com dados de exemplo.');
+    } catch (error) {
+      actionToasts.upload.error();
+    } finally {
+      setIsLoadingDemo(false);
+    }
   };
 
   const handleRestartOnboarding = () => {
@@ -49,9 +68,30 @@ export const DashboardView = () => {
     setShowOnboarding(true);
   };
 
-  const handleClearDemo = () => {
-    clearDemoData();
-    setDemoData(getDemoData());
+  const handleClearDemo = async () => {
+    const toastId = actionToasts.delete.loading();
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      clearDemoData();
+      setDemoData(getDemoData());
+      actionToasts.delete.success('Dados demo');
+    } catch (error) {
+      actionToasts.delete.error();
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    const toastId = loadingToast('Saindo...');
+    
+    try {
+      await enhancedLogout();
+    } catch (error) {
+      errorToast('Erro ao sair', 'Tente novamente.');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const isDemoMode = localStorage.getItem('contaflix_demo_mode') === 'true';
@@ -72,20 +112,35 @@ export const DashboardView = () => {
                 variant="destructive" 
                 size="sm" 
                 className="flex items-center"
-                onClick={enhancedLogout}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                {isLoggingOut ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-r-transparent" />
+                    Saindo...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </>
+                )}
               </Button>
               {isDemoMode && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center"
-                  onClick={handleClearDemo}
-                >
-                  Limpar Demo
-                </Button>
+                <DeleteConfirmation
+                  trigger={
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center"
+                    >
+                      Limpar Demo
+                    </Button>
+                  }
+                  itemName="dados de demonstração"
+                  onConfirm={handleClearDemo}
+                />
               )}
             </div>
             <div className="flex items-center gap-3">
