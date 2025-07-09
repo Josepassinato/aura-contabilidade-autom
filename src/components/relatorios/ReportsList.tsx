@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase/client";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ClientSelector } from "@/components/layout/ClientSelector";
+import { useSecureDataAccess } from "@/hooks/useSecureDataAccess";
 
 interface Report {
   id: string;
@@ -24,10 +25,12 @@ interface Report {
 }
 
 export function ReportsList() {
+  const { getSecureReportsQuery, executeSecureOperation, userRole } = useSecureDataAccess();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<{id: string, name: string} | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReports();
@@ -35,33 +38,25 @@ export function ReportsList() {
 
   const fetchReports = async () => {
     setIsLoading(true);
-    try {
-      let query = supabase
-        .from('generated_reports')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (selectedClient?.id) {
-        query = query.eq('client_id', selectedClient.id);
-      }
-      
+    
+    const result = await executeSecureOperation(async () => {
+      const query = getSecureReportsQuery(selectedClient?.id);
       const { data, error } = await query;
 
       if (error) {
         throw error;
       }
 
-      setReports(data || []);
-    } catch (error) {
-      console.error("Error fetching reports:", error);
-      useToast().toast({
-        title: "Erro ao carregar relatórios",
-        description: "Não foi possível carregar a lista de relatórios.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      return data || [];
+    }, 'Erro ao carregar relatórios');
+
+    if (result) {
+      setReports(result);
+    } else {
+      setReports([]);
     }
+    
+    setIsLoading(false);
   };
 
   const handleDownload = async (report: Report) => {
@@ -145,9 +140,11 @@ export function ReportsList() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="w-full md:w-72">
-          <ClientSelector onClientSelect={handleClientChange} />
-        </div>
+        {userRole !== 'client' && (
+          <div className="w-full md:w-72">
+            <ClientSelector onClientSelect={handleClientChange} />
+          </div>
+        )}
       </div>
 
       {isLoading ? (
