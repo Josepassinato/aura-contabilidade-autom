@@ -21,7 +21,7 @@ import AutomacaoBancaria from '../pages/AutomacaoBancaria';
 import Notifications from '../pages/Notifications';
 import ClassificacaoReconciliacao from '../pages/ClassificacaoReconciliacao';
 import DadosTeste from '../pages/DadosTeste';
-import MonitorAnomalias from '../pages/MonitorAnomalias';
+
 import AlertasPagamento from '../pages/AlertasPagamento';
 import AuditoriaInteligente from '../pages/AuditoriaInteligente';
 import GestaoRiscos from '../pages/GestaoRiscos';
@@ -126,11 +126,6 @@ export const protectedRoutes = [
   <Route key="dados-teste" path="/dados-teste" element={
     <ProtectedRoute>
       <DadosTeste />
-    </ProtectedRoute>
-  } />,
-  <Route key="monitor-anomalias" path="/monitor-anomalias" element={
-    <ProtectedRoute>
-      <MonitorAnomalias />
     </ProtectedRoute>
   } />,
   <Route key="alertas-pagamento" path="/alertas-pagamento" element={

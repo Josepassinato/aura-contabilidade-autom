@@ -36,14 +36,6 @@ export function CommonSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/monitor-anomalias')}>
-              <Link to="/monitor-anomalias">
-                <AlertTriangleIcon className="h-4 w-4 mr-2" />
-                <span>Monitor de Anomalias</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/alertas-pagamento')}>
               <Link to="/alertas-pagamento">
                 <BellIcon className="h-4 w-4 mr-2" />
