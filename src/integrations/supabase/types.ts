@@ -147,6 +147,36 @@ export type Database = {
         }
         Relationships: []
       }
+      archived_data: {
+        Row: {
+          archive_reason: string
+          archived_at: string
+          archived_data: Json
+          id: string
+          metadata: Json | null
+          original_id: string
+          original_table: string
+        }
+        Insert: {
+          archive_reason?: string
+          archived_at?: string
+          archived_data: Json
+          id?: string
+          metadata?: Json | null
+          original_id: string
+          original_table: string
+        }
+        Update: {
+          archive_reason?: string
+          archived_at?: string
+          archived_data?: Json
+          id?: string
+          metadata?: Json | null
+          original_id?: string
+          original_table?: string
+        }
+        Relationships: []
+      }
       atualizacoes_parametros_log: {
         Row: {
           data_atualizacao: string | null
@@ -1538,6 +1568,45 @@ export type Database = {
           },
         ]
       }
+      performance_metrics: {
+        Row: {
+          cpu_usage_percent: number
+          created_at: string
+          error_rate: number
+          execution_time_ms: number
+          function_name: string
+          id: string
+          memory_usage_mb: number
+          metadata: Json | null
+          throughput_per_second: number
+          timestamp: string
+        }
+        Insert: {
+          cpu_usage_percent?: number
+          created_at?: string
+          error_rate?: number
+          execution_time_ms: number
+          function_name: string
+          id?: string
+          memory_usage_mb?: number
+          metadata?: Json | null
+          throughput_per_second?: number
+          timestamp?: string
+        }
+        Update: {
+          cpu_usage_percent?: number
+          created_at?: string
+          error_rate?: number
+          execution_time_ms?: number
+          function_name?: string
+          id?: string
+          memory_usage_mb?: number
+          metadata?: Json | null
+          throughput_per_second?: number
+          timestamp?: string
+        }
+        Relationships: []
+      }
       pix_payments: {
         Row: {
           amount: string
@@ -1690,6 +1759,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "processed_accounting_data_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      processing_queue: {
+        Row: {
+          client_id: string
+          completed_at: string | null
+          created_at: string
+          error_details: Json | null
+          id: string
+          max_retries: number
+          parameters: Json
+          priority: number
+          process_type: string
+          result: Json | null
+          retry_count: number
+          scheduled_at: string
+          started_at: string | null
+          status: string
+          timeout_at: string | null
+          updated_at: string
+          worker_id: string | null
+        }
+        Insert: {
+          client_id: string
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          max_retries?: number
+          parameters?: Json
+          priority?: number
+          process_type: string
+          result?: Json | null
+          retry_count?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          timeout_at?: string | null
+          updated_at?: string
+          worker_id?: string | null
+        }
+        Update: {
+          client_id?: string
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          max_retries?: number
+          parameters?: Json
+          priority?: number
+          process_type?: string
+          result?: Json | null
+          retry_count?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          timeout_at?: string | null
+          updated_at?: string
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processing_queue_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "accounting_clients"
@@ -1991,14 +2128,85 @@ export type Database = {
         }
         Relationships: []
       }
+      worker_instances: {
+        Row: {
+          created_at: string
+          current_task_count: number
+          current_task_id: string | null
+          function_name: string
+          id: string
+          last_heartbeat: string
+          max_concurrent_tasks: number
+          metadata: Json | null
+          started_at: string
+          status: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_task_count?: number
+          current_task_id?: string | null
+          function_name: string
+          id?: string
+          last_heartbeat?: string
+          max_concurrent_tasks?: number
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          current_task_count?: number
+          current_task_id?: string | null
+          function_name?: string
+          id?: string
+          last_heartbeat?: string
+          max_concurrent_tasks?: number
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_instances_current_task_id_fkey"
+            columns: ["current_task_id"]
+            isOneToOne: false
+            referencedRelation: "processing_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      archive_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_offline_workers: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      complete_queue_task: {
+        Args: {
+          p_task_id: string
+          p_worker_id: string
+          p_success: boolean
+          p_result?: Json
+          p_error_details?: Json
+        }
+        Returns: boolean
       }
       create_notification_with_escalation: {
         Args: {
@@ -2047,6 +2255,10 @@ export type Database = {
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: boolean
+      }
+      process_queue_item: {
+        Args: { p_worker_id: string }
+        Returns: Json
       }
     }
     Enums: {
