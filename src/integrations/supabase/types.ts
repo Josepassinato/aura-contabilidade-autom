@@ -2467,6 +2467,10 @@ export type Database = {
           alert_sent_date: string
         }[]
       }
+      get_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       initiate_pix_payment: {
         Args: {
           p_client_id: string
