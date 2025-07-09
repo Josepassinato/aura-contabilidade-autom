@@ -32,8 +32,25 @@ serve(async (req) => {
 
     console.log('📊 Gerando relatório:', { reportType, clientId, templateId });
 
-    // Buscar dados do cliente e da contabilidade
-    const { data: client, error: clientError } = await supabase
+    // Obter o usuário autenticado
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Usuário não autenticado');
+    }
+
+    // Buscar dados do usuário e sua contabilidade
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (profileError || !userProfile) {
+      throw new Error('Perfil do usuário não encontrado');
+    }
+
+    // Buscar dados do cliente e da contabilidade baseado no usuário
+    let clientQuery = supabase
       .from('accounting_clients')
       .select(`
         *,
@@ -43,13 +60,40 @@ serve(async (req) => {
           phone,
           email
         )
-      `)
-      .eq('id', clientId)
-      .maybeSingle();
+      `);
+
+    // Se o usuário é contador/admin, pode acessar qualquer cliente
+    // Se é cliente, só pode acessar sua própria empresa
+    if (userProfile.role === 'client') {
+      if (!userProfile.company_id) {
+        throw new Error('Cliente não possui empresa associada');
+      }
+      clientQuery = clientQuery.eq('id', userProfile.company_id);
+    } else {
+      // Para contadores/admins, usar o clientId fornecido
+      clientQuery = clientQuery.eq('id', clientId);
+    }
+
+    const { data: client, error: clientError } = await clientQuery.maybeSingle();
 
     if (clientError || !client) {
-      throw new Error('Cliente não encontrado');
+      console.error('Erro ao buscar cliente:', { clientError, userProfile, clientId });
+      throw new Error('Cliente não encontrado ou usuário não autorizado');
     }
+
+    // Validar se as informações da contabilidade estão presentes
+    if (!client.accounting_firms) {
+      console.error('Contabilidade não encontrada para o cliente:', { clientId: client.id, clientName: client.name });
+      throw new Error('Dados da contabilidade não encontrados');
+    }
+
+    console.log('✅ Cliente e contabilidade encontrados:', {
+      clientId: client.id,
+      clientName: client.name,
+      firmName: client.accounting_firms.name,
+      firmCnpj: client.accounting_firms.cnpj,
+      userRole: userProfile.role
+    });
 
     // Buscar template se especificado
     let template = null;
