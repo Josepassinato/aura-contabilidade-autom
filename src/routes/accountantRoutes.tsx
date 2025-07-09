@@ -5,6 +5,7 @@ import { AccountantRoute } from './routeComponents';
 import GerenciarClientes from '../pages/GerenciarClientes';
 import CalculosFiscais from '../pages/CalculosFiscais';
 import GerenciarParametrosFiscais from '../pages/GerenciarParametrosFiscais';
+import WorkflowDashboard from '../pages/WorkflowDashboard';
 
 // Export an array of Route elements
 export const accountantRoutes = [
@@ -21,6 +22,11 @@ export const accountantRoutes = [
   <Route key="parametros-fiscais" path="/parametros-fiscais" element={
     <AccountantRoute>
       <GerenciarParametrosFiscais />
+    </AccountantRoute>
+  } />,
+  <Route key="workflow-dashboard" path="/workflow-dashboard" element={
+    <AccountantRoute>
+      <WorkflowDashboard />
     </AccountantRoute>
   } />,
 ];

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -104,6 +104,14 @@ export function AccountantSection() {
               <Link to="/integracoes-gov">
                 <Network className="h-4 w-4 mr-2" />
                 <span>Integrações Governamentais</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/workflow-dashboard')}>
+              <Link to="/workflow-dashboard">
+                <Activity className="h-4 w-4 mr-2" />
+                <span>Dashboard de Problemas</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

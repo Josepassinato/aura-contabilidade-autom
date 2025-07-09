@@ -189,6 +189,53 @@ export type Database = {
           },
         ]
       }
+      automated_actions_log: {
+        Row: {
+          action_type: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          metadata: Json | null
+          success: boolean
+        }
+        Insert: {
+          action_type: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          success?: boolean
+        }
+        Update: {
+          action_type?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automated_actions_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_logs: {
         Row: {
           client_id: string | null
@@ -553,6 +600,50 @@ export type Database = {
         }
         Relationships: []
       }
+      correction_history: {
+        Row: {
+          action_taken: string
+          corrected_by: string | null
+          correction_notes: string | null
+          created_at: string
+          error_classification_id: string | null
+          id: string
+          metadata: Json | null
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          action_taken: string
+          corrected_by?: string | null
+          correction_notes?: string | null
+          created_at?: string
+          error_classification_id?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          action_taken?: string
+          corrected_by?: string | null
+          correction_notes?: string | null
+          created_at?: string
+          error_classification_id?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "correction_history_error_classification_id_fkey"
+            columns: ["error_classification_id"]
+            isOneToOne: false
+            referencedRelation: "error_classifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       declaracoes_simples_nacional: {
         Row: {
           ano: number
@@ -690,6 +781,56 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "accounting_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      error_classifications: {
+        Row: {
+          confidence_score: number | null
+          corrected_classification: string | null
+          created_at: string
+          document_id: string | null
+          error_type: string
+          id: string
+          metadata: Json | null
+          original_classification: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          corrected_classification?: string | null
+          created_at?: string
+          document_id?: string | null
+          error_type: string
+          id?: string
+          metadata?: Json | null
+          original_classification: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          corrected_classification?: string | null
+          created_at?: string
+          document_id?: string | null
+          error_type?: string
+          id?: string
+          metadata?: Json | null
+          original_classification?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "error_classifications_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -1477,6 +1618,36 @@ export type Database = {
           created_at?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_performance_metrics: {
+        Row: {
+          context: Json | null
+          created_at: string
+          id: string
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          metric_type?: string
+          metric_value?: number
+          period_end?: string
+          period_start?: string
         }
         Relationships: []
       }
