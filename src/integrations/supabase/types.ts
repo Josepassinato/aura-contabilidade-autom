@@ -417,6 +417,39 @@ export type Database = {
           },
         ]
       }
+      bi_dashboards: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dashboard_config: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dashboard_config?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dashboard_config?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       centro_custos: {
         Row: {
           ativo: boolean
@@ -1597,6 +1630,51 @@ export type Database = {
           },
         ]
       }
+      performance_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_value: number
+          id: string
+          is_resolved: boolean
+          message: string
+          metadata: Json
+          metric_name: string
+          resolved_at: string | null
+          severity: string
+          threshold_value: number
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          current_value: number
+          id?: string
+          is_resolved?: boolean
+          message: string
+          metadata?: Json
+          metric_name: string
+          resolved_at?: string | null
+          severity: string
+          threshold_value: number
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          is_resolved?: boolean
+          message?: string
+          metadata?: Json
+          metric_name?: string
+          resolved_at?: string | null
+          severity?: string
+          threshold_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       performance_metrics: {
         Row: {
           cpu_usage_percent: number
@@ -2133,6 +2211,36 @@ export type Database = {
           created_at?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          labels: Json
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          labels?: Json
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          labels?: Json
+          metric_name?: string
+          metric_type?: string
+          metric_value?: number
+          timestamp?: string
         }
         Relationships: []
       }
