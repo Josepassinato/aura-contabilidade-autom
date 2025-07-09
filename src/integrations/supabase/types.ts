@@ -210,13 +210,6 @@ export type Database = {
             referencedRelation: "parametros_fiscais"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_atualizacoes_parametros_log_parametro"
-            columns: ["parametro_id"]
-            isOneToOne: false
-            referencedRelation: "parametros_fiscais"
-            referencedColumns: ["id"]
-          },
         ]
       }
       automated_actions_log: {

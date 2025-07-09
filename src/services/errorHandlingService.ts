@@ -115,3 +115,46 @@ export function handleError(error: any, context?: string, shouldNotify = true): 
     notifyError(error);
   }
 }
+
+/**
+ * Trata erros específicos de autenticação
+ */
+export function handleAuthError(error: any): void {
+  const standardError = normalizeError(error);
+  
+  console.error('[AUTH ERROR]', standardError);
+  
+  // Mensagens específicas para erros de autenticação
+  let userMessage = standardError.message;
+  
+  if (standardError.code === 'invalid_credentials') {
+    userMessage = 'Email ou senha incorretos. Verifique suas credenciais.';
+  } else if (standardError.code === 'email_not_confirmed') {
+    userMessage = 'Por favor, confirme seu email antes de fazer login.';
+  } else if (standardError.code === 'signup_disabled') {
+    userMessage = 'Cadastro temporariamente desabilitado.';
+  } else if (standardError.code === 'weak_password') {
+    userMessage = 'A senha deve ter pelo menos 6 caracteres.';
+  } else if (error?.message?.includes('User already registered')) {
+    userMessage = 'Este email já está cadastrado. Tente fazer login.';
+  }
+  
+  toast({
+    title: "Erro de Autenticação",
+    description: userMessage,
+    variant: "destructive",
+  });
+}
+
+/**
+ * Trata erros de validação de formulário
+ */
+export function handleValidationError(errors: Record<string, string>): void {
+  const errorMessages = Object.values(errors).join('\n');
+  
+  toast({
+    title: "Erro de Validação",
+    description: errorMessages,
+    variant: "destructive",
+  });
+}
