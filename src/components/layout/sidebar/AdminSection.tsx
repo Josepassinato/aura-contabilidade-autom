@@ -10,7 +10,8 @@ import {
   CreditCard,
   AlertTriangle,
   Activity,
-  Shield
+  Shield,
+  CheckCircle2
 } from 'lucide-react';
 
 export function AdminSection() {
@@ -56,6 +57,11 @@ export function AdminSection() {
       title: "Segurança",
       href: "/admin/security",
       icon: Shield,
+    },
+    {
+      title: "Status do Sistema",
+      href: "/admin/system-status",
+      icon: CheckCircle2,
     },
   ];
 

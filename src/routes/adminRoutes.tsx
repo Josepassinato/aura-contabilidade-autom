@@ -13,6 +13,7 @@ import AutomationDashboard from '@/pages/AutomationDashboard';
 import ReportTemplates from '@/pages/admin/ReportTemplates';
 import ReportScheduler from '@/pages/admin/ReportScheduler';
 import SecurityManagement from '@/pages/admin/SecurityManagement';
+import SystemStatus from '@/pages/admin/SystemStatus';
 
 const adminRoutes = [
   <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
@@ -26,6 +27,7 @@ const adminRoutes = [
   <Route key="report-templates" path="/admin/report-templates" element={<AdminRoute component={ReportTemplates} />} />,
   <Route key="report-scheduler" path="/admin/report-scheduler" element={<AdminRoute component={ReportScheduler} />} />,
   <Route key="security-management" path="/admin/security" element={<AdminRoute component={SecurityManagement} />} />,
+  <Route key="system-status" path="/admin/system-status" element={<AdminRoute component={SystemStatus} />} />,
 ];
 
 export { adminRoutes };
