@@ -12,6 +12,7 @@ import PaymentAlerts from '@/pages/admin/PaymentAlerts';
 import AutomationDashboard from '@/pages/AutomationDashboard';
 import ReportTemplates from '@/pages/admin/ReportTemplates';
 import ReportScheduler from '@/pages/admin/ReportScheduler';
+import SecurityManagement from '@/pages/admin/SecurityManagement';
 
 const adminRoutes = [
   <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
@@ -24,6 +25,7 @@ const adminRoutes = [
   <Route key="voice-agent-config" path="/admin/voice-agent" element={<AdminRoute component={() => <VoiceAgentConfig />} />} />,
   <Route key="report-templates" path="/admin/report-templates" element={<AdminRoute component={ReportTemplates} />} />,
   <Route key="report-scheduler" path="/admin/report-scheduler" element={<AdminRoute component={ReportScheduler} />} />,
+  <Route key="security-management" path="/admin/security" element={<AdminRoute component={SecurityManagement} />} />,
 ];
 
 export { adminRoutes };

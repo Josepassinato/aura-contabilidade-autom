@@ -9,7 +9,8 @@ import {
   Mail, 
   CreditCard,
   AlertTriangle,
-  Activity
+  Activity,
+  Shield
 } from 'lucide-react';
 
 export function AdminSection() {
@@ -50,6 +51,11 @@ export function AdminSection() {
       title: "Dashboard de Automação",
       href: "/admin/automation",
       icon: Activity,
+    },
+    {
+      title: "Segurança",
+      href: "/admin/security",
+      icon: Shield,
     },
   ];
 

@@ -75,3 +75,9 @@ url = ""
 [functions]
 [functions.processar-procuracao]
 verify_jwt = true
+
+[functions.security-monitor]
+verify_jwt = true
+
+[functions.validation-service]
+verify_jwt = true
