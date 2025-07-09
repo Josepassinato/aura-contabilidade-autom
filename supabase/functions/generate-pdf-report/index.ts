@@ -32,12 +32,20 @@ serve(async (req) => {
 
     console.log('📊 Gerando relatório:', { reportType, clientId, templateId });
 
-    // Buscar dados do cliente
+    // Buscar dados do cliente e da contabilidade
     const { data: client, error: clientError } = await supabase
       .from('accounting_clients')
-      .select('*')
+      .select(`
+        *,
+        accounting_firms (
+          name,
+          cnpj,
+          phone,
+          email
+        )
+      `)
       .eq('id', clientId)
-      .single();
+      .maybeSingle();
 
     if (clientError || !client) {
       throw new Error('Cliente não encontrado');
@@ -155,14 +163,34 @@ async function generatePDFByType(
 ): Promise<Uint8Array> {
   const doc = new (jsPDF as any)();
   
-  // Configuração padrão
+  // Adicionar cabeçalho com informações da contabilidade
+  if (client.accounting_firms) {
+    const accountingFirm = client.accounting_firms;
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${accountingFirm.name}`, 20, 15);
+    doc.text(`CNPJ: ${accountingFirm.cnpj}`, 20, 20);
+    if (accountingFirm.phone) {
+      doc.text(`Tel: ${accountingFirm.phone}`, 120, 15);
+    }
+    if (accountingFirm.email) {
+      doc.text(`Email: ${accountingFirm.email}`, 120, 20);
+    }
+    
+    // Linha separadora
+    doc.setLineWidth(0.5);
+    doc.line(20, 25, 190, 25);
+  }
+  
+  // Configuração do título do relatório
+  doc.setTextColor(0, 0, 0);
   doc.setFontSize(20);
-  doc.text(getReportTitle(reportType, client.name), 20, 30);
+  doc.text(getReportTitle(reportType, client.name), 20, 40);
   
   doc.setFontSize(12);
-  doc.text(`CNPJ: ${client.cnpj}`, 20, 45);
-  doc.text(`Regime: ${client.regime}`, 20, 55);
-  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 65);
+  doc.text(`CNPJ: ${client.cnpj}`, 20, 55);
+  doc.text(`Regime: ${client.regime}`, 20, 65);
+  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 75);
 
   switch (reportType) {
     case 'balancete':
@@ -198,7 +226,7 @@ async function generatePDFByType(
 
 async function generateBalanceteReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('BALANCETE PATRIMONIAL', 20, 85);
+  doc.text('BALANCETE PATRIMONIAL', 20, 95);
 
   // Buscar dados do balancete
   const { data: balancetes } = await supabase
@@ -260,7 +288,7 @@ async function generateBalanceteReport(doc: any, client: any, parameters: any, s
 
 async function generateDREReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO', 20, 85);
+  doc.text('DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO', 20, 95);
 
   // Buscar lançamentos contábeis para DRE
   const { data: lancamentos } = await supabase
@@ -328,7 +356,7 @@ async function generateDREReport(doc: any, client: any, parameters: any, supabas
 
 async function generateObrigacoesReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('RESUMO DE OBRIGAÇÕES FISCAIS', 20, 85);
+  doc.text('RESUMO DE OBRIGAÇÕES FISCAIS', 20, 95);
 
   // Buscar obrigações do cliente
   const { data: obrigacoes } = await supabase
@@ -347,7 +375,7 @@ async function generateObrigacoesReport(doc: any, client: any, parameters: any, 
     ]);
 
     (doc as any).autoTable({
-      startY: 110,
+      startY: 120,
       head: [['Obrigação', 'Vencimento', 'Status', 'Prioridade', 'Valor']],
       body: tableData,
       styles: { fontSize: 10 },
@@ -355,15 +383,15 @@ async function generateObrigacoesReport(doc: any, client: any, parameters: any, 
     });
   } else {
     doc.setFontSize(12);
-    doc.text('Nenhuma obrigação encontrada.', 20, 110);
+    doc.text('Nenhuma obrigação encontrada.', 20, 120);
   }
 }
 
 async function generateResumoFiscalReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('RESUMO FISCAL MENSAL', 20, 85);
+  doc.text('RESUMO FISCAL MENSAL', 20, 95);
 
-  let yPosition = 110;
+  let yPosition = 120;
 
   // Seção 1: Obrigações Pendentes
   doc.setFontSize(14);
@@ -516,9 +544,9 @@ function formatCurrency(value: number): string {
 
 async function generateFluxoCaixaReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('RELATÓRIO DE FLUXO DE CAIXA', 20, 85);
+  doc.text('RELATÓRIO DE FLUXO DE CAIXA', 20, 95);
 
-  let yPosition = 110;
+  let yPosition = 120;
   
   // Dados simulados de fluxo de caixa
   const entradas = [
@@ -577,9 +605,9 @@ async function generateFluxoCaixaReport(doc: any, client: any, parameters: any, 
 
 async function generateAnaliseFinanceiraReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('ANÁLISE FINANCEIRA AVANÇADA', 20, 85);
+  doc.text('ANÁLISE FINANCEIRA AVANÇADA', 20, 95);
 
-  let yPosition = 110;
+  let yPosition = 120;
   
   // Indicadores simulados
   doc.setFontSize(14);
@@ -620,7 +648,7 @@ async function generateAnaliseFinanceiraReport(doc: any, client: any, parameters
 
 async function generateComparativoMensalReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('COMPARATIVO MENSAL', 20, 85);
+  doc.text('COMPARATIVO MENSAL', 20, 95);
 
   // Dados simulados de comparação
   const meses = ['Janeiro', 'Fevereiro', 'Março'];
@@ -648,9 +676,9 @@ async function generateComparativoMensalReport(doc: any, client: any, parameters
 
 async function generateIndicadoresPerformanceReport(doc: any, client: any, parameters: any, supabase: any) {
   doc.setFontSize(16);
-  doc.text('INDICADORES DE PERFORMANCE', 20, 85);
+  doc.text('INDICADORES DE PERFORMANCE', 20, 95);
 
-  let yPosition = 110;
+  let yPosition = 120;
 
   // KPIs principais
   doc.setFontSize(14);
