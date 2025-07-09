@@ -1,4 +1,4 @@
-import { useSupabaseClient } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 // Tipos para análises preditivas
 export interface PredictionTimeframe {
@@ -51,18 +51,13 @@ export const PredictiveAnalyticsService = {
    * Gerar previsão de fluxo de caixa baseada em dados históricos
    */
   generateCashFlowPrediction: async (clientId: string): Promise<CashFlowPrediction> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em produção, isso faria uma chamada para uma Edge Function ou API
       // que usaria ML para gerar previsões baseadas em histórico de dados
       
       // Para demonstração, usando dados simulados
       // Normalmente buscaria dados históricos do cliente e aplicaria algoritmo de ML
-      if (supabase) {
-        // Aqui faríamos uma consulta na base ou chamada para função
-        console.log('Gerando previsão para cliente:', clientId);
-      }
+      console.log('Gerando previsão para cliente:', clientId);
       
       // Simulação de resposta
       return {
@@ -102,14 +97,9 @@ export const PredictiveAnalyticsService = {
    * Analisar regimes tributários e recomendar a opção mais econômica
    */
   analyzeTaxRegimes: async (clientId: string): Promise<TaxOptimizationPrediction> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em produção, usaria dados reais de faturamento e despesas
-      if (supabase) {
-        // Aqui faríamos uma consulta ou chamada para edge function
-        console.log('Analisando regimes tributários para cliente:', clientId);
-      }
+      console.log('Analisando regimes tributários para cliente:', clientId);
       
       // Simulação de resposta
       return {
@@ -140,15 +130,10 @@ export const PredictiveAnalyticsService = {
    * Detectar anomalias nos dados contábeis usando algoritmos de ML
    */
   detectAnomalies: async (clientId: string, period?: { start: string, end: string }): Promise<AccountingAnomaly[]> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em produção, usaria algoritmos de detecção de anomalias
       // como Isolation Forest, One-Class SVM ou DBSCAN
-      if (supabase) {
-        // Aqui faríamos uma consulta ou chamada para edge function
-        console.log('Detectando anomalias para cliente:', clientId, period);
-      }
+      console.log('Detectando anomalias para cliente:', clientId, period);
       
       // Simulação de resposta
       return [
@@ -211,14 +196,9 @@ export const PredictiveAnalyticsService = {
     clientId: string, 
     scenarios: "optimistic" | "realistic" | "pessimistic" = "realistic"
   ): Promise<any> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em produção, aplicaria modelos de ML/estatísticos para projeções
-      if (supabase) {
-        // Aqui faríamos uma consulta ou chamada para edge function
-        console.log('Gerando projeção financeira para cliente:', clientId, scenarios);
-      }
+      console.log('Gerando projeção financeira para cliente:', clientId, scenarios);
       
       // Simulação de resposta (simplificada)
       const baseValues = {
@@ -264,13 +244,9 @@ export const PredictiveAnalyticsService = {
    * Buscar transações relacionadas a uma anomalia específica
    */
   getRelatedTransactions: async (anomalyId: string): Promise<any[]> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em produção, buscaria dados no banco relacionados à anomalia
-      if (supabase) {
-        console.log('Buscando transações relacionadas à anomalia:', anomalyId);
-      }
+      console.log('Buscando transações relacionadas à anomalia:', anomalyId);
       
       // Simulação de dados relacionados
       return [
@@ -319,14 +295,10 @@ export const PredictiveAnalyticsService = {
     riskAssessment: 'low' | 'medium' | 'high';
     reasoning: string[];
   }> => {
-    const supabase = useSupabaseClient();
-    
     try {
       // Em uma implementação real, este método aplicaria algoritmos avançados
       // de análise para determinar se a transação pode ser processada automaticamente
-      if (supabase) {
-        console.log('Analisando transação para automação:', transactionData, 'do cliente:', clientId);
-      }
+      console.log('Analisando transação para automação:', transactionData, 'do cliente:', clientId);
       
       // Simulação de análise avançada
       const mockConfidence = Math.random() * 0.3 + 0.65; // Confiança entre 65% e 95%
