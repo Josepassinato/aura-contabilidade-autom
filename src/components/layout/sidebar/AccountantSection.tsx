@@ -114,6 +114,7 @@ export function AccountantSection() {
                 <span>Dashboard de Problemas</span>
               </Link>
             </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/fechamento-mensal')}>
               <Link to="/fechamento-mensal">
