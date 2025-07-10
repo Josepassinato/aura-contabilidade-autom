@@ -48,13 +48,32 @@ const VoiceAgentInterface: React.FC = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const cleanupFunctionsRef = useRef<Array<() => void>>([]);
+  const initializationStateRef = useRef<'idle' | 'initializing' | 'completed' | 'failed'>('idle');
+  const operationLockRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let isMounted = true;
     
     const initialize = async () => {
-      if (isMounted) {
-        await initializeVoiceAgent();
+      // Prevent multiple concurrent initializations
+      if (initializationStateRef.current !== 'idle') {
+        return;
+      }
+      
+      initializationStateRef.current = 'initializing';
+      
+      try {
+        if (isMounted) {
+          await initializeVoiceAgent();
+          if (isMounted) {
+            initializationStateRef.current = 'completed';
+          }
+        }
+      } catch (error) {
+        console.error('Initialization failed:', error);
+        if (isMounted) {
+          initializationStateRef.current = 'failed';
+        }
       }
     };
     
@@ -62,6 +81,8 @@ const VoiceAgentInterface: React.FC = () => {
     
     return () => {
       isMounted = false;
+      initializationStateRef.current = 'idle';
+      operationLockRef.current.clear();
       
       // Execute all cleanup functions
       cleanupFunctionsRef.current.forEach(cleanup => {
@@ -92,7 +113,7 @@ const VoiceAgentInterface: React.FC = () => {
       // Cleanup media recorder
       if (mediaRecorderRef.current) {
         try {
-          if (mediaRecorderRef.current.state === 'recording') {
+          if (mediaRecorderRef.current.state !== 'inactive') {
             mediaRecorderRef.current.stop();
           }
         } catch (error) {
@@ -132,6 +153,13 @@ const VoiceAgentInterface: React.FC = () => {
   }, [messages]);
 
   const initializeVoiceAgent = async () => {
+    // Prevent concurrent execution
+    if (operationLockRef.current.has('initialize')) {
+      return;
+    }
+    
+    operationLockRef.current.add('initialize');
+    
     try {
       // Get stored client data using secure storage
       const storedClientId = authStorage.getClientId();
@@ -141,7 +169,11 @@ const VoiceAgentInterface: React.FC = () => {
         // Only redirect to setup if there's no access token indicating we came from a valid route
         const accessToken = authStorage.getAccessToken();
         if (!accessToken) {
-          window.location.href = '/voice-agent/setup';
+          try {
+            window.location.replace('/voice-agent/setup');
+          } catch (navError) {
+            window.location.href = '/voice-agent/setup';
+          }
           return;
         } else {
           toast({
@@ -149,7 +181,11 @@ const VoiceAgentInterface: React.FC = () => {
             description: "Escaneie o QR code novamente ou configure o acesso",
             variant: "destructive",
           });
-          window.location.href = '/voice-agent/setup';
+          try {
+            window.location.replace('/voice-agent/setup');
+          } catch (navError) {
+            window.location.href = '/voice-agent/setup';
+          }
           return;
         }
       }
@@ -164,7 +200,13 @@ const VoiceAgentInterface: React.FC = () => {
           description: "Dados armazenados inválidos. Configure o acesso novamente.",
           variant: "destructive",
         });
-        setTimeout(() => window.location.replace('/voice-agent/setup'), 2000);
+        setTimeout(() => {
+          try {
+            window.location.replace('/voice-agent/setup');
+          } catch (navError) {
+            window.location.href = '/voice-agent/setup';
+          }
+        }, 2000);
         return;
       }
       
@@ -186,10 +228,19 @@ const VoiceAgentInterface: React.FC = () => {
         description: "Não foi possível inicializar o agente de voz",
         variant: "destructive",
       });
+    } finally {
+      operationLockRef.current.delete('initialize');
     }
   };
 
   const authenticateUser = async () => {
+    // Prevent concurrent authentication attempts
+    if (operationLockRef.current.has('authenticate')) {
+      return;
+    }
+    
+    operationLockRef.current.add('authenticate');
+    
     try {
       // Validate stored token first
       const accessToken = authStorage.getAccessToken();
@@ -277,7 +328,15 @@ const VoiceAgentInterface: React.FC = () => {
         variant: "destructive",
       });
       
-      setTimeout(() => window.location.replace('/voice-agent/setup'), 2000);
+      setTimeout(() => {
+        try {
+          window.location.replace('/voice-agent/setup');
+        } catch (navError) {
+          window.location.href = '/voice-agent/setup';
+        }
+      }, 2000);
+    } finally {
+      operationLockRef.current.delete('authenticate');
     }
   };
 
@@ -312,45 +371,68 @@ const VoiceAgentInterface: React.FC = () => {
   };
 
   const toggleListening = async () => {
+    // Prevent concurrent listening operations
+    if (operationLockRef.current.has('listening')) {
+      return;
+    }
+    
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      // Check microphone permissions first
+      operationLockRef.current.add('listening');
+      
       try {
-        const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-        if (permissionStatus.state === 'denied') {
-          toast({
-            title: "Permissão negada",
-            description: "Por favor, permita o acesso ao microfone nas configurações do navegador",
-            variant: "destructive",
-          });
-          return;
+        // Check microphone permissions first
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          if (permissionStatus.state === 'denied') {
+            toast({
+              title: "Permissão negada",
+              description: "Por favor, permita o acesso ao microfone nas configurações do navegador",
+              variant: "destructive",
+            });
+            return;
+          }
+        } catch (e) {
+          // Permissions API not supported, continue
         }
-      } catch (e) {
-        // Permissions API not supported, continue
-      }
 
-      // Try to use advanced voice recognition first
-      try {
-        await startAdvancedListening();
-      } catch (error) {
-        console.log('Advanced voice recognition failed, falling back to browser API');
-        if (recognitionRef.current) {
-          recognitionRef.current.start();
-          setIsListening(true);
-        } else {
-          toast({
-            title: "Reconhecimento de voz não suportado",
-            description: "Seu navegador não suporta reconhecimento de voz",
-            variant: "destructive",
-          });
+        // Try to use advanced voice recognition first
+        try {
+          await startAdvancedListening();
+        } catch (error) {
+          console.log('Advanced voice recognition failed, falling back to browser API');
+          if (recognitionRef.current) {
+            recognitionRef.current.start();
+            setIsListening(true);
+          } else {
+            toast({
+              title: "Reconhecimento de voz não suportado",
+              description: "Seu navegador não suporta reconhecimento de voz",
+              variant: "destructive",
+            });
+          }
         }
+      } catch (error) {
+        console.error('Error starting listening:', error);
+        toast({
+          title: "Erro ao iniciar gravação",
+          description: "Não foi possível iniciar o reconhecimento de voz",
+          variant: "destructive",
+        });
+      } finally {
+        operationLockRef.current.delete('listening');
       }
     }
   };
 
   const startAdvancedListening = async () => {
+    // Additional check to prevent race conditions
+    if (isListening || (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive')) {
+      return;
+    }
+    
     try {
       // Check MediaRecorder support (iOS Safari doesn't support it)
       if (!window.MediaRecorder) {
@@ -358,8 +440,12 @@ const VoiceAgentInterface: React.FC = () => {
       }
 
       // Clean up any existing recording first
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          console.warn('Error stopping existing recorder:', e);
+        }
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -436,8 +522,12 @@ const VoiceAgentInterface: React.FC = () => {
       
       // Auto-stop after 10 seconds with proper cleanup
       const timeoutId = setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
+        try {
+          if (mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          }
+        } catch (e) {
+          console.warn('Error stopping recorder on timeout:', e);
         }
       }, 10000);
 
@@ -447,8 +537,12 @@ const VoiceAgentInterface: React.FC = () => {
         if (stream.active) {
           stream.getTracks().forEach(track => track.stop());
         }
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
+        try {
+          if (mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          }
+        } catch (e) {
+          console.warn('Error stopping recorder in cleanup:', e);
         }
       };
 
@@ -489,7 +583,14 @@ const VoiceAgentInterface: React.FC = () => {
   };
 
   const handleVoiceInput = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isProcessing) return;
+    
+    // Prevent concurrent voice processing
+    if (operationLockRef.current.has('processing')) {
+      return;
+    }
+    
+    operationLockRef.current.add('processing');
     
     addMessage('user', text);
     setIsProcessing(true);
@@ -520,10 +621,18 @@ const VoiceAgentInterface: React.FC = () => {
       await speakResponse(errorMessage);
     } finally {
       setIsProcessing(false);
+      operationLockRef.current.delete('processing');
     }
   };
 
   const speakResponse = async (text: string) => {
+    // Prevent concurrent TTS operations
+    if (operationLockRef.current.has('speaking') || isSpeaking) {
+      return;
+    }
+    
+    operationLockRef.current.add('speaking');
+    
     try {
       setIsSpeaking(true);
       
@@ -590,6 +699,8 @@ const VoiceAgentInterface: React.FC = () => {
     } catch (error) {
       console.error('Error speaking response:', error);
       setIsSpeaking(false);
+    } finally {
+      operationLockRef.current.delete('speaking');
     }
   };
 
@@ -627,8 +738,13 @@ const VoiceAgentInterface: React.FC = () => {
     // Clean all stored data using secure storage
     authStorage.clearAll();
     
-    // Use replace instead of href to avoid navigation stack issues
-    window.location.replace('/voice-agent/setup');
+    // Robust navigation with fallback
+    try {
+      window.location.replace('/voice-agent/setup');
+    } catch (navError) {
+      console.warn('Replace failed, using href fallback:', navError);
+      window.location.href = '/voice-agent/setup';
+    }
   };
 
   if (!isAuthenticated) {
