@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ClientSummaryCard } from './ClientSummaryCard';
 import { FiscalCalendar } from './FiscalCalendar';
 import { DocumentsTable } from './DocumentsTable';
+import { AccountingDashboard } from './AccountingDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toas
 import { getDemoData, clearDemoData } from '@/data/demoData';
 
 export const DashboardView = () => {
-  const { enhancedLogout } = useAuth();
+  const { enhancedLogout, isAccountant, isAdmin } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [demoData, setDemoData] = useState(getDemoData());
@@ -99,6 +100,32 @@ export const DashboardView = () => {
   const mockDocuments = demoData.documents || [];
   
   const stats = demoData.stats || { totalClients: 0, totalDocumentsPending: 0, totalUpcomingDeadlines: 0, fiscalSavings: 0 };
+
+  // Para contadores e admins, mostra o dashboard especializado
+  if (isAccountant || isAdmin) {
+    return (
+      <>
+        <AccountingDashboard />
+        
+        {/* Componentes de Onboarding */}
+        {showOnboarding && (
+          <OnboardingWelcome
+            onStartTour={handleStartTour}
+            onLoadDemo={handleLoadDemo}
+            onSkip={handleOnboardingComplete}
+          />
+        )}
+
+        {showTour && (
+          <OnboardingTour
+            isOpen={showTour}
+            onComplete={handleOnboardingComplete}
+            onSkip={handleOnboardingComplete}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
