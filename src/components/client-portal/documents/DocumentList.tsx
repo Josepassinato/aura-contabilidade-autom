@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/auth';
 import {
   Table,
   TableBody,
@@ -47,6 +48,7 @@ export const DocumentList = ({
   isLoading = false 
 }: DocumentListProps) => {
   const { toast } = useToast();
+  const { isClient } = useAuth();
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   const handleView = async (document: Document) => {
@@ -162,13 +164,15 @@ export const DocumentList = ({
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-600" 
-                        onClick={() => setDeleteId(doc.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Excluir
-                      </DropdownMenuItem>
+                      {!isClient && (
+                        <DropdownMenuItem 
+                          className="text-red-600" 
+                          onClick={() => setDeleteId(doc.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

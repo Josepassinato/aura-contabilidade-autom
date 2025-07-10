@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, FileText, ArrowRight, Lightbulb } from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
 
 interface EmptyStateProps {
   type: 'clients' | 'documents' | 'events';
@@ -9,6 +10,7 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ type, onLoadDemo }) => {
+  const { isClient } = useAuth();
   const configs = {
     clients: {
       icon: Users,
@@ -80,11 +82,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ type, onLoadDemo }) => {
               <FileText className="h-4 w-4 mr-2" />
               Ver Exemplo
             </Button>
-            <Button className="flex-1">
-              <Plus className="h-4 w-4 mr-2" />
-              Começar Agora
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+            {!isClient && (
+              <Button className="flex-1">
+                <Plus className="h-4 w-4 mr-2" />
+                Começar Agora
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
