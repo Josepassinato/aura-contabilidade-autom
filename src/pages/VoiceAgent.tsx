@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { VoiceAgentInterface } from '@/components/voice-agent/VoiceAgentInterface';
+import VoiceAgentInterface from '@/components/voice-agent/VoiceAgentInterface';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Bot, ArrowLeft } from 'lucide-react';
@@ -68,5 +68,5 @@ export default function VoiceAgent() {
     );
   }
 
-  return <VoiceAgentInterface token={token} />;
+  return <VoiceAgentInterface />;
 }
