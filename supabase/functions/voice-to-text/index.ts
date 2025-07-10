@@ -20,13 +20,18 @@ serve(async (req) => {
 
     console.log('Processing voice-to-text request')
 
-    // Convert base64 to binary
-    const binaryAudio = Uint8Array.from(atob(audio), c => c.charCodeAt(0))
+    // Convert base64 to binary - FIXED FOR AUDIO
+    const audioData = audio.replace(/^data:audio\/[^;]+;base64,/, '');
+    const binaryString = atob(audioData);
+    const binaryAudio = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      binaryAudio[i] = binaryString.charCodeAt(i);
+    }
     
     // Prepare form data
     const formData = new FormData()
     const blob = new Blob([binaryAudio], { type: 'audio/webm' })
-    formData.append('file', blob, 'audio.webm')
+    formData.append('file', blob, 'recording.webm')
     formData.append('model', 'whisper-1')
     formData.append('language', 'pt')
 

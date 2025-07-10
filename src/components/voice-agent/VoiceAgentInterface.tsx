@@ -171,32 +171,78 @@ const VoiceAgentInterface: React.FC = () => {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
+      // Check microphone permissions first
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (permissionStatus.state === 'denied') {
+          toast({
+            title: "Permissão negada",
+            description: "Por favor, permita o acesso ao microfone nas configurações do navegador",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (e) {
+        // Permissions API not supported, continue
+      }
+
       // Try to use advanced voice recognition first
       try {
         await startAdvancedListening();
       } catch (error) {
         console.log('Advanced voice recognition failed, falling back to browser API');
-        recognitionRef.current?.start();
-        setIsListening(true);
+        if (recognitionRef.current) {
+          recognitionRef.current.start();
+          setIsListening(true);
+        } else {
+          toast({
+            title: "Reconhecimento de voz não suportado",
+            description: "Seu navegador não suporta reconhecimento de voz",
+            variant: "destructive",
+          });
+        }
       }
     }
   };
 
   const startAdvancedListening = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      // Check MediaRecorder support (iOS Safari doesn't support it)
+      if (!window.MediaRecorder) {
+        throw new Error('MediaRecorder not supported');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        }
+      });
+      
+      let mediaRecorder: MediaRecorder;
       const audioChunks: Blob[] = [];
 
+      try {
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
+      } catch (e) {
+        // Fallback for Safari
+        mediaRecorder = new MediaRecorder(stream);
+      }
+
       mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks);
-        const audioBase64 = await blobToBase64(audioBlob);
-        
         try {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioBase64 = await blobToBase64(audioBlob);
+          
           const { data, error } = await supabase.functions.invoke('voice-to-text', {
             body: { audio: audioBase64 }
           });
@@ -205,32 +251,41 @@ const VoiceAgentInterface: React.FC = () => {
           
           if (data.success && data.text) {
             handleVoiceInput(data.text);
+          } else {
+            throw new Error('No text recognized');
           }
         } catch (error) {
           console.error('Voice-to-text error:', error);
           toast({
             title: "Erro no reconhecimento de voz",
-            description: "Não foi possível processar o áudio",
+            description: "Não foi possível processar o áudio. Tente novamente.",
             variant: "destructive",
           });
+        } finally {
+          // Always clean up stream
+          stream.getTracks().forEach(track => track.stop());
+          setIsListening(false);
         }
-        
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
       };
 
       setIsListening(true);
       mediaRecorder.start();
       
-      // Stop recording after 10 seconds max
-      setTimeout(() => {
+      // Auto-stop after 10 seconds with proper cleanup
+      const timeoutId = setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop();
-          setIsListening(false);
         }
       }, 10000);
 
+      // Store cleanup function
+      (mediaRecorder as any).cleanup = () => {
+        clearTimeout(timeoutId);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
     } catch (error) {
+      setIsListening(false);
       throw error;
     }
   };
@@ -298,7 +353,7 @@ const VoiceAgentInterface: React.FC = () => {
         if (error) throw error;
         
         if (data.success && data.audioContent) {
-          // Play the audio
+          // Play the audio with proper error handling
           const audioBlob = new Blob(
             [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
             { type: 'audio/mp3' }
@@ -307,17 +362,38 @@ const VoiceAgentInterface: React.FC = () => {
           const audioUrl = URL.createObjectURL(audioBlob);
           const audio = new Audio(audioUrl);
           
-          audio.onended = () => {
-            setIsSpeaking(false);
-            URL.revokeObjectURL(audioUrl);
+          // Create promise for audio playback
+          const playAudio = () => {
+            return new Promise<void>((resolve, reject) => {
+              audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(audioUrl);
+                resolve();
+              };
+              
+              audio.onerror = (e) => {
+                console.error('Audio playback failed:', e);
+                URL.revokeObjectURL(audioUrl);
+                setIsSpeaking(false);
+                reject(new Error('Audio playback failed'));
+              };
+              
+              // Handle autoplay policy restrictions
+              audio.play().catch((playError) => {
+                console.error('Autoplay prevented:', playError);
+                URL.revokeObjectURL(audioUrl);
+                setIsSpeaking(false);
+                reject(playError);
+              });
+            });
           };
-          
-          audio.onerror = () => {
-            console.error('Audio playback failed');
-            fallbackToWebSpeechAPI(text);
-          };
-          
-          await audio.play();
+
+          try {
+            await playAudio();
+          } catch (playError) {
+            // If audio playback fails, fall back to browser TTS
+            throw new Error('Audio playback failed');
+          }
         } else {
           throw new Error('TTS API failed');
         }
