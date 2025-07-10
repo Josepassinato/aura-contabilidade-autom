@@ -103,11 +103,6 @@ export const protectedRoutes = [
       <Colaboradores />
     </ProtectedRoute>
   } />,
-  <Route key="settings" path="/settings" element={
-    <ProtectedRoute>
-      <Settings />
-    </ProtectedRoute>
-  } />,
   <Route key="automacao-bancaria" path="/automacao-bancaria" element={
     <ProtectedRoute>
       <AutomacaoBancaria />
