@@ -15,7 +15,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSafeInterval, useSafeTimeout } from '@/hooks/useTimerManager';
+import { useSafeInterval } from '@/hooks/useTimerManager';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemHealthChecker } from "./SystemHealthChecker";
@@ -86,7 +86,7 @@ export function AutomationDashboard() {
       });
 
       // Recarregar logs após um breve delay
-      useSafeTimeout(() => {
+      setTimeout(() => {
         loadAutomationLogs();
       }, 2000);
 
@@ -132,7 +132,7 @@ export function AutomationDashboard() {
       });
 
       // Recarregar logs após um breve delay
-      useSafeTimeout(() => {
+      setTimeout(() => {
         loadAutomationLogs();
       }, 2000);
 
