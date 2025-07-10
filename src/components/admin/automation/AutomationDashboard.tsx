@@ -15,6 +15,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSafeInterval, useSafeTimeout } from '@/hooks/useTimerManager';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemHealthChecker } from "./SystemHealthChecker";
@@ -85,7 +86,7 @@ export function AutomationDashboard() {
       });
 
       // Recarregar logs após um breve delay
-      setTimeout(() => {
+      useSafeTimeout(() => {
         loadAutomationLogs();
       }, 2000);
 
@@ -131,7 +132,7 @@ export function AutomationDashboard() {
       });
 
       // Recarregar logs após um breve delay
-      setTimeout(() => {
+      useSafeTimeout(() => {
         loadAutomationLogs();
       }, 2000);
 
@@ -147,12 +148,13 @@ export function AutomationDashboard() {
     }
   };
 
+  // Use safe interval to prevent memory leaks
+  useSafeInterval(() => {
+    loadAutomationLogs();
+  }, 30000); // 30 seconds
+
   useEffect(() => {
     loadAutomationLogs();
-    
-    // Recarregar logs a cada 30 segundos
-    const interval = setInterval(loadAutomationLogs, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   // Calcular estatísticas

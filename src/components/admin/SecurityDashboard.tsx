@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Shield, AlertTriangle, CheckCircle, Activity, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSafeInterval } from '@/hooks/useTimerManager';
 import { supabase } from '@/lib/supabase/client';
 
 interface SecurityMetric {
@@ -31,12 +32,13 @@ export function SecurityDashboard() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const { toast } = useToast();
 
+  // Use safe interval hook to prevent memory leaks
+  useSafeInterval(() => {
+    loadSecurityData();
+  }, 5 * 60 * 1000); // 5 minutes
+
   useEffect(() => {
     loadSecurityData();
-    
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(loadSecurityData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const loadSecurityData = async () => {

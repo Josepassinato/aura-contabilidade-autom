@@ -74,29 +74,40 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Sanitize CSS values to prevent XSS
+  const sanitizeCSS = (value: string): string => {
+    // Remove dangerous characters and potential CSS injection
+    return value.replace(/[<>'";\(\)]/g, '').trim();
+  };
+
+  const cssContent = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const sanitizedPrefix = sanitizeCSS(prefix);
+      const sanitizedId = sanitizeCSS(id);
+      
+      const colorRules = colorConfig
+        .map(([key, itemConfig]) => {
+          const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+          if (!color) return null;
+          
+          const sanitizedKey = sanitizeCSS(key);
+          const sanitizedColor = sanitizeCSS(color);
+          
+          return `  --color-${sanitizedKey}: ${sanitizedColor};`;
+        })
+        .filter(Boolean)
+        .join("\n");
+        
+      return `${sanitizedPrefix} [data-chart="${sanitizedId}"] {\n${colorRules}\n}`;
+    })
+    .join("\n");
+
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
-}
+    <style>
+      {cssContent}
+    </style>
+  );
+};
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
