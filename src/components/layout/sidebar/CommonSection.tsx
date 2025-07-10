@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { HomeIcon, BellIcon, Settings2Icon, TestTubeIcon, AlertTriangleIcon } from 'lucide-react';
+import { HomeIcon, BellIcon, Settings2Icon, AlertTriangleIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function CommonSection() {
@@ -56,14 +56,6 @@ export function CommonSection() {
               <Link to="/gestao-riscos">
                 <Settings2Icon className="h-4 w-4 mr-2" />
                 <span>Gestão de Riscos</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/dados-teste')}>
-              <Link to="/dados-teste">
-                <TestTubeIcon className="h-4 w-4 mr-2" />
-                <span>Dados de Teste</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

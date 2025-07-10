@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar, TestTubeIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -128,6 +128,14 @@ export function AccountantSection() {
               <Link to="/documentos">
                 <FileText className="h-4 w-4 mr-2" />
                 <span>Documentos dos Clientes</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/dados-teste')}>
+              <Link to="/dados-teste">
+                <TestTubeIcon className="h-4 w-4 mr-2" />
+                <span>Dados de Teste</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
