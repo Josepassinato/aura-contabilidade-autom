@@ -1,0 +1,35 @@
+{
+  "name": "ContaFlix Voice Agent",
+  "short_name": "ContaFlix Voice",
+  "description": "Agente de voz inteligente para consultas contábeis",
+  "start_url": "/voice-agent",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Conversar com Agente",
+      "short_name": "Agente",
+      "description": "Iniciar conversa com agente de voz",
+      "url": "/voice-agent",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

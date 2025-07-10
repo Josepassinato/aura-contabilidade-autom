@@ -132,6 +132,14 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/agente-voz')}>
+              <Link to="/agente-voz">
+                <Settings2Icon className="h-4 w-4 mr-2" />
+                <span>Agente de Voz</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/auditoria-inteligente')}>
               <Link to="/auditoria-inteligente">
                 <Settings2Icon className="h-4 w-4 mr-2" />
