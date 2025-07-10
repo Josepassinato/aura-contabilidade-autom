@@ -46,10 +46,29 @@ const VoiceAgentInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    initializeVoiceAgent();
+    let isMounted = true;
+    
+    const initialize = async () => {
+      if (isMounted) {
+        await initializeVoiceAgent();
+      }
+    };
+    
+    initialize();
+    
     return () => {
+      isMounted = false;
+      // Proper cleanup of all resources
       if (recognitionRef.current) {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
         recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
     };
   }, []);
@@ -81,7 +100,25 @@ const VoiceAgentInterface: React.FC = () => {
         }
       }
 
-      const clientInfo = JSON.parse(storedClientData);
+      let clientInfo;
+      try {
+        clientInfo = JSON.parse(storedClientData);
+      } catch (parseError) {
+        console.error('Invalid client data in localStorage:', parseError);
+        // Clear corrupted data and redirect
+        localStorage.removeItem('contaflix_client_id');
+        localStorage.removeItem('contaflix_client_data');
+        localStorage.removeItem('contaflix_access_token');
+        toast({
+          title: "Dados corrompidos",
+          description: "Dados armazenados inválidos. Configure o acesso novamente.",
+          variant: "destructive",
+        });
+        // Use React Router instead of window.location
+        setTimeout(() => window.location.replace('/voice-agent/setup'), 2000);
+        return;
+      }
+      
       setClientData(clientInfo);
       
       // Authenticate with biometric or PIN
@@ -278,11 +315,16 @@ const VoiceAgentInterface: React.FC = () => {
         }
       }, 10000);
 
-      // Store cleanup function
-      (mediaRecorder as any).cleanup = () => {
+      // Store cleanup function properly
+      const cleanup = () => {
         clearTimeout(timeoutId);
         stream.getTracks().forEach(track => track.stop());
       };
+
+      // Store cleanup in component ref for later use
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
 
     } catch (error) {
       setIsListening(false);
@@ -438,10 +480,14 @@ const VoiceAgentInterface: React.FC = () => {
   };
 
   const handleLogout = () => {
+    // Clean all stored data
     localStorage.removeItem('contaflix_client_id');
     localStorage.removeItem('contaflix_client_data');
     localStorage.removeItem('contaflix_biometric_id');
-    window.location.href = '/voice-agent/setup';
+    localStorage.removeItem('contaflix_access_token');
+    
+    // Use replace instead of href to avoid navigation stack issues
+    window.location.replace('/voice-agent/setup');
   };
 
   if (!isAuthenticated) {

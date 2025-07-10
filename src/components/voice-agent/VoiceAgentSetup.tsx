@@ -83,8 +83,13 @@ const VoiceAgentSetup: React.FC = () => {
 
   const handleQRScan = async (qrData: string) => {
     try {
-      // Parse QR code data (should contain client ID and validation token)
-      const data = JSON.parse(atob(qrData));
+      // Parse QR code data with proper error handling
+      let data;
+      try {
+        data = JSON.parse(atob(qrData));
+      } catch (parseError) {
+        throw new Error('QR Code inválido ou corrompido');
+      }
       
       // Validate with backend
       const { data: client, error } = await supabase
@@ -305,7 +310,8 @@ const VoiceAgentSetup: React.FC = () => {
                   timestamp: Date.now(),
                   setup: true
                 }));
-                window.location.href = `/voice-agent?token=${tempToken}`;
+                // Use replace instead of href to avoid navigation issues
+                window.location.replace(`/voice-agent?token=${tempToken}`);
               }}
             >
               Começar a Usar

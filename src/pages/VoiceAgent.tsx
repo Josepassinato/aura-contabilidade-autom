@@ -27,8 +27,14 @@ export default function VoiceAgent() {
 
   const validateToken = async (token: string) => {
     try {
-      // Decode and validate token
-      const decodedData = JSON.parse(atob(token));
+      // Decode and validate token with proper error handling
+      let decodedData;
+      try {
+        decodedData = JSON.parse(atob(token));
+      } catch (parseError) {
+        setError('Token inválido ou corrompido. Verifique o link enviado pelo seu contador.');
+        return;
+      }
       
       // Check if it's a setup token (no expiration check needed)
       if (decodedData.setup) {
