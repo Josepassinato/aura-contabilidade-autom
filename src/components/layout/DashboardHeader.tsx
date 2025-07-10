@@ -18,9 +18,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { isAuthenticated, navigateToLogin } = useAuth();
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b glass px-4">
       <div className="flex md:hidden">
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden transition-smooth hover:bg-primary/10">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
@@ -30,15 +30,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {isAuthenticated ? (
           <ClientSelector />
         ) : (
-          <div className="text-lg font-semibold">ContaFlix</div>
+          <div className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
+            ContaFlix
+          </div>
         )}
       </div>
       
       <div className="flex items-center gap-2">
         {isAuthenticated ? (
           <>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="relative transition-smooth hover:bg-primary/10 hover:shadow-glow">
               <Bell className="h-5 w-5" />
+              <div className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
               <span className="sr-only">Notifications</span>
             </Button>
             
@@ -50,7 +53,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
           </>
         ) : (
-          <Button onClick={() => navigateToLogin()}>
+          <Button onClick={() => navigateToLogin()} className="bg-gradient-primary hover:shadow-glow transition-smooth">
             Fazer Login
           </Button>
         )}

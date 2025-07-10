@@ -78,7 +78,7 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-2xl font-medium">Email</FormLabel>
+              <FormLabel className="text-sm font-medium">Email</FormLabel>
               <FormControl>
                 <Input
                   placeholder="seu@email.com"
@@ -86,10 +86,10 @@ export function LoginForm() {
                   {...field}
                   autoComplete="email"
                   disabled={loading}
-                  className="h-20 text-2xl px-4 py-4"
+                  className="h-12 text-base transition-smooth focus:shadow-glow"
                 />
               </FormControl>
-              <FormMessage className="text-xl" />
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -98,7 +98,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-2xl font-medium">Senha</FormLabel>
+              <FormLabel className="text-sm font-medium">Senha</FormLabel>
               <FormControl>
                 <Input
                   placeholder="******"
@@ -106,17 +106,17 @@ export function LoginForm() {
                   {...field}
                   autoComplete="current-password"
                   disabled={loading}
-                  className="h-20 text-2xl px-4 py-4"
+                  className="h-12 text-base transition-smooth focus:shadow-glow"
                 />
               </FormControl>
-              <FormMessage className="text-xl" />
+              <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full h-20 text-2xl font-medium mt-8" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium mt-6 bg-gradient-primary hover:shadow-glow transition-smooth" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Entrando...
             </>
           ) : (

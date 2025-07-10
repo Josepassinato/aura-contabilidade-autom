@@ -144,10 +144,10 @@ export const DashboardView = () => {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">Dashboard</h1>
               {isDemoMode && (
-                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  Modo Demo
+                <div className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md animate-pulse">
+                  ✨ Modo Demo
                 </div>
               )}
             </div>
@@ -166,7 +166,7 @@ export const DashboardView = () => {
               Ajuda
             </Button>
             <Link to="/ux-demo">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="gradient" className="flex items-center gap-2 shadow-glow">
                 <Sparkles className="h-4 w-4" />
                 Demo UX
               </Button>
@@ -203,13 +203,20 @@ export const DashboardView = () => {
         </div>
 
         {/* Calendário e Documentos */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4" data-tour="fiscal-calendar">
-            <CardHeader>
-              <CardTitle>Calendário Fiscal</CardTitle>
-              <CardDescription>
-                Próximas obrigações e eventos fiscais
-              </CardDescription>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+          <Card className="col-span-4 interactive-card bg-gradient-to-br from-primary/5 to-transparent border-primary/10" data-tour="fiscal-calendar">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-primary rounded-lg shadow-sm">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Calendário Fiscal</CardTitle>
+                  <CardDescription>
+                    Próximas obrigações e eventos fiscais
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {mockEvents.length === 0 ? (
@@ -220,12 +227,19 @@ export const DashboardView = () => {
             </CardContent>
           </Card>
           
-          <Card className="col-span-3" data-tour="recent-documents">
-            <CardHeader>
-              <CardTitle>Documentos Recentes</CardTitle>
-              <CardDescription>
-                Últimos documentos enviados pelos clientes
-              </CardDescription>
+          <Card className="col-span-3 interactive-card bg-gradient-to-br from-secondary/50 to-transparent border-muted" data-tour="recent-documents">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Documentos Recentes</CardTitle>
+                  <CardDescription>
+                    Últimos documentos enviados pelos clientes
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {mockDocuments.length === 0 ? (
