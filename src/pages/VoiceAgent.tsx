@@ -30,7 +30,19 @@ export default function VoiceAgent() {
       // Decode and validate token
       const decodedData = JSON.parse(atob(token));
       
-      // Check if token is expired
+      // Check if it's a setup token (no expiration check needed)
+      if (decodedData.setup) {
+        // For setup tokens, client data should already be in localStorage
+        const storedClientId = localStorage.getItem('contaflix_client_id');
+        const storedClientData = localStorage.getItem('contaflix_client_data');
+        
+        if (storedClientId && storedClientData) {
+          setToken(token);
+          return;
+        }
+      }
+      
+      // Check if token is expired (for QR code tokens)
       if (decodedData.expires && Date.now() > decodedData.expires) {
         setError('Token expirado. Solicite um novo link ao seu contador.');
         return;

@@ -65,8 +65,20 @@ const VoiceAgentInterface: React.FC = () => {
       const storedClientData = localStorage.getItem('contaflix_client_data');
       
       if (!storedClientId || !storedClientData) {
-        window.location.href = '/voice-agent/setup';
-        return;
+        // Only redirect to setup if there's no access token indicating we came from a valid route
+        const accessToken = localStorage.getItem('contaflix_access_token');
+        if (!accessToken) {
+          window.location.href = '/voice-agent/setup';
+          return;
+        } else {
+          toast({
+            title: "Dados não encontrados",
+            description: "Escaneie o QR code novamente ou configure o acesso",
+            variant: "destructive",
+          });
+          window.location.href = '/voice-agent/setup';
+          return;
+        }
       }
 
       const clientInfo = JSON.parse(storedClientData);

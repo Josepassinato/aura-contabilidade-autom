@@ -106,9 +106,13 @@ const VoiceAgentSetup: React.FC = () => {
         theme_colors: data.colors
       });
 
-      // Store secure credentials
+      // Store secure credentials in the correct format
       localStorage.setItem('contaflix_client_id', client.id);
-      localStorage.setItem('contaflix_client_data', JSON.stringify(client));
+      localStorage.setItem('contaflix_client_data', JSON.stringify({
+        id: client.id,
+        name: client.name,
+        accounting_firm_name: client.accounting_firms?.name || 'Contabilidade'
+      }));
 
       setCurrentStep(1);
       toast({
@@ -294,7 +298,15 @@ const VoiceAgentSetup: React.FC = () => {
             )}
             <Button 
               className="w-full" 
-              onClick={() => window.location.href = '/voice-agent'}
+              onClick={() => {
+                // Generate a temporary access token for seamless transition
+                const tempToken = btoa(JSON.stringify({
+                  clientId: clientData?.id,
+                  timestamp: Date.now(),
+                  setup: true
+                }));
+                window.location.href = `/voice-agent?token=${tempToken}`;
+              }}
             >
               Começar a Usar
             </Button>
