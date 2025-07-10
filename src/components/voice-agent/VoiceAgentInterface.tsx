@@ -154,14 +154,85 @@ const VoiceAgentInterface: React.FC = () => {
     }
   };
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
-      recognitionRef.current?.start();
-      setIsListening(true);
+      // Try to use advanced voice recognition first
+      try {
+        await startAdvancedListening();
+      } catch (error) {
+        console.log('Advanced voice recognition failed, falling back to browser API');
+        recognitionRef.current?.start();
+        setIsListening(true);
+      }
     }
+  };
+
+  const startAdvancedListening = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks);
+        const audioBase64 = await blobToBase64(audioBlob);
+        
+        try {
+          const { data, error } = await supabase.functions.invoke('voice-to-text', {
+            body: { audio: audioBase64 }
+          });
+          
+          if (error) throw error;
+          
+          if (data.success && data.text) {
+            handleVoiceInput(data.text);
+          }
+        } catch (error) {
+          console.error('Voice-to-text error:', error);
+          toast({
+            title: "Erro no reconhecimento de voz",
+            description: "Não foi possível processar o áudio",
+            variant: "destructive",
+          });
+        }
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      setIsListening(true);
+      mediaRecorder.start();
+      
+      // Stop recording after 10 seconds max
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          setIsListening(false);
+        }
+      }, 10000);
+
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
 
   const handleVoiceInput = async (text: string) => {
@@ -203,20 +274,67 @@ const VoiceAgentInterface: React.FC = () => {
     try {
       setIsSpeaking(true);
       
-      // Use Web Speech API or call TTS service
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pt-BR';
-        utterance.rate = 0.9;
+      // Try advanced TTS first, fallback to browser API
+      try {
+        const { data, error } = await supabase.functions.invoke('text-to-voice', {
+          body: { 
+            text: text,
+            voice: 'nova'
+          }
+        });
         
-        utterance.onend = () => {
-          setIsSpeaking(false);
-        };
+        if (error) throw error;
         
-        speechSynthesis.speak(utterance);
+        if (data.success && data.audioContent) {
+          // Play the audio
+          const audioBlob = new Blob(
+            [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+            { type: 'audio/mp3' }
+          );
+          
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          audio.onended = () => {
+            setIsSpeaking(false);
+            URL.revokeObjectURL(audioUrl);
+          };
+          
+          audio.onerror = () => {
+            console.error('Audio playback failed');
+            fallbackToWebSpeechAPI(text);
+          };
+          
+          await audio.play();
+        } else {
+          throw new Error('TTS API failed');
+        }
+      } catch (ttsError) {
+        console.log('Advanced TTS failed, falling back to browser API');
+        fallbackToWebSpeechAPI(text);
       }
     } catch (error) {
       console.error('Error speaking response:', error);
+      setIsSpeaking(false);
+    }
+  };
+
+  const fallbackToWebSpeechAPI = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+      };
+      
+      speechSynthesis.speak(utterance);
+    } else {
       setIsSpeaking(false);
     }
   };

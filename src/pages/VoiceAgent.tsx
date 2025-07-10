@@ -4,6 +4,7 @@ import VoiceAgentInterface from '@/components/voice-agent/VoiceAgentInterface';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Bot, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function VoiceAgent() {
   const [searchParams] = useSearchParams();
@@ -19,8 +20,48 @@ export default function VoiceAgent() {
       return;
     }
 
-    setToken(tokenParam);
+    // Store token and validate it
+    localStorage.setItem('contaflix_access_token', tokenParam);
+    validateToken(tokenParam);
   }, [searchParams]);
+
+  const validateToken = async (token: string) => {
+    try {
+      // Decode and validate token
+      const decodedData = JSON.parse(atob(token));
+      
+      // Check if token is expired
+      if (decodedData.expires && Date.now() > decodedData.expires) {
+        setError('Token expirado. Solicite um novo link ao seu contador.');
+        return;
+      }
+
+      // Validate client exists
+      const { data: client, error } = await supabase
+        .from('accounting_clients')
+        .select('id, name, accounting_firms(name)')
+        .eq('id', decodedData.clientId)
+        .single();
+
+      if (error || !client) {
+        setError('Cliente não encontrado ou token inválido.');
+        return;
+      }
+
+      // Store client data for the voice agent
+      localStorage.setItem('contaflix_client_id', client.id);
+      localStorage.setItem('contaflix_client_data', JSON.stringify({
+        id: client.id,
+        name: client.name,
+        accounting_firm_name: client.accounting_firms?.name || 'Não informado'
+      }));
+
+      setToken(token);
+    } catch (error) {
+      console.error('Token validation error:', error);
+      setError('Token inválido. Verifique o link enviado pelo seu contador.');
+    }
+  };
 
   if (error) {
     return (
