@@ -17,6 +17,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { authStorage } from '@/utils/secureStorage';
+import { 
+  detectBrowserCapabilities, 
+  getOptimalAudioConstraints, 
+  getCompatibleMediaRecorder,
+  type BrowserCapabilities 
+} from '@/utils/mediaRecorderUtils';
 
 interface Message {
   id: string;
@@ -41,11 +47,12 @@ const VoiceAgentInterface: React.FC = () => {
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [browserCapabilities, setBrowserCapabilities] = useState<BrowserCapabilities | null>(null);
   
   const recognitionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaRecorderRef = useRef<any>(null); // Can be MediaRecorder or polyfill
   const streamRef = useRef<MediaStream | null>(null);
   const cleanupFunctionsRef = useRef<Array<() => void>>([]);
   const initializationStateRef = useRef<'idle' | 'initializing' | 'completed' | 'failed'>('idle');
@@ -63,6 +70,10 @@ const VoiceAgentInterface: React.FC = () => {
       initializationStateRef.current = 'initializing';
       
       try {
+        // Detect browser capabilities first
+        const capabilities = detectBrowserCapabilities();
+        setBrowserCapabilities(capabilities);
+        
         if (isMounted) {
           await initializeVoiceAgent();
           if (isMounted) {
@@ -434,9 +445,13 @@ const VoiceAgentInterface: React.FC = () => {
     }
     
     try {
-      // Check MediaRecorder support (iOS Safari doesn't support it)
-      if (!window.MediaRecorder) {
-        throw new Error('MediaRecorder not supported');
+      // Check browser capabilities
+      if (!browserCapabilities) {
+        throw new Error('Browser capabilities not detected');
+      }
+      
+      if (!browserCapabilities.hasGetUserMedia) {
+        throw new Error('Seu navegador não suporta gravação de áudio');
       }
 
       // Clean up any existing recording first
@@ -451,41 +466,36 @@ const VoiceAgentInterface: React.FC = () => {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        }
-      });
+      // Get optimal audio constraints for this browser
+      const constraints = getOptimalAudioConstraints(browserCapabilities);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       // Store stream reference for cleanup
       streamRef.current = stream;
       
-      let mediaRecorder: MediaRecorder;
       const audioChunks: Blob[] = [];
 
-      try {
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
-      } catch (e) {
-        // Fallback for Safari
-        mediaRecorder = new MediaRecorder(stream);
-      }
+      // Get compatible MediaRecorder (or polyfill)
+      const mediaRecorder = await getCompatibleMediaRecorder(stream);
 
       // Store mediaRecorder reference for cleanup
       mediaRecorderRef.current = mediaRecorder;
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+      mediaRecorder.ondataavailable = (event: any) => {
+        if (event.data && event.data.size > 0) {
           audioChunks.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
         try {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          // Determine blob type based on browser capabilities
+          let blobType = 'audio/webm';
+          if (browserCapabilities.isSafari || browserCapabilities.isIOS) {
+            blobType = 'audio/wav'; // Better compatibility with our polyfill
+          }
+          
+          const audioBlob = new Blob(audioChunks, { type: blobType });
           const audioBase64 = await blobToBase64(audioBlob);
           
           const { data, error } = await supabase.functions.invoke('voice-to-text', {
@@ -494,16 +504,18 @@ const VoiceAgentInterface: React.FC = () => {
           
           if (error) throw error;
           
-          if (data.success && data.text) {
+          if (data && data.text) {
             handleVoiceInput(data.text);
           } else {
-            throw new Error('No text recognized');
+            throw new Error('Nenhum texto reconhecido');
           }
         } catch (error) {
           console.error('Voice-to-text error:', error);
           toast({
             title: "Erro no reconhecimento de voz",
-            description: "Não foi possível processar o áudio. Tente novamente.",
+            description: browserCapabilities?.isSafari 
+              ? "Safari tem limitações de áudio. Tente usar Chrome para melhor experiência."
+              : "Não foi possível processar o áudio. Verifique o microfone e tente novamente.",
             variant: "destructive",
           });
         } finally {
@@ -512,8 +524,13 @@ const VoiceAgentInterface: React.FC = () => {
         }
       };
 
-      mediaRecorder.onerror = (error) => {
+      mediaRecorder.onerror = (error: any) => {
         console.error('MediaRecorder error:', error);
+        toast({
+          title: "Erro de gravação",
+          description: "Problema com o gravador de áudio. Tente novamente.",
+          variant: "destructive",
+        });
         cleanupRecordingResources();
       };
 

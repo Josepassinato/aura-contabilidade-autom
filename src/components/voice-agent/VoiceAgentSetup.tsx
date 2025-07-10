@@ -193,28 +193,85 @@ const VoiceAgentSetup: React.FC = () => {
 
   const handleVoiceTest = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Import browser capabilities
+      const { detectBrowserCapabilities, getOptimalAudioConstraints } = await import('@/utils/mediaRecorderUtils');
+      
+      // Detect browser capabilities
+      const capabilities = detectBrowserCapabilities();
+      
+      if (!capabilities.hasGetUserMedia) {
+        throw new Error('Seu navegador não suporta gravação de áudio');
+      }
+      
+      // Show browser-specific warnings
+      if (capabilities.isSafari || capabilities.isIOS) {
+        toast({
+          title: "Navegador Safari detectado",
+          description: "Para melhor experiência, recomendamos usar Chrome",
+          variant: "default",
+        });
+      }
+      
+      if (!capabilities.hasMediaRecorder) {
+        toast({
+          title: "MediaRecorder não suportado",
+          description: "Usaremos modo de compatibilidade",
+          variant: "default",
+        });
+      }
+      
+      // Get optimal constraints for this browser
+      const constraints = getOptimalAudioConstraints(capabilities);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       // Test microphone
-      const audioContext = new AudioContext();
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
       source.connect(analyser);
-
+      
+      // Test for actual audio input
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(dataArray);
+      
+      // Check if we're getting audio data
+      const hasAudio = dataArray.some(value => value > 0);
+      
       // Stop stream after test
       stream.getTracks().forEach(track => track.stop());
+      await audioContext.close();
+      
+      if (!hasAudio) {
+        throw new Error('Nenhum sinal de áudio detectado');
+      }
       
       updateStepCompletion('voice', true);
       setSetupComplete(true);
       
       toast({
         title: "Configuração concluída!",
-        description: "Seu agente de voz está pronto para uso",
+        description: `Agente de voz configurado com sucesso. Compatibilidade: ${capabilities.supportedMimeTypes.length > 0 ? 'Ótima' : 'Básica'}`,
       });
     } catch (error) {
+      console.error('Voice test failed:', error);
+      
+      let errorMessage = "Verifique as permissões de áudio";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('não suporta')) {
+          errorMessage = "Navegador não suporta gravação de áudio. Tente Chrome ou Firefox";
+        } else if (error.message.includes('Permission denied')) {
+          errorMessage = "Permissão de microfone negada. Habilite nas configurações do navegador";
+        } else if (error.message.includes('NotFoundError')) {
+          errorMessage = "Nenhum microfone encontrado. Conecte um microfone";
+        } else if (error.message.includes('Nenhum sinal')) {
+          errorMessage = "Microfone conectado mas sem áudio. Verifique se não está mudo";
+        }
+      }
+      
       toast({
-        title: "Erro no microfone",
-        description: "Verifique as permissões de áudio",
+        title: "Erro no teste de voz",
+        description: errorMessage,
         variant: "destructive",
       });
     }
