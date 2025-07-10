@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { authStorage } from '@/utils/secureStorage';
 
 interface Message {
   id: string;
@@ -44,6 +45,9 @@ const VoiceAgentInterface: React.FC = () => {
   const recognitionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const cleanupFunctionsRef = useRef<Array<() => void>>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -58,16 +62,66 @@ const VoiceAgentInterface: React.FC = () => {
     
     return () => {
       isMounted = false;
-      // Proper cleanup of all resources
+      
+      // Execute all cleanup functions
+      cleanupFunctionsRef.current.forEach(cleanup => {
+        try {
+          cleanup();
+        } catch (error) {
+          console.warn('Cleanup function failed:', error);
+        }
+      });
+      cleanupFunctionsRef.current = [];
+      
+      // Cleanup speech recognition
       if (recognitionRef.current) {
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.onerror = null;
-        recognitionRef.current.onend = null;
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.onstart = null;
+          if (recognitionRef.current.state === 'started') {
+            recognitionRef.current.stop();
+          }
+        } catch (error) {
+          console.warn('Recognition cleanup failed:', error);
+        }
         recognitionRef.current = null;
       }
+      
+      // Cleanup media recorder
+      if (mediaRecorderRef.current) {
+        try {
+          if (mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+          }
+        } catch (error) {
+          console.warn('MediaRecorder cleanup failed:', error);
+        }
+        mediaRecorderRef.current = null;
+      }
+      
+      // Cleanup media stream
+      if (streamRef.current) {
+        try {
+          streamRef.current.getTracks().forEach(track => {
+            track.stop();
+          });
+        } catch (error) {
+          console.warn('Stream cleanup failed:', error);
+        }
+        streamRef.current = null;
+      }
+      
+      // Cleanup audio context
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        try {
+          if (audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close();
+          }
+        } catch (error) {
+          console.warn('AudioContext cleanup failed:', error);
+        }
         audioContextRef.current = null;
       }
     };
@@ -79,13 +133,13 @@ const VoiceAgentInterface: React.FC = () => {
 
   const initializeVoiceAgent = async () => {
     try {
-      // Get stored client data
-      const storedClientId = localStorage.getItem('contaflix_client_id');
-      const storedClientData = localStorage.getItem('contaflix_client_data');
+      // Get stored client data using secure storage
+      const storedClientId = authStorage.getClientId();
+      const storedClientData = authStorage.getClientData();
       
       if (!storedClientId || !storedClientData) {
         // Only redirect to setup if there's no access token indicating we came from a valid route
-        const accessToken = localStorage.getItem('contaflix_access_token');
+        const accessToken = authStorage.getAccessToken();
         if (!accessToken) {
           window.location.href = '/voice-agent/setup';
           return;
@@ -100,26 +154,21 @@ const VoiceAgentInterface: React.FC = () => {
         }
       }
 
-      let clientInfo;
-      try {
-        clientInfo = JSON.parse(storedClientData);
-      } catch (parseError) {
-        console.error('Invalid client data in localStorage:', parseError);
+      // Validate stored client data structure
+      if (!storedClientData.id || !storedClientData.name) {
+        console.error('Invalid client data structure');
         // Clear corrupted data and redirect
-        localStorage.removeItem('contaflix_client_id');
-        localStorage.removeItem('contaflix_client_data');
-        localStorage.removeItem('contaflix_access_token');
+        authStorage.clearAll();
         toast({
           title: "Dados corrompidos",
           description: "Dados armazenados inválidos. Configure o acesso novamente.",
           variant: "destructive",
         });
-        // Use React Router instead of window.location
         setTimeout(() => window.location.replace('/voice-agent/setup'), 2000);
         return;
       }
       
-      setClientData(clientInfo);
+      setClientData(storedClientData);
       
       // Authenticate with biometric or PIN
       await authenticateUser();
@@ -128,7 +177,7 @@ const VoiceAgentInterface: React.FC = () => {
       initializeSpeechRecognition();
       
       // Welcome message
-      addMessage('assistant', `Olá! Sou seu assistente da ${clientInfo.name}. Como posso ajudar?`);
+      addMessage('assistant', `Olá! Sou seu assistente da ${storedClientData.name}. Como posso ajudar?`);
       
     } catch (error) {
       console.error('Error initializing voice agent:', error);
@@ -142,34 +191,93 @@ const VoiceAgentInterface: React.FC = () => {
 
   const authenticateUser = async () => {
     try {
-      // Try biometric authentication first
-      const biometricId = localStorage.getItem('contaflix_biometric_id');
+      // Validate stored token first
+      const accessToken = authStorage.getAccessToken();
+      const clientId = authStorage.getClientId();
       
-      if (biometricId && 'credentials' in navigator) {
-        const credential = await navigator.credentials.get({
-          publicKey: {
-            challenge: new Uint8Array(32),
-            allowCredentials: [{
-              id: new TextEncoder().encode(biometricId),
-              type: 'public-key'
-            }],
-            timeout: 60000
-          }
-        });
+      if (!accessToken || !clientId) {
+        throw new Error('Missing authentication credentials');
+      }
+      
+      // Validate token with backend
+      try {
+        const decodedToken = JSON.parse(atob(accessToken));
         
-        if (credential) {
-          setIsAuthenticated(true);
-          return;
+        // Check token expiration (if not setup token)
+        if (!decodedToken.setup && decodedToken.expires && Date.now() > decodedToken.expires) {
+          throw new Error('Token expired');
+        }
+        
+        // Validate client exists and token is valid
+        const { data: client, error } = await supabase
+          .from('accounting_clients')
+          .select('id, name, status')
+          .eq('id', decodedToken.clientId || clientId)
+          .eq('status', 'active')
+          .single();
+          
+        if (error || !client) {
+          throw new Error('Invalid client or inactive account');
+        }
+        
+      } catch (tokenError) {
+        throw new Error('Invalid or corrupted token');
+      }
+      
+      // Try biometric authentication if available
+      const biometricId = authStorage.getBiometricId();
+      
+      if (biometricId && 'credentials' in navigator && window.PublicKeyCredential) {
+        try {
+          const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          
+          if (available) {
+            const credential = await navigator.credentials.get({
+              publicKey: {
+                challenge: crypto.getRandomValues(new Uint8Array(32)),
+                allowCredentials: [{
+                  id: new TextEncoder().encode(biometricId),
+                  type: 'public-key'
+                }],
+                timeout: 30000,
+                userVerification: 'required'
+              }
+            });
+            
+            if (credential) {
+              setIsAuthenticated(true);
+              return;
+            }
+          }
+        } catch (biometricError) {
+          console.log('Biometric authentication failed, requiring manual confirmation');
         }
       }
       
-      // Fallback to PIN or other authentication
-      setIsAuthenticated(true);
+      // Fallback: Require user confirmation for access
+      const userConfirmed = confirm(
+        `Confirmar acesso à conta ${clientData?.name || 'empresa'}?\n\nClique OK para continuar ou Cancelar para sair.`
+      );
+      
+      if (userConfirmed) {
+        setIsAuthenticated(true);
+      } else {
+        throw new Error('Authentication denied by user');
+      }
       
     } catch (error) {
       console.error('Authentication failed:', error);
-      // Could implement PIN fallback here
-      setIsAuthenticated(true);
+      
+      // Clear all auth data and redirect
+      authStorage.clearAll();
+      
+      toast({
+        title: "Autenticação Falhou",
+        description: "Credenciais inválidas. Reconfigure o acesso.",
+        variant: "destructive",
+      });
+      
+      setTimeout(() => window.location.replace('/voice-agent/setup'), 2000);
     }
   };
 
@@ -249,6 +357,14 @@ const VoiceAgentInterface: React.FC = () => {
         throw new Error('MediaRecorder not supported');
       }
 
+      // Clean up any existing recording first
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -256,6 +372,9 @@ const VoiceAgentInterface: React.FC = () => {
           sampleRate: 44100
         }
       });
+      
+      // Store stream reference for cleanup
+      streamRef.current = stream;
       
       let mediaRecorder: MediaRecorder;
       const audioChunks: Blob[] = [];
@@ -268,6 +387,9 @@ const VoiceAgentInterface: React.FC = () => {
         // Fallback for Safari
         mediaRecorder = new MediaRecorder(stream);
       }
+
+      // Store mediaRecorder reference for cleanup
+      mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -299,10 +421,14 @@ const VoiceAgentInterface: React.FC = () => {
             variant: "destructive",
           });
         } finally {
-          // Always clean up stream
-          stream.getTracks().forEach(track => track.stop());
-          setIsListening(false);
+          // Clean up resources
+          cleanupRecordingResources();
         }
+      };
+
+      mediaRecorder.onerror = (error) => {
+        console.error('MediaRecorder error:', error);
+        cleanupRecordingResources();
       };
 
       setIsListening(true);
@@ -315,20 +441,38 @@ const VoiceAgentInterface: React.FC = () => {
         }
       }, 10000);
 
-      // Store cleanup function properly
-      const cleanup = () => {
+      // Store cleanup function for this recording session
+      const sessionCleanup = () => {
         clearTimeout(timeoutId);
-        stream.getTracks().forEach(track => track.stop());
+        if (stream.active) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
       };
 
-      // Store cleanup in component ref for later use
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
+      // Add to cleanup functions array
+      cleanupFunctionsRef.current.push(sessionCleanup);
 
     } catch (error) {
-      setIsListening(false);
+      cleanupRecordingResources();
       throw error;
+    }
+  };
+
+  const cleanupRecordingResources = () => {
+    setIsListening(false);
+    
+    // Clean up stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    // Clean up media recorder
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current = null;
     }
   };
 
@@ -480,11 +624,8 @@ const VoiceAgentInterface: React.FC = () => {
   };
 
   const handleLogout = () => {
-    // Clean all stored data
-    localStorage.removeItem('contaflix_client_id');
-    localStorage.removeItem('contaflix_client_data');
-    localStorage.removeItem('contaflix_biometric_id');
-    localStorage.removeItem('contaflix_access_token');
+    // Clean all stored data using secure storage
+    authStorage.clearAll();
     
     // Use replace instead of href to avoid navigation stack issues
     window.location.replace('/voice-agent/setup');

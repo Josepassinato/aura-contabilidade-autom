@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { QrCode, Smartphone, Shield, Mic, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { authStorage } from '@/utils/secureStorage';
 
 interface SetupStep {
   id: string;
@@ -111,13 +112,13 @@ const VoiceAgentSetup: React.FC = () => {
         theme_colors: data.colors
       });
 
-      // Store secure credentials in the correct format
-      localStorage.setItem('contaflix_client_id', client.id);
-      localStorage.setItem('contaflix_client_data', JSON.stringify({
+      // Store secure credentials using encrypted storage
+      authStorage.setClientId(client.id);
+      authStorage.setClientData({
         id: client.id,
         name: client.name,
         accounting_firm_name: client.accounting_firms?.name || 'Contabilidade'
-      }));
+      });
 
       setCurrentStep(1);
       toast({
@@ -171,7 +172,7 @@ const VoiceAgentSetup: React.FC = () => {
           }
         });
 
-        localStorage.setItem('contaflix_biometric_id', credential?.id || '');
+        authStorage.setBiometricId(credential?.id || '');
         updateStepCompletion('security', true);
         setCurrentStep(3);
         

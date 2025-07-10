@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Bot, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { authStorage } from '@/utils/secureStorage';
 
 export default function VoiceAgent() {
   const [searchParams] = useSearchParams();
@@ -21,7 +22,7 @@ export default function VoiceAgent() {
     }
 
     // Store token and validate it
-    localStorage.setItem('contaflix_access_token', tokenParam);
+    authStorage.setAccessToken(tokenParam);
     validateToken(tokenParam);
   }, [searchParams]);
 
@@ -36,48 +37,86 @@ export default function VoiceAgent() {
         return;
       }
       
+      // Validate required fields in token
+      if (!decodedData.clientId && !decodedData.setup) {
+        setError('Token malformado - dados obrigatórios ausentes.');
+        return;
+      }
+      
       // Check if it's a setup token (no expiration check needed)
       if (decodedData.setup) {
-        // For setup tokens, client data should already be in localStorage
-        const storedClientId = localStorage.getItem('contaflix_client_id');
-        const storedClientData = localStorage.getItem('contaflix_client_data');
+        // For setup tokens, client data should already be in secure storage
+        const storedClientId = authStorage.getClientId();
+        const storedClientData = authStorage.getClientData();
         
         if (storedClientId && storedClientData) {
+          // Additional security: verify stored client data structure
+          if (!storedClientData.id || !storedClientData.name) {
+            authStorage.clearAll();
+            setError('Dados armazenados corrompidos. Configure o acesso novamente.');
+            return;
+          }
           setToken(token);
+          return;
+        } else {
+          setError('Dados de configuração não encontrados. Escaneie o QR code novamente.');
           return;
         }
       }
       
-      // Check if token is expired (for QR code tokens)
-      if (decodedData.expires && Date.now() > decodedData.expires) {
-        setError('Token expirado. Solicite um novo link ao seu contador.');
-        return;
+      // For non-setup tokens, check expiration strictly
+      if (!decodedData.setup) {
+        if (!decodedData.expires) {
+          setError('Token sem data de expiração - formato inválido.');
+          return;
+        }
+        
+        if (Date.now() > decodedData.expires) {
+          setError('Token expirado. Solicite um novo link ao seu contador.');
+          return;
+        }
+        
+        // Check if token is not too old (max 24 hours for non-setup tokens)
+        const tokenAge = Date.now() - (decodedData.timestamp || 0);
+        if (tokenAge > 24 * 60 * 60 * 1000) {
+          setError('Token muito antigo. Solicite um novo link ao seu contador.');
+          return;
+        }
       }
 
-      // Validate client exists
+      // Validate client exists and is active
       const { data: client, error } = await supabase
         .from('accounting_clients')
-        .select('id, name, accounting_firms(name)')
+        .select('id, name, status, accounting_firms(name)')
         .eq('id', decodedData.clientId)
+        .eq('status', 'active')
         .single();
 
       if (error || !client) {
-        setError('Cliente não encontrado ou token inválido.');
+        setError('Cliente não encontrado, inativo ou token inválido.');
         return;
       }
 
-      // Store client data for the voice agent
-      localStorage.setItem('contaflix_client_id', client.id);
-      localStorage.setItem('contaflix_client_data', JSON.stringify({
+      // Additional security check: verify token clientId matches database
+      if (client.id !== decodedData.clientId) {
+        setError('Inconsistência nos dados de cliente. Token possivelmente adulterado.');
+        return;
+      }
+
+      // Store client data for the voice agent with additional validation
+      const clientDataToStore = {
         id: client.id,
         name: client.name,
         accounting_firm_name: client.accounting_firms?.name || 'Não informado'
-      }));
+      };
+      
+      authStorage.setClientId(client.id);
+      authStorage.setClientData(clientDataToStore);
 
       setToken(token);
     } catch (error) {
       console.error('Token validation error:', error);
-      setError('Token inválido. Verifique o link enviado pelo seu contador.');
+      setError('Erro interno na validação do token. Tente novamente ou contate o suporte.');
     }
   };
 
