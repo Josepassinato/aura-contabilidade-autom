@@ -20,6 +20,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { ClientList } from "@/components/clients/ClientList";
 import { ClientForm } from "@/components/clients/ClientForm";
+import { ClientAccountantAssignment } from "@/components/clients/ClientAccountantAssignment";
+import { SecurityValidation } from "@/components/security/SecurityValidation";
 import { useAuth } from '@/contexts/auth';
 import { Navigate } from 'react-router-dom';
 import { checkForAuthLimboState, cleanupAuthState } from '@/contexts/auth/cleanupUtils';
@@ -33,7 +35,7 @@ type FormValues = z.infer<typeof formSchema>;
 const GerenciarClientes = () => {
   const [activeTab, setActiveTab] = useState("listar");
   const [refreshKey, setRefreshKey] = useState(0); // Para forçar a atualização do componente ClientList
-  const { isAuthenticated, isAccountant, isLoading, navigateToLogin } = useAuth();
+  const { isAuthenticated, isAccountant, isAdmin, isLoading, navigateToLogin } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -94,9 +96,9 @@ const GerenciarClientes = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Only accountants should access this page
-  if (!isAccountant) {
-    console.log("User is not an accountant, redirecting to dashboard");
+  // Only accountants and admins should access this page
+  if (!isAccountant && !isAdmin) {
+    console.log("User is not an accountant or admin, redirecting to dashboard");
     return <Navigate to="/" replace />;
   }
 
@@ -121,6 +123,18 @@ const GerenciarClientes = () => {
             <Plus className="h-4 w-4" />
             Novo Cliente
           </TabsTrigger>
+          {isAdmin && (
+            <>
+              <TabsTrigger value="associar" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Associar Contadores
+              </TabsTrigger>
+              <TabsTrigger value="seguranca" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Validação de Segurança
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="listar" className="space-y-4">
@@ -169,6 +183,27 @@ const GerenciarClientes = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {isAdmin && (
+          <>
+            <TabsContent value="associar">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Associar Clientes a Contadores</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientAccountantAssignment 
+                    onAssignmentChange={() => setRefreshKey(prev => prev + 1)} 
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="seguranca">
+              <SecurityValidation />
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </DashboardLayout>
   );

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       accounting_clients: {
         Row: {
+          accountant_id: string | null
           accounting_firm_id: string | null
           address: string | null
           cnpj: string
@@ -29,6 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accountant_id?: string | null
           accounting_firm_id?: string | null
           address?: string | null
           cnpj: string
@@ -42,6 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accountant_id?: string | null
           accounting_firm_id?: string | null
           address?: string | null
           cnpj?: string
@@ -55,6 +58,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "accounting_clients_accountant_id_fkey"
+            columns: ["accountant_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "accounting_clients_accounting_firm_id_fkey"
             columns: ["accounting_firm_id"]
@@ -2442,6 +2452,18 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      get_accountant_clients: {
+        Args: { accountant_user_id?: string }
+        Returns: {
+          id: string
+          name: string
+          cnpj: string
+          email: string
+          status: string
+          regime: string
+          created_at: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>

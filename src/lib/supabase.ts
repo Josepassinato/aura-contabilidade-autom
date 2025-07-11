@@ -72,6 +72,8 @@ export interface AccountingClient {
   status: string;
   address?: string;
   phone?: string;
+  accountant_id?: string;
+  accounting_firm_id?: string;
   created_at?: string;
   updated_at?: string;
 }
