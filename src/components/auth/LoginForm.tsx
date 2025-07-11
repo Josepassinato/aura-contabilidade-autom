@@ -54,47 +54,7 @@ export function LoginForm() {
       const result = await enhancedLogin(data.email, data.password);
       
       if (result?.success) {
-        // Verificar se o tipo de usuário selecionado corresponde ao perfil do usuário
-        const userRole = localStorage.getItem('user_role');
-        const expectedRole = data.userType;
-        
-        // Mapear os tipos para os roles do sistema
-        const roleMapping = {
-          'admin': 'admin',
-          'accountant': 'accountant', 
-          'client': 'client'
-        };
-        
-        if (userRole !== roleMapping[expectedRole]) {
-          // Fazer logout se o tipo não corresponder
-          cleanupAuthState();
-          
-          let expectedTypeLabel = '';
-          let actualTypeLabel = '';
-          
-          switch (expectedRole) {
-            case 'admin': expectedTypeLabel = 'Administrador'; break;
-            case 'accountant': expectedTypeLabel = 'Contador'; break;
-            case 'client': expectedTypeLabel = 'Empresa'; break;
-          }
-          
-          switch (userRole) {
-            case 'admin': actualTypeLabel = 'Administrador'; break;
-            case 'accountant': actualTypeLabel = 'Contador'; break;
-            case 'client': actualTypeLabel = 'Empresa'; break;
-            default: actualTypeLabel = 'Desconhecido'; break;
-          }
-          
-          toast({
-            title: 'Tipo de acesso incorreto',
-            description: `Você selecionou "${expectedTypeLabel}" mas sua conta é do tipo "${actualTypeLabel}". Verifique o tipo de acesso selecionado.`,
-            variant: 'destructive',
-          });
-          
-          return;
-        }
-        
-        console.log('Login successful with correct user type, navigating...');
+        console.log('Login successful, navigating...');
         // Navegação será tratada pelo enhancedLogin
       } else {
         toast({
