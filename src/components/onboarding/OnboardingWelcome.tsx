@@ -16,7 +16,7 @@ import {
 import { demoFeatures, initializeDemoData } from '@/data/demoData';
 
 interface OnboardingWelcomeProps {
-  onStartTour: () => void;
+  onStartTour?: () => void;
   onLoadDemo: () => void;
   onSkip: () => void;
 }
@@ -108,7 +108,7 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
               Como você gostaria de começar?
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Tour Guiado */}
+              {/* Assistente IA */}
               <Card className="border-primary/20 hover:border-primary/40 hover:shadow-glow transition-smooth cursor-pointer interactive-card">
                 <CardHeader>
                   <div className="flex items-center gap-3">
@@ -116,18 +116,18 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
                       <BookOpen className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Tour Guiado</CardTitle>
-                      <Badge className="text-xs bg-success text-success-foreground">Recomendado</Badge>
+                      <CardTitle className="text-base">Assistente IA</CardTitle>
+                      <Badge className="text-xs bg-success text-success-foreground">Novo!</Badge>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="mb-4">
-                    Aprenda os recursos principais com um tour interativo passo-a-passo pela interface.
+                    Use nosso assistente inteligente para obter ajuda e orientações sobre qualquer funcionalidade.
                   </CardDescription>
-                  <Button onClick={onStartTour} className="w-full bg-gradient-primary hover:shadow-glow transition-smooth">
+                  <Button onClick={onSkip} className="w-full bg-gradient-primary hover:shadow-glow transition-smooth">
                     <Play className="h-4 w-4 mr-2" />
-                    Iniciar Tour
+                    Começar com Assistente
                   </Button>
                 </CardContent>
               </Card>
@@ -182,10 +182,10 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
               Pular Introdução
             </Button>
             <Button 
-              onClick={onStartTour}
+              onClick={onSkip}
               className="flex-1 bg-gradient-primary hover:shadow-glow transition-smooth"
             >
-              Começar Tour Completo
+              Começar com Assistente IA
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
@@ -199,7 +199,7 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
               <div>
                 <p className="text-sm font-medium text-primary">💡 Dica Profissional</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Você pode acessar este tour novamente a qualquer momento através do menu "Ajuda" na barra lateral.
+                  Você pode acessar o assistente IA a qualquer momento através do botão no canto inferior direito da tela.
                 </p>
               </div>
             </div>

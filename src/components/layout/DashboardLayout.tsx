@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
 import { VoiceAssistant } from '@/components/dashboard/VoiceAssistant';
-import TourController from '@/components/dashboard/TourController';
+import { AIAssistant } from '@/components/chat/AIAssistant';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/auth";
 import { Button } from '@/components/ui/button';
@@ -108,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <VoiceAssistant isActive={isVoiceActive} onToggle={toggleVoiceAssistant} />
         )}
         
-        <TourController />
+        <AIAssistant />
       </div>
     </SidebarProvider>
   );

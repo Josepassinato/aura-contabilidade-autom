@@ -12,7 +12,7 @@ import { LogOut, Sparkles, Plus, HelpCircle, Calendar, FileText } from 'lucide-r
 import { BackButton } from '@/components/navigation/BackButton';
 import { Link } from 'react-router-dom';
 import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
-import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+
 import { EmptyState } from './EmptyState';
 import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
 import { DeleteConfirmation } from '@/components/ui/confirmation';
@@ -22,7 +22,7 @@ import { getDemoData, clearDemoData } from '@/data/demoData';
 export const DashboardView = () => {
   const { enhancedLogout, isAccountant, isAdmin } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showTour, setShowTour] = useState(false);
+  
   const [demoData, setDemoData] = useState(getDemoData());
   const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -38,14 +38,10 @@ export const DashboardView = () => {
   const handleOnboardingComplete = () => {
     localStorage.setItem('contaflix_onboarding_completed', 'true');
     setShowOnboarding(false);
-    setShowTour(false);
+    setShowOnboarding(false);
     successToast('Onboarding concluído!', 'Você pode acessar a ajuda novamente pelo menu.');
   };
 
-  const handleStartTour = () => {
-    setShowOnboarding(false);
-    setShowTour(true);
-  };
 
   const handleLoadDemo = async () => {
     setIsLoadingDemo(true);
@@ -110,20 +106,12 @@ export const DashboardView = () => {
         
         {/* Componentes de Onboarding */}
         {showOnboarding && (
-          <OnboardingWelcome
-            onStartTour={handleStartTour}
-            onLoadDemo={handleLoadDemo}
-            onSkip={handleOnboardingComplete}
-          />
+           <OnboardingWelcome
+             onLoadDemo={handleLoadDemo}
+             onSkip={handleOnboardingComplete}
+           />
         )}
         
-        {showTour && (
-          <OnboardingTour
-            isOpen={showTour}
-            onComplete={handleOnboardingComplete}
-            onSkip={handleOnboardingComplete}
-          />
-        )}
       </>
     );
   }
@@ -137,19 +125,11 @@ export const DashboardView = () => {
         {/* Componentes de Onboarding */}
         {showOnboarding && (
           <OnboardingWelcome
-            onStartTour={handleStartTour}
             onLoadDemo={handleLoadDemo}
             onSkip={handleOnboardingComplete}
           />
         )}
 
-        {showTour && (
-          <OnboardingTour
-            isOpen={showTour}
-            onComplete={handleOnboardingComplete}
-            onSkip={handleOnboardingComplete}
-          />
-        )}
       </>
     );
   }
@@ -309,19 +289,11 @@ export const DashboardView = () => {
       {/* Componentes de Onboarding */}
       {showOnboarding && (
         <OnboardingWelcome
-          onStartTour={handleStartTour}
           onLoadDemo={handleLoadDemo}
           onSkip={handleOnboardingComplete}
         />
       )}
 
-      {showTour && (
-        <OnboardingTour
-          isOpen={showTour}
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingComplete}
-        />
-      )}
     </>
   );
 };
