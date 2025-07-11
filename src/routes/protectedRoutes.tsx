@@ -11,7 +11,7 @@ import GuiasFiscais from '../pages/GuiasFiscais';
 import IntegracoesGov from '../pages/IntegracoesGov';
 import IntegracoesEstaduais from '../pages/IntegracoesEstaduais';
 import EmailService from '../pages/EmailService';
-import ClientDocuments from '../pages/ClientDocuments';
+import AccountantDocuments from '../pages/AccountantDocuments';
 import FolhaPagamento from '../pages/FolhaPagamento';
 import RegimeFiscal from '../pages/RegimeFiscal';
 import ApuracaoAutomatica from '../pages/ApuracaoAutomatica';
@@ -75,7 +75,7 @@ export const protectedRoutes = [
   } />,
   <Route key="documentos" path="/documentos" element={
     <ProtectedRoute>
-      <ClientDocuments />
+      <AccountantDocuments />
     </ProtectedRoute>
   } />,
   <Route key="folha-pagamento" path="/folha-pagamento" element={
