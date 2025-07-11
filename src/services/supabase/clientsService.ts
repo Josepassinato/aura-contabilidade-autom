@@ -10,9 +10,16 @@ export async function fetchAllClients(): Promise<AccountingClient[]> {
   try {
     console.log("Buscando clientes do contador atual...");
     
+    // Obter o ID do usuário atual
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('Erro ao obter usuário atual:', userError);
+      return [];
+    }
+    
     // Usar a função do banco que já aplica filtros de segurança
     const { data, error } = await supabase
-      .rpc('get_accountant_clients');
+      .rpc('get_accountant_clients', { accountant_user_id: user.id });
       
     if (error) {
       console.error('Erro ao buscar clientes:', error);
