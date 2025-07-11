@@ -298,6 +298,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           data: {
             full_name: userData.full_name || userData.name,
             role: userData.role || 'client',
+            company: userData.company_id,
+            cnpj: userData.cnpj,
           }
         }
       });

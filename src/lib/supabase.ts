@@ -16,6 +16,7 @@ export interface UserProfile {
   role: UserRole;
   company_id?: string;
   avatar_url?: string;
+  cnpj?: string;
 }
 
 // Employee type

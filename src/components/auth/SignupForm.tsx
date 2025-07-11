@@ -110,7 +110,8 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
       const userData = {
         full_name: data.fullName,
         role: data.role as UserRole,
-        company_id: data.company || undefined,
+        company_id: data.company,
+        cnpj: data.cnpj,
       };
       
       const { error } = await signUp(data.email, data.password, userData);
