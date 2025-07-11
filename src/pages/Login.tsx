@@ -8,7 +8,7 @@ import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
-import { QuickLoginButtons } from '@/components/auth/QuickLoginButtons';
+
 import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 import { BackButton } from '@/components/navigation/BackButton';
 
@@ -80,7 +80,6 @@ const Login = () => {
                 
                 <TabsContent value="login" className="mt-0">
                   <LoginForm />
-                  <QuickLoginButtons />
                 </TabsContent>
                 
                 <TabsContent value="signup" className="mt-0">
