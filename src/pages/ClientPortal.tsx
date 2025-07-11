@@ -10,6 +10,7 @@ import { VoiceAssistant } from "@/components/dashboard/VoiceAssistant";
 import { VoiceAssistantButton } from "@/components/layout/VoiceAssistantButton";
 import { ClientDocumentUpload } from "@/components/client-portal/ClientDocumentUpload";
 import { ExternalIntegrations } from "@/components/client-portal/ExternalIntegrations";
+import { BlingDashboard } from "@/components/integracoes/BlingDashboard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const ClientPortal = () => {
@@ -162,8 +163,9 @@ const ClientPortal = () => {
         <ClientPortalTabs toggleAssistant={toggleAssistant} />
         
         {/* External integrations section */}
-        <div className="mt-8">
+        <div className="mt-8 space-y-6">
           <ExternalIntegrations clientId={clientId || ''} />
+          <BlingDashboard clientId={clientId || ''} />
         </div>
 
         {/* Voice assistant (now managed by DashboardLayout) */}

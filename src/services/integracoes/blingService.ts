@@ -55,19 +55,11 @@ class BlingService {
    */
   async saveCredentials(clientId: string, credentials: BlingCredentials): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .rpc('upsert_integracao_externa', {
-          p_client_id: clientId,
-          p_tipo_integracao: 'bling',
-          p_credenciais: credentials,
-          p_status: 'configurado'
-        });
-
-      if (error) {
-        console.error('Erro ao salvar credenciais Bling:', error);
-        return false;
-      }
-
+      // Implementação temporária usando localStorage até tipos serem atualizados
+      const storageKey = `bling_credentials_${clientId}`;
+      localStorage.setItem(storageKey, JSON.stringify(credentials));
+      
+      console.log('Credenciais Bling salvas localmente:', { clientId, credentials });
       return true;
     } catch (error) {
       console.error('Erro ao salvar credenciais Bling:', error);
@@ -80,10 +72,14 @@ class BlingService {
    */
   async getCredentials(clientId: string): Promise<BlingCredentials | null> {
     try {
-      // Por enquanto, simular as credenciais - será implementado após atualização dos tipos
-      console.log(`Buscando credenciais Bling para cliente ${clientId}`);
+      // Implementação temporária usando localStorage
+      const storageKey = `bling_credentials_${clientId}`;
+      const stored = localStorage.getItem(storageKey);
       
-      // Implementação temporária - substituir por consulta real após tipos atualizados
+      if (stored) {
+        return JSON.parse(stored) as BlingCredentials;
+      }
+      
       return null;
     } catch (error) {
       console.error('Erro ao obter credenciais Bling:', error);

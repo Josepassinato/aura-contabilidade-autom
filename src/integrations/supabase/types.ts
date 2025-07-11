@@ -2600,6 +2600,15 @@ export type Database = {
         Args: { p_worker_id: string }
         Returns: Json
       }
+      upsert_integracao_externa: {
+        Args: {
+          p_client_id: string
+          p_tipo_integracao: string
+          p_credenciais: Json
+          p_status?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -16,6 +16,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { useForm } from "react-hook-form";
 import { Link2, Database, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { blingService } from "@/services/integracoes/blingService";
 
 interface ExternalIntegrationsProps {
   clientId: string;
@@ -39,16 +40,37 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
     setIsConnecting(true);
     
     try {
-      // Simulating API connection - in a real app, this would call an API endpoint
-      console.log(`Connecting to ${integrationType} with credentials:`, values);
-      
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Integração iniciada",
-        description: `A solicitação de integração com ${getIntegrationName(integrationType)} foi enviada com sucesso.`,
-      });
+      if (integrationType === "bling") {
+        // Usar o serviço específico do Bling
+        const credentials = {
+          clientId: values.clientId,
+          clientSecret: values.clientSecret
+        };
+        
+        // Testar conexão primeiro
+        const isConnected = await blingService.testConnection(credentials);
+        
+        if (isConnected) {
+          // Salvar credenciais
+          await blingService.saveCredentials(clientId, credentials);
+          
+          toast({
+            title: "Integração com Bling configurada",
+            description: "Conexão estabelecida com sucesso! Agora você pode sincronizar seus dados.",
+          });
+        } else {
+          throw new Error("Falha na conexão com Bling");
+        }
+      } else {
+        // Para outros sistemas, manter simulação
+        console.log(`Connecting to ${integrationType} with credentials:`, values);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        toast({
+          title: "Integração iniciada",
+          description: `A solicitação de integração com ${getIntegrationName(integrationType)} foi enviada com sucesso.`,
+        });
+      }
       
       setOpen(false);
       form.reset();
