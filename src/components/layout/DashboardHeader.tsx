@@ -4,6 +4,7 @@ import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceAssistantButton } from "./VoiceAssistantButton";
 import { ClientSelector } from "./ClientSelector";
+import { AccountingStatus } from "./AccountingStatus";
 import { useAuth } from "@/contexts/auth";
 
 interface DashboardHeaderProps {
@@ -36,9 +37,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         )}
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {isAuthenticated ? (
           <>
+            <AccountingStatus />
+            
             <Button variant="ghost" size="icon" className="relative transition-smooth hover:bg-primary/10 hover:shadow-glow">
               <Bell className="h-5 w-5" />
               <div className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
