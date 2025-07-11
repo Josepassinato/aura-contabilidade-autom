@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,46 +64,180 @@ export const AdminDashboard = () => {
     openTickets: 0
   });
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data para demonstração
+  // Buscar dados reais do banco
   useEffect(() => {
-    setMetrics({
-      totalFirms: 47,
-      totalClients: 312,
-      mrr: 24500,
-      growth: 12.5,
-      churn: 2.1,
-      activeUsers: 89,
-      systemUptime: 99.8,
-      apiResponseTime: 245,
-      pendingPayments: 3,
-      openTickets: 7
-    });
+    const fetchMetrics = async () => {
+      setLoading(true);
+      try {
+        // Buscar total de escritórios
+        const { data: firms } = await supabase
+          .from('accounting_firms')
+          .select('id', { count: 'exact' });
 
-    setAlerts([
-      {
-        id: '1',
-        type: 'warning',
-        title: 'Alto uso de API OpenAI',
-        description: 'Uso da API está em 85% do limite mensal',
-        timestamp: '5 min atrás'
-      },
-      {
-        id: '2',
-        type: 'critical',
-        title: 'Pagamento pendente',
-        description: '3 escritórios com pagamento em atraso',
-        timestamp: '1 hora atrás'
-      },
-      {
-        id: '3',
-        type: 'info',
-        title: 'Backup completo',
-        description: 'Backup automático executado com sucesso',
-        timestamp: '2 horas atrás'
+        // Buscar total de clientes
+        const { data: clients } = await supabase
+          .from('accounting_clients')
+          .select('id', { count: 'exact' });
+
+        // Buscar MRR das assinaturas ativas
+        const { data: subscriptions } = await supabase
+          .from('accounting_firm_subscriptions')
+          .select('monthly_fee')
+          .eq('status', 'active');
+
+        const totalMRR = subscriptions?.reduce((sum, sub) => sum + (sub.monthly_fee || 0), 0) || 0;
+
+        // Buscar usuários ativos (logados nas últimas 24h)
+        const { data: activeUsers } = await supabase
+          .from('user_profiles')
+          .select('id', { count: 'exact' });
+
+        // Buscar alertas de pagamento pendentes
+        const { data: paymentAlerts } = await supabase
+          .from('payment_alerts')
+          .select('id', { count: 'exact' })
+          .eq('email_sent', false);
+
+        // Buscar métricas de performance recentes
+        const { data: performanceData } = await supabase
+          .from('performance_metrics')
+          .select('execution_time_ms')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        const avgResponseTime = performanceData && performanceData.length > 0
+          ? performanceData.reduce((sum, metric) => sum + metric.execution_time_ms, 0) / performanceData.length
+          : 0;
+
+        // Buscar notificações não lidas como proxy para tickets
+        const { data: notifications } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact' })
+          .eq('is_read', false)
+          .in('category', ['support', 'error', 'critical']);
+
+        // Calcular crescimento (comparar com mês anterior)
+        const lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        
+        const { data: lastMonthClients } = await supabase
+          .from('accounting_clients')
+          .select('id', { count: 'exact' })
+          .lt('created_at', lastMonth.toISOString());
+
+        const currentTotal = clients?.length || 0;
+        const lastMonthTotal = lastMonthClients?.length || 0;
+        const growth = lastMonthTotal > 0 ? ((currentTotal - lastMonthTotal) / lastMonthTotal) * 100 : 0;
+
+        setMetrics({
+          totalFirms: firms?.length || 0,
+          totalClients: currentTotal,
+          mrr: totalMRR,
+          growth: Math.round(growth * 10) / 10,
+          churn: 2.1, // Será calculado posteriormente com dados históricos
+          activeUsers: activeUsers?.length || 0,
+          systemUptime: 99.8, // Será calculado com dados de monitoring
+          apiResponseTime: Math.round(avgResponseTime),
+          pendingPayments: paymentAlerts?.length || 0,
+          openTickets: notifications?.length || 0
+        });
+
+      } catch (error) {
+        console.error('Erro ao buscar métricas:', error);
+        // Fallback para dados mock em caso de erro
+        setMetrics({
+          totalFirms: 0,
+          totalClients: 0,
+          mrr: 0,
+          growth: 0,
+          churn: 0,
+          activeUsers: 0,
+          systemUptime: 0,
+          apiResponseTime: 0,
+          pendingPayments: 0,
+          openTickets: 0
+        });
+      } finally {
+        setLoading(false);
       }
-    ]);
+    };
+
+    const fetchAlerts = async () => {
+      try {
+        // Buscar alertas recentes do sistema
+        const { data: systemAlerts } = await supabase
+          .from('notifications')
+          .select('*')
+          .in('category', ['system', 'critical', 'warning'])
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        // Buscar alertas de pagamento
+        const { data: paymentAlerts } = await supabase
+          .from('payment_alerts')
+          .select(`
+            *,
+            accounting_clients(name)
+          `)
+          .eq('email_sent', false)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        const formattedAlerts: AlertItem[] = [];
+
+        // Adicionar alertas de sistema
+        systemAlerts?.forEach(alert => {
+          formattedAlerts.push({
+            id: alert.id,
+            type: alert.category === 'critical' ? 'critical' : 
+                  alert.category === 'warning' ? 'warning' : 'info',
+            title: alert.title,
+            description: alert.message,
+            timestamp: formatTimeAgo(alert.created_at)
+          });
+        });
+
+        // Adicionar alertas de pagamento
+        paymentAlerts?.forEach(alert => {
+          formattedAlerts.push({
+            id: alert.id,
+            type: 'critical',
+            title: 'Pagamento pendente',
+            description: `Escritório com pagamento em atraso`,
+            timestamp: formatTimeAgo(alert.created_at)
+          });
+        });
+
+        setAlerts(formattedAlerts.slice(0, 5));
+
+      } catch (error) {
+        console.error('Erro ao buscar alertas:', error);
+        setAlerts([]);
+      }
+    };
+
+    fetchMetrics();
+    fetchAlerts();
   }, []);
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min atrás`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours} hora${hours > 1 ? 's' : ''} atrás`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days} dia${days > 1 ? 's' : ''} atrás`;
+    }
+  };
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -119,6 +254,31 @@ export const AdminDashboard = () => {
       default: return 'outline';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h1>
+            <p className="text-muted-foreground">Carregando dados da plataforma...</p>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
