@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -14,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { User, Building } from 'lucide-react';
+import { User, Building, Crown, UserCheck, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/supabase';
@@ -72,7 +73,7 @@ const signupFormSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
   fullName: z.string().min(3, { message: "Nome completo é obrigatório" }),
-  role: z.enum(['accountant', 'client'], { 
+  role: z.enum(['admin', 'accountant', 'client'], { 
     required_error: "Selecione um tipo de usuário",
   }),
   company: z.string().optional(),
@@ -96,7 +97,7 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
       email: "",
       password: "",
       fullName: "",
-      role: "client",
+      role: "accountant",
       company: "",
       cnpj: "",
     },
@@ -206,26 +207,33 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo de Usuário</FormLabel>
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  type="button"
-                  variant={field.value === 'accountant' ? 'default' : 'outline'}
-                  className="w-full justify-start"
-                  onClick={() => form.setValue('role', 'accountant')}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Contador
-                </Button>
-                <Button
-                  type="button"
-                  variant={field.value === 'client' ? 'default' : 'outline'}
-                  className="w-full justify-start"
-                  onClick={() => form.setValue('role', 'client')}
-                >
-                  <Building className="mr-2 h-4 w-4" />
-                  Cliente
-                </Button>
-              </div>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="h-12 text-base transition-smooth focus:shadow-glow">
+                    <SelectValue placeholder="Selecione o tipo de usuário" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-background border shadow-lg">
+                  <SelectItem value="admin" className="cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <Crown className="h-4 w-4 text-purple-500" />
+                      <span>Administrador</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="accountant" className="cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <UserCheck className="h-4 w-4 text-blue-500" />
+                      <span>Contador</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="client" className="cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <Building2 className="h-4 w-4 text-green-500" />
+                      <span>Empresa</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
