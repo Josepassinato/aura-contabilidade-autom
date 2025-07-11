@@ -40,97 +40,20 @@ export function AnomalyAlerts() {
 
   useEffect(() => {
     loadAlerts();
-    // Simular chegada de novos alertas
-    const interval = setInterval(checkForNewAlerts, 30000); // A cada 30 segundos
-    return () => clearInterval(interval);
   }, []);
 
-  const loadAlerts = () => {
-    // Simulando dados de alertas de anomalias
-    const mockAlerts: AnomalyAlert[] = [
-      {
-        id: '1',
-        type: 'revenue_spike',
-        severity: 'high',
-        title: 'Pico de Receita Detectado',
-        message: 'Receita 45% acima da média para Empresa Teste LTDA em Janeiro/2024',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 horas atrás
-        confidence: 0.89,
-        value: 150000,
-        expected_value: 103000,
-        is_read: false,
-        is_dismissed: false
-      },
-      {
-        id: '2',
-        type: 'duplicate_detection',
-        severity: 'critical',
-        title: 'Possível Duplicação Detectada',
-        message: 'Lançamentos duplicados identificados no período de Janeiro/2024',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 horas atrás
-        confidence: 0.95,
-        is_read: false,
-        is_dismissed: false
-      },
-      {
-        id: '3',
-        type: 'expense_anomaly',
-        severity: 'medium',
-        title: 'Padrão de Despesas Atípico',
-        message: 'Despesas seguindo padrão incomum comparado ao histórico',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 horas atrás
-        confidence: 0.75,
-        value: 45000,
-        expected_value: 35000,
-        is_read: true,
-        is_dismissed: false
-      },
-      {
-        id: '4',
-        type: 'margin_drop',
-        severity: 'high',
-        title: 'Queda na Margem de Lucro',
-        message: 'Margem de lucro 15% abaixo da média histórica',
-        client_name: 'Outro Cliente LTDA',
-        detected_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 horas atrás
-        confidence: 0.82,
-        is_read: true,
-        is_dismissed: true
-      }
-    ];
-
-    setAlerts(mockAlerts);
-  };
-
-  const checkForNewAlerts = () => {
-    // Simular chegada de novos alertas (em produção viria via websocket ou polling)
-    const randomChance = Math.random();
-    if (randomChance > 0.8) {
-      const newAlert: AnomalyAlert = {
-        id: `new_${Date.now()}`,
-        type: 'pattern_break',
-        severity: 'medium',
-        title: 'Quebra de Padrão Detectada',
-        message: 'Padrão de lançamentos diferentes do comportamento histórico',
-        client_name: 'Empresa Exemplo LTDA',
-        detected_at: new Date().toISOString(),
-        confidence: 0.73,
-        is_read: false,
-        is_dismissed: false
-      };
-
-      setAlerts(prev => [newAlert, ...prev]);
-      
-      toast({
-        title: "Nova Anomalia Detectada",
-        description: newAlert.message,
-        variant: "destructive"
-      });
+  const loadAlerts = async () => {
+    // Load real alerts from database only
+    try {
+      // TODO: Replace with real API call to fetch anomaly alerts
+      // For now, return empty array until real implementation
+      setAlerts([]);
+    } catch (error) {
+      console.error('Error loading alerts:', error);
+      setAlerts([]);
     }
   };
+
 
   const markAsRead = (alertId: string) => {
     setAlerts(prev => prev.map(alert => 

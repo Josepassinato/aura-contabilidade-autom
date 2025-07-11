@@ -48,7 +48,6 @@ export const checkForAuthLimboState = () => {
   // Check for inconsistent auth state
   const hasSession = localStorage.getItem('supabase.auth.token') !== null;
   const hasSessionExpiry = localStorage.getItem('supabase.auth.expires_at') !== null;
-  const hasMockSession = localStorage.getItem('mock_session') === 'true';
   
   // Check if session is expired
   let isExpired = false;
@@ -62,11 +61,8 @@ export const checkForAuthLimboState = () => {
     }
   }
   
-  // Detect mock session without proper role
-  const hasMockWithoutRole = hasMockSession && !localStorage.getItem('user_role');
-  
   // If we have a session that's expired or corrupted, clean up
-  if ((hasSession && isExpired) || hasMockWithoutRole) {
+  if (hasSession && isExpired) {
     console.warn('Detected auth limbo state, cleaning up');
     cleanupAuthState();
     return true;
