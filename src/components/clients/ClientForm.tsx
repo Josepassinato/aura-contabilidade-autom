@@ -15,11 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { consultarCNPJ } from "@/services/governamental/apiIntegration";
 import { formatCNPJ } from "@/components/client-access/formatCNPJ";
 import { validateCNPJ } from "@/utils/validators";
+import { addClient } from "@/services/supabase/clientsService";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -64,7 +64,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       console.log("=== INICIANDO CADASTRO DE CLIENTE ===");
       console.log("Dados do cliente:", data);
       
-      // Preparar dados para inserção
+      // Preparar dados para inserção (sem accounting_firm_id nem accountant_id - o serviço vai adicionar)
       const clientData = {
         name: data.name,
         cnpj: data.cnpj,
@@ -78,53 +78,28 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       
       console.log("Dados preparados para inserção:", clientData);
       
-      // Inserir cliente no Supabase
-      const { data: insertedData, error } = await supabase
-        .from('accounting_clients')
-        .insert([clientData])
-        .select();
+      // Usar o serviço que já funciona com RLS
+      const clientId = await addClient(clientData);
       
-      if (error) {
-        console.error("Erro na inserção:", error);
-        throw error;
+      if (!clientId) {
+        throw new Error("Erro ao cadastrar cliente - dados não foram salvos");
       }
       
-      console.log("Cliente inserido com sucesso:", insertedData);
+      console.log(`✅ Cliente cadastrado com ID: ${clientId}`);
       
-      // Verificar se realmente foi inserido
-      if (insertedData && insertedData.length > 0) {
-        const clientId = insertedData[0].id;
-        console.log(`✅ Cliente cadastrado com ID: ${clientId}`);
-        
-        // Verificar se o cliente pode ser encontrado
-        const { data: verificationData, error: verificationError } = await supabase
-          .from('accounting_clients')
-          .select('*')
-          .eq('id', clientId)
-          .single();
-          
-        if (verificationError) {
-          console.warn("Aviso: Erro na verificação:", verificationError);
-        } else {
-          console.log("✅ Verificação: Cliente encontrado no banco:", verificationData);
-        }
-        
-        // Exibir mensagem de sucesso
-        toast({
-          title: "Cliente cadastrado com sucesso",
-          description: `${data.name} foi cadastrado e está disponível no sistema.`,
-        });
-        
-        // Limpar formulário
-        form.reset();
-        
-        // Chamar callback de sucesso
-        if (onSuccess) {
-          console.log("Chamando callback de sucesso...");
-          onSuccess();
-        }
-      } else {
-        throw new Error("Nenhum dado foi retornado após a inserção");
+      // Exibir mensagem de sucesso
+      toast({
+        title: "Cliente cadastrado com sucesso",
+        description: `${data.name} foi cadastrado e está disponível no sistema.`,
+      });
+      
+      // Limpar formulário
+      form.reset();
+      
+      // Chamar callback de sucesso
+      if (onSuccess) {
+        console.log("Chamando callback de sucesso...");
+        onSuccess();
       }
     } catch (error: any) {
       console.error("❌ ERRO NO CADASTRO:", error);
