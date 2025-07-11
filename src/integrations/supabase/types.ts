@@ -2429,6 +2429,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      cleanup_orphaned_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       complete_queue_task: {
         Args: {
           p_task_id: string
