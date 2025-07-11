@@ -68,12 +68,12 @@ const validateCNPJ = (value: string) => {
   return result === parseInt(digits.charAt(1));
 };
 
-// Schema para validação do formulário de cadastro
+// Schema para validação do formulário de cadastro (sem admin para cadastro público)
 const signupFormSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
   fullName: z.string().min(3, { message: "Nome completo é obrigatório" }),
-  role: z.enum(['admin', 'accountant', 'client'], { 
+  role: z.enum(['accountant', 'client'], { 
     required_error: "Selecione um tipo de usuário",
   }),
   company: z.string().optional(),
@@ -214,12 +214,6 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="admin" className="cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <Crown className="h-4 w-4 text-purple-500" />
-                      <span>Administrador</span>
-                    </div>
-                  </SelectItem>
                   <SelectItem value="accountant" className="cursor-pointer">
                     <div className="flex items-center gap-3">
                       <UserCheck className="h-4 w-4 text-blue-500" />
