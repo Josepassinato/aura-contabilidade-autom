@@ -13,6 +13,10 @@ export const cleanupAuthState = () => {
     // Clear standard auth tokens
     localStorage.removeItem('supabase.auth.token');
     
+    // Clear mock session related items
+    localStorage.removeItem('mock_session');
+    localStorage.removeItem('user_role');
+    
     // Clear all Supabase auth related items from localStorage
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {

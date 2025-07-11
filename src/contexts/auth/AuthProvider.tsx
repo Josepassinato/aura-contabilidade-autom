@@ -61,6 +61,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Check for role in localStorage for testing
         const userRole = localStorage.getItem('user_role');
         const hasMockSession = localStorage.getItem('mock_session') === 'true' || userRole !== null;
+
+        // Debug: log what we found in localStorage
+        console.log('InitializeAuth Debug:', {
+          userRole,
+          hasMockSession,
+          mockSession: localStorage.getItem('mock_session'),
+          allLocalStorageKeys: Object.keys(localStorage)
+        });
         
         if (hasMockSession) {
           // Setup for test/demo environment
@@ -347,6 +355,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = userProfile?.role === 'admin';
   const isAccountant = userProfile?.role === 'accountant' || isAdmin;
   const isClient = userProfile?.role === 'client';
+
+  // Debug logging to help identify the issue
+  console.log('AuthProvider Debug:', {
+    userProfileRole: userProfile?.role,
+    userProfileEmail: userProfile?.email,
+    isAdmin,
+    isAccountant,
+    isClient
+  });
 
   return (
     <AuthContext.Provider
