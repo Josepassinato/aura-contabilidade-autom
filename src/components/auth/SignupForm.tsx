@@ -76,10 +76,9 @@ const signupFormSchema = z.object({
   role: z.enum(['accountant', 'client'], { 
     required_error: "Selecione um tipo de usuário",
   }),
-  company: z.string().optional(),
-  cnpj: z.string()
-    .optional()
-    .refine(val => !val || validateCNPJ(val), { 
+  company: z.string().min(1, { message: "Nome da empresa é obrigatório" }),
+  cnpj: z.string().min(1, { message: "CNPJ é obrigatório" })
+    .refine(val => validateCNPJ(val), { 
       message: "CNPJ inválido"
     }),
 });
@@ -233,47 +232,45 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
           )}
         />
         
-        {form.watch('role') === 'client' && (
-          <>
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome da Empresa</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Nome da sua empresa"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="cnpj"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CNPJ</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="XX.XXX.XXX/XXXX-XX"
-                      {...field}
-                      onChange={handleCNPJChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Digite um CNPJ válido ou deixe em branco
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
+        <FormField
+          control={form.control}
+          name="company"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                {form.watch('role') === 'accountant' ? 'Nome do Escritório Contábil' : 'Nome da Empresa'}
+              </FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder={form.watch('role') === 'accountant' ? 'Nome do seu escritório contábil' : 'Nome da sua empresa'}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="cnpj"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CNPJ</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="XX.XXX.XXX/XXXX-XX"
+                  {...field}
+                  onChange={handleCNPJChange}
+                />
+              </FormControl>
+              <FormDescription>
+                CNPJ obrigatório para validação
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <Button 
           type="submit" 
