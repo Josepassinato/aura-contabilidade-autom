@@ -20,6 +20,7 @@ import { useMonthlyClosing, ClosingStatus } from '@/hooks/useMonthlyClosing';
 import { ClosingMetricsCard } from './ClosingMetricsCard';
 import { ClosingTimelineCard } from './ClosingTimelineCard';
 import { ClientClosingCard } from './ClientClosingCard';
+import { ClientSelector } from '@/components/layout/ClientSelector';
 import { toast } from '@/hooks/use-toast';
 
 export function MonthlyClosingDashboard() {
@@ -163,6 +164,13 @@ export function MonthlyClosingDashboard() {
             Controle e monitore o fechamento mensal de todos os clientes
           </p>
         </div>
+        <div className="flex items-center gap-3">
+          <ClientSelector />
+        </div>
+      </div>
+
+      {/* Period Selection */}
+      <div className="flex items-center gap-3 justify-end">
         <div className="flex items-center gap-3">
           <Select
             value={selectedMonth.toString()}
