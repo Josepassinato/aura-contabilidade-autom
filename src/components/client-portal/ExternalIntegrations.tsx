@@ -23,13 +23,15 @@ interface ExternalIntegrationsProps {
 
 export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) => {
   const [open, setOpen] = useState(false);
-  const [integrationType, setIntegrationType] = useState<string>("quickbooks");
+  const [integrationType, setIntegrationType] = useState<string>("bling");
   const [isConnecting, setIsConnecting] = useState(false);
 
   const form = useForm({
     defaultValues: {
       apiKey: "",
       apiSecret: "",
+      clientId: "",
+      clientSecret: ""
     }
   });
 
@@ -64,6 +66,7 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
   
   const getIntegrationName = (type: string) => {
     switch (type) {
+      case "bling": return "Bling";
       case "quickbooks": return "QuickBooks";
       case "xero": return "Xero";
       case "sage": return "Sage";
@@ -112,6 +115,7 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
                       <SelectValue placeholder="Selecione um sistema" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="bling">Bling</SelectItem>
                       <SelectItem value="quickbooks">QuickBooks</SelectItem>
                       <SelectItem value="xero">Xero</SelectItem>
                       <SelectItem value="sage">Sage</SelectItem>
@@ -120,43 +124,87 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
                   </Select>
                 </div>
                 
-                <FormField
-                  control={form.control}
-                  name="apiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Chave API</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Insira sua chave API" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Encontre esta informação no painel de desenvolvedor do seu sistema.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="apiSecret"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Segredo API</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="Insira o segredo API" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Nunca compartilhe este segredo com terceiros.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+{integrationType === "bling" ? (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="clientId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Client ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Seu Client ID do Bling" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Encontre no painel de API do Bling em Configurações &gt; API.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="clientSecret"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Client Secret</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="Seu Client Secret do Bling" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Mantenha este segredo protegido e nunca o compartilhe.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="apiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Chave API</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Insira sua chave API" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Encontre esta informação no painel de desenvolvedor do seu sistema.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="apiSecret"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Segredo API</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="Insira o segredo API" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Nunca compartilhe este segredo com terceiros.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
                 
                 <div className="flex justify-between items-center pt-2">
                   <div className="flex items-center text-xs text-muted-foreground">
