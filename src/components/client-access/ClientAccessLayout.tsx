@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/auth";
 import { useNavigate } from "react-router-dom";
+import { AIAssistant } from "@/components/chat/AIAssistant";
 
 interface ClientAccessLayoutProps {
   children: React.ReactNode;
@@ -53,6 +54,8 @@ export const ClientAccessLayout = ({ children }: ClientAccessLayoutProps) => {
         
         {children}
       </div>
+      
+      <AIAssistant />
     </div>
   );
 };
