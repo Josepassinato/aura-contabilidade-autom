@@ -4,6 +4,7 @@ import { ClientSummaryCard } from './ClientSummaryCard';
 import { FiscalCalendar } from './FiscalCalendar';
 import { DocumentsTable } from './DocumentsTable';
 import { AccountingDashboard } from './AccountingDashboard';
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -101,8 +102,34 @@ export const DashboardView = () => {
   
   const stats = demoData.stats || { totalClients: 0, totalDocumentsPending: 0, totalUpcomingDeadlines: 0, fiscalSavings: 0 };
 
-  // Para contadores e admins, mostra o dashboard especializado
-  if (isAccountant || isAdmin) {
+  // Para admins, mostra o dashboard administrativo
+  if (isAdmin) {
+    return (
+      <>
+        <AdminDashboard />
+        
+        {/* Componentes de Onboarding */}
+        {showOnboarding && (
+          <OnboardingWelcome
+            onStartTour={handleStartTour}
+            onLoadDemo={handleLoadDemo}
+            onSkip={handleOnboardingComplete}
+          />
+        )}
+        
+        {showTour && (
+          <OnboardingTour
+            isOpen={showTour}
+            onComplete={handleOnboardingComplete}
+            onSkip={handleOnboardingComplete}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Para contadores, mostra o dashboard contábil
+  if (isAccountant) {
     return (
       <>
         <AccountingDashboard />
