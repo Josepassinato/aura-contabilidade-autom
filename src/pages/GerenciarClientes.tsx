@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/hooks/use-toast";
@@ -33,7 +34,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const GerenciarClientes = () => {
-  const [activeTab, setActiveTab] = useState("listar");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'listar';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [refreshKey, setRefreshKey] = useState(0); // Para forçar a atualização do componente ClientList
   const { isAuthenticated, isAccountant, isAdmin, isLoading, navigateToLogin } = useAuth();
 
@@ -113,7 +116,7 @@ const GerenciarClientes = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="listar" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="listar" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />

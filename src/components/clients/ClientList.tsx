@@ -121,7 +121,7 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
             Você ainda não possui clientes cadastrados ou a busca não retornou resultados.
           </p>
           <Button asChild>
-            <Link to="/gerenciar-clientes?tab=cadastrar">
+            <Link to="/clientes?tab=cadastrar">
               <Plus className="mr-2 h-4 w-4" />
               Adicionar Cliente
             </Link>
