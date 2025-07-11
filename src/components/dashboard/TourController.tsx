@@ -419,11 +419,11 @@ export const TourController = () => {
   return (
     <>
       {showTourButton && (
-        <div className="fixed bottom-4 left-4 z-40">
+        <div className="fixed bottom-4 right-4 z-40">
           <Button
             onClick={handleStartTour}
             variant="secondary"
-            className="rounded-full"
+            className="rounded-full shadow-lg"
           >
             <HelpCircle className="h-5 w-5 mr-2" />
             Tour Guiado
