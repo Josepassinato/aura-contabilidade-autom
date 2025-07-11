@@ -1131,6 +1131,45 @@ export type Database = {
           },
         ]
       }
+      integracoes_externas: {
+        Row: {
+          client_id: string
+          configuracoes: Json | null
+          created_at: string
+          credenciais: Json
+          id: string
+          proxima_sincronizacao: string | null
+          status: string
+          tipo_integracao: string
+          ultima_sincronizacao: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          configuracoes?: Json | null
+          created_at?: string
+          credenciais?: Json
+          id?: string
+          proxima_sincronizacao?: string | null
+          status?: string
+          tipo_integracao: string
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          configuracoes?: Json | null
+          created_at?: string
+          credenciais?: Json
+          id?: string
+          proxima_sincronizacao?: string | null
+          status?: string
+          tipo_integracao?: string
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integracoes_simples_nacional: {
         Row: {
           certificado_digital: string | null
@@ -1294,6 +1333,56 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos_contabeis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logs_sincronizacao: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          erro_detalhes: Json | null
+          id: string
+          integracao_id: string
+          metadata: Json | null
+          registros_processados: number | null
+          registros_total: number | null
+          started_at: string
+          status: string
+          tipo_operacao: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          erro_detalhes?: Json | null
+          id?: string
+          integracao_id: string
+          metadata?: Json | null
+          registros_processados?: number | null
+          registros_total?: number | null
+          started_at?: string
+          status?: string
+          tipo_operacao: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          erro_detalhes?: Json | null
+          id?: string
+          integracao_id?: string
+          metadata?: Json | null
+          registros_processados?: number | null
+          registros_total?: number | null
+          started_at?: string
+          status?: string
+          tipo_operacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_sincronizacao_integracao_id_fkey"
+            columns: ["integracao_id"]
+            isOneToOne: false
+            referencedRelation: "integracoes_externas"
             referencedColumns: ["id"]
           },
         ]
