@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   FileText, 
   Calendar, 
@@ -43,59 +44,64 @@ export const AccountingDashboard = () => {
   const [clients, setClients] = useState<ClientSummary[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState(new Date().toISOString().substring(0, 7));
   
-  // Mock data para demonstração
+  // Buscar dados reais dos clientes e obrigações
   useEffect(() => {
-    // Tarefas do mês
-    setTasks([
-      {
-        id: '1',
-        title: 'Fechamento Mensal',
-        client: 'Empresa ABC Ltda',
-        dueDate: '2024-01-15',
-        status: 'pending',
-        priority: 'high',
-        type: 'closing'
-      },
-      {
-        id: '2',
-        title: 'DAS - Simples Nacional',
-        client: 'Loja XYZ ME',
-        dueDate: '2024-01-20',
-        status: 'completed',
-        priority: 'medium',
-        type: 'tax'
-      },
-      {
-        id: '3',
-        title: 'DCTF-Web',
-        client: 'Empresa ABC Ltda',
-        dueDate: '2024-01-25',
-        status: 'in_progress',
-        priority: 'high',
-        type: 'compliance'
-      }
-    ]);
+    const fetchData = async () => {
+      if (!isAccountant) return;
 
-    // Resumo de clientes
-    setClients([
-      {
-        id: '1',
-        name: 'Empresa ABC Ltda',
-        regime: 'Lucro Presumido',
-        documentsStatus: 'missing',
-        closingStatus: 'in_progress',
-        nextDeadline: '2024-01-15'
-      },
-      {
-        id: '2',
-        name: 'Loja XYZ ME',
-        regime: 'Simples Nacional',
-        documentsStatus: 'complete',
-        closingStatus: 'closed',
-        nextDeadline: '2024-01-20'
+      try {
+        // Buscar clientes do contador logado
+        const { data: clientsData, error: clientsError } = await supabase
+          .from('accounting_clients')
+          .select('id, name, regime, status')
+          .eq('accountant_id', user?.id);
+
+        if (clientsError) {
+          console.error('Erro ao buscar clientes:', clientsError);
+          return;
+        }
+
+        // Buscar obrigações fiscais dos clientes
+        const { data: obrigacoesData, error: obrigacoesError } = await supabase
+          .from('obrigacoes_fiscais')
+          .select('*')
+          .in('client_id', clientsData?.map(c => c.id) || []);
+
+        if (obrigacoesError) {
+          console.error('Erro ao buscar obrigações:', obrigacoesError);
+        }
+
+        // Converter clientes para o formato esperado
+        const clientsSummary: ClientSummary[] = clientsData?.map(client => ({
+          id: client.id,
+          name: client.name,
+          regime: client.regime,
+          documentsStatus: 'pending' as const,
+          closingStatus: 'open' as const,
+          nextDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 15 dias
+        })) || [];
+
+        // Converter obrigações para tarefas
+        const tasksList: MonthlyTask[] = obrigacoesData?.map((obrigacao, index) => ({
+          id: obrigacao.id,
+          title: obrigacao.nome,
+          client: clientsData?.find(c => c.id === obrigacao.client_id)?.name || 'Cliente',
+          dueDate: obrigacao.prazo,
+          status: obrigacao.status === 'cumprida' ? 'completed' : 'pending' as const,
+          priority: obrigacao.prioridade as 'high' | 'medium' | 'low',
+          type: obrigacao.tipo as 'closing' | 'tax' | 'compliance' | 'report'
+        })) || [];
+
+        setClients(clientsSummary);
+        setTasks(tasksList);
+
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
       }
-    ]);
-  }, []);
+    };
+
+    fetchData();
+  }, [user, isAccountant]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -199,34 +199,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (error) {
-        // Check if it's a demo login
-        if (email && password) {
-          let role = 'accountant';
-          let name = 'Contador Teste';
-          
-          if (email.includes('cliente')) {
-            role = 'client';
-            name = 'Empresa Cliente';
-          } else if (email.includes('admin')) {
-            role = 'admin';
-            name = 'Admin Contaflix';
-          }
-          
-          // Setup mock session for demo
-          localStorage.setItem('mock_session', 'true');
-          localStorage.setItem('user_role', role);
-          
-          setupMockSession(role);
-          
-          toast({
-            title: "Login bem-sucedido (Demo)",
-            description: `Bem-vindo, ${name}!`,
-          });
-          
-          return { success: true, error: null };
-        }
-        
-        throw error;
+        console.error('Login error:', error);
+        toast({
+          title: "Erro no login",
+          description: error.message || "Credenciais inválidas",
+          variant: "destructive",
+        });
+        return { success: false, error: error.message };
       }
       
       if (data.user) {
