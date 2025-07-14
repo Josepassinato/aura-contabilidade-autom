@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { useTaskAutomation } from '@/hooks/useTaskAutomation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AutomationRuleBuilder } from '@/components/automation/AutomationRuleBuilder';
+import AutomationMonitoringDashboard from '@/components/automation/AutomationMonitoringDashboard';
+import AutomationScheduler from '@/components/automation/AutomationScheduler';
 import { 
   Bot, 
   Play, 
@@ -190,10 +192,12 @@ const TaskAutomationEngine = () => {
         </div>
 
         <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="rules">Regras de Automação</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="rules">Regras</TabsTrigger>
             <TabsTrigger value="create">Criar Regra</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
+            <TabsTrigger value="scheduler">Agendador</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
           <TabsContent value="rules" className="space-y-4">
@@ -300,6 +304,14 @@ const TaskAutomationEngine = () => {
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-4">
+            <AutomationMonitoringDashboard />
+          </TabsContent>
+
+          <TabsContent value="scheduler" className="space-y-4">
+            <AutomationScheduler />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
