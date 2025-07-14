@@ -7,6 +7,7 @@ import CalculosFiscais from '../pages/CalculosFiscais';
 import GerenciarParametrosFiscais from '../pages/GerenciarParametrosFiscais';
 import WorkflowDashboard from '../pages/WorkflowDashboard';
 import MonthlyClosing from '../pages/MonthlyClosing';
+import TaskAutomationEngine from '../pages/TaskAutomationEngine';
 import Settings from '../pages/Settings';
 import QRCodeManager from '../components/QRCodeManager';
 
@@ -35,6 +36,11 @@ export const accountantRoutes = [
   <Route key="fechamento-mensal" path="/fechamento-mensal" element={
     <AccountantRoute>
       <MonthlyClosing />
+    </AccountantRoute>
+  } />,
+  <Route key="task-automation" path="/task-automation" element={
+    <AccountantRoute>
+      <TaskAutomationEngine />
     </AccountantRoute>
   } />,
   <Route key="agente-voz" path="/agente-voz" element={

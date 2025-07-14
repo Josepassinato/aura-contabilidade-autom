@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar, TestTubeIcon, Settings2Icon } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar, TestTubeIcon, Settings2Icon, Bot } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -120,6 +120,14 @@ export function AccountantSection() {
               <Link to="/fechamento-mensal">
                 <Calendar className="h-4 w-4 mr-2" />
                 <span>Fechamento Mensal</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/task-automation')}>
+              <Link to="/task-automation">
+                <Bot className="h-4 w-4 mr-2" />
+                <span>Motor de Automação</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
