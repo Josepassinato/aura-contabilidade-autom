@@ -5,13 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useTaskAutomation } from '@/hooks/useTaskAutomation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { AutomationRuleBuilder } from '@/components/automation/AutomationRuleBuilder';
 import { 
   Bot, 
   Play, 
@@ -288,102 +285,18 @@ const TaskAutomationEngine = () => {
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Criar Nova Regra</CardTitle>
-                <CardDescription>
-                  Configure uma nova regra de automação para seus processos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="rule-name">Nome da Regra</Label>
-                    <Input
-                      id="rule-name"
-                      value={newRule.name}
-                      onChange={(e) => setNewRule(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Ex: Processamento Contábil Diário"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="rule-type">Tipo de Trigger</Label>
-                    <Select 
-                      value={newRule.trigger_type} 
-                      onValueChange={(value) => setNewRule(prev => ({ ...prev, trigger_type: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="scheduled">Agendado</SelectItem>
-                        <SelectItem value="document_received">Documento Recebido</SelectItem>
-                        <SelectItem value="condition_met">Condição Atendida</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="rule-description">Descrição</Label>
-                  <Textarea
-                    id="rule-description"
-                    value={newRule.description}
-                    onChange={(e) => setNewRule(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Descreva o que esta regra fará..."
-                  />
-                </div>
-
-                {newRule.trigger_type === 'scheduled' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="schedule">Agendamento (Cron)</Label>
-                    <Input
-                      id="schedule"
-                      value={newRule.trigger_conditions.schedule || ''}
-                      onChange={(e) => setNewRule(prev => ({ 
-                        ...prev, 
-                        trigger_conditions: { ...prev.trigger_conditions, schedule: e.target.value }
-                      }))}
-                      placeholder="0 2 * * * (Diário às 2:00)"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Use formato cron: minuto hora dia mês dia-da-semana
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Tipo de Processo</Label>
-                  <Select 
-                    value={newRule.actions[0]?.type || ''}
-                    onValueChange={(value) => setNewRule(prev => ({ 
-                      ...prev, 
-                      actions: [{ type: value, config: {} }]
-                    }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo de processo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="extract_data">Extração de Dados</SelectItem>
-                      <SelectItem value="validate_data">Validação de Dados</SelectItem>
-                      <SelectItem value="create_accounting_entry">Criar Lançamento Contábil</SelectItem>
-                      <SelectItem value="fetch_bank_statements">Buscar Extratos Bancários</SelectItem>
-                      <SelectItem value="match_transactions">Conciliar Transações</SelectItem>
-                      <SelectItem value="generate_report">Gerar Relatório</SelectItem>
-                      <SelectItem value="send_notification">Enviar Notificação</SelectItem>
-                      <SelectItem value="backup_data">Backup de Dados</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button onClick={handleCreateRule} className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Regra
-                </Button>
-              </CardContent>
-            </Card>
+            <AutomationRuleBuilder
+              onRuleCreate={async (ruleData) => {
+                try {
+                  await createRule(ruleData);
+                  // Reset to rules tab after successful creation
+                  const tabsTrigger = document.querySelector('[value="rules"]') as HTMLElement;
+                  if (tabsTrigger) tabsTrigger.click();
+                } catch (error) {
+                  console.error('Error creating rule:', error);
+                }
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-4">
