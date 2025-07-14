@@ -322,6 +322,60 @@ export type Database = {
           },
         ]
       }
+      automation_rules: {
+        Row: {
+          actions: Json
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean
+          error_count: number
+          id: string
+          last_run: string | null
+          name: string
+          success_count: number
+          trigger_conditions: Json
+          trigger_type: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          last_run?: string | null
+          name: string
+          success_count?: number
+          trigger_conditions?: Json
+          trigger_type: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          last_run?: string | null
+          name?: string
+          success_count?: number
+          trigger_conditions?: Json
+          trigger_type?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       balancetes: {
         Row: {
           client_id: string

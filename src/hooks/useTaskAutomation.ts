@@ -5,16 +5,19 @@ import { useToast } from '@/hooks/use-toast';
 interface AutomationRule {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   type: string;
-  trigger: string;
-  conditions: any;
-  actions: any;
+  trigger_type: string;
+  trigger_conditions: any;
+  actions: any[];
   enabled: boolean;
   last_run?: string;
   success_count: number;
   error_count: number;
   created_at: string;
+  updated_at: string;
+  created_by?: string;
+  client_id?: string;
 }
 
 interface AutomationMetrics {
@@ -42,6 +45,14 @@ export const useTaskAutomation = () => {
   const loadAutomationData = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Load automation rules from database
+      const { data: rulesData, error: rulesError } = await supabase
+        .from('automation_rules')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (rulesError) throw rulesError;
+
       // Load automation logs for metrics
       const { data: logsData, error: logsError } = await supabase
         .from('automation_logs')
@@ -60,56 +71,14 @@ export const useTaskAutomation = () => {
         sum + (log.duration_seconds || 0), 0
       ) / Math.max(successfulLogs.length, 1);
 
-      // Mock automation rules (in real implementation, these would come from database)
-      const mockRules: AutomationRule[] = [
-        {
-          id: '1',
-          name: 'Processamento Contábil Diário',
-          description: 'Processa automaticamente todos os lançamentos contábeis pendentes',
-          type: 'scheduled',
-          trigger: 'time',
-          conditions: { schedule: '0 2 * * *' },
-          actions: { process_type: 'daily_accounting' },
-          enabled: true,
-          last_run: new Date(Date.now() - 86400000).toISOString(),
-          success_count: 45,
-          error_count: 2,
-          created_at: new Date(Date.now() - 7 * 86400000).toISOString()
-        },
-        {
-          id: '2',
-          name: 'Backup Automático',
-          description: 'Realiza backup dos dados críticos do sistema',
-          type: 'scheduled',
-          trigger: 'time',
-          conditions: { schedule: '0 0 * * 0' },
-          actions: { process_type: 'data_backup' },
-          enabled: true,
-          last_run: new Date(Date.now() - 7 * 86400000).toISOString(),
-          success_count: 12,
-          error_count: 0,
-          created_at: new Date(Date.now() - 30 * 86400000).toISOString()
-        },
-        {
-          id: '3',
-          name: 'Análise de Performance',
-          description: 'Analisa métricas de performance do sistema',
-          type: 'scheduled',
-          trigger: 'time',
-          conditions: { schedule: '0 */6 * * *' },
-          actions: { process_type: 'performance_analysis' },
-          enabled: false,
-          last_run: new Date(Date.now() - 2 * 86400000).toISOString(),
-          success_count: 8,
-          error_count: 1,
-          created_at: new Date(Date.now() - 15 * 86400000).toISOString()
-        }
-      ];
-
-      setRules(mockRules);
+      const automationRules = (rulesData || []).map(rule => ({
+        ...rule,
+        actions: Array.isArray(rule.actions) ? rule.actions : []
+      }));
+      setRules(automationRules);
       
-      const activeRules = mockRules.filter(rule => rule.enabled).length;
-      const rulesWithErrors = mockRules.filter(rule => rule.error_count > 0).length;
+      const activeRules = automationRules.filter(rule => rule.enabled).length;
+      const rulesWithErrors = automationRules.filter(rule => rule.error_count > 0).length;
 
       setMetrics({
         totalExecutions: logs.length,
@@ -139,28 +108,48 @@ export const useTaskAutomation = () => {
         throw new Error('Regra não encontrada');
       }
 
+      // Get process type from first action or use a default
+      const firstAction = rule.actions?.[0];
+      const processType = firstAction?.type || 'automation_rule_execution';
+
       // Add task to processing queue
       const { data, error } = await supabase.functions.invoke('queue-processor', {
         body: {
           action: 'add_task',
-          processType: rule.actions.process_type,
+          processType,
           clientId: 'system',
           priority: 1,
           parameters: {
             automated: true,
             rule_id: ruleId,
             rule_name: rule.name,
-            manual_trigger: true
+            manual_trigger: true,
+            actions: rule.actions
           }
         }
       });
 
       if (error) throw error;
 
-      // Update rule's last run time locally
+      // Update rule's last run time in database
+      const { error: updateError } = await supabase
+        .from('automation_rules')
+        .update({ 
+          last_run: new Date().toISOString(),
+          success_count: rule.success_count + 1
+        })
+        .eq('id', ruleId);
+
+      if (updateError) throw updateError;
+
+      // Update local state
       setRules(prev => prev.map(r => 
         r.id === ruleId 
-          ? { ...r, last_run: new Date().toISOString() }
+          ? { 
+              ...r, 
+              last_run: new Date().toISOString(),
+              success_count: r.success_count + 1
+            }
           : r
       ));
 
@@ -183,12 +172,19 @@ export const useTaskAutomation = () => {
 
   const toggleRule = useCallback(async (ruleId: string, enabled: boolean) => {
     try {
+      // Update rule status in database
+      const { error } = await supabase
+        .from('automation_rules')
+        .update({ enabled })
+        .eq('id', ruleId);
+
+      if (error) throw error;
+
       // Update rule status locally
       setRules(prev => prev.map(rule => 
         rule.id === ruleId ? { ...rule, enabled } : rule
       ));
 
-      // In a real implementation, this would update the database
       toast({
         title: enabled ? "Regra Ativada" : "Regra Desativada",
         description: `A regra foi ${enabled ? 'ativada' : 'desativada'} com sucesso.`
@@ -207,25 +203,39 @@ export const useTaskAutomation = () => {
     }
   }, [loadAutomationData, toast]);
 
-  const createRule = useCallback(async (newRule: Omit<AutomationRule, 'id' | 'success_count' | 'error_count' | 'created_at'>) => {
+  const createRule = useCallback(async (newRule: Omit<AutomationRule, 'id' | 'success_count' | 'error_count' | 'created_at' | 'updated_at'>) => {
     try {
-      const rule: AutomationRule = {
-        ...newRule,
-        id: Date.now().toString(),
-        success_count: 0,
-        error_count: 0,
-        created_at: new Date().toISOString()
+      const { data, error } = await supabase
+        .from('automation_rules')
+        .insert({
+          name: newRule.name,
+          description: newRule.description || null,
+          type: newRule.type,
+          trigger_type: newRule.trigger_type,
+          trigger_conditions: newRule.trigger_conditions,
+          actions: newRule.actions,
+          enabled: newRule.enabled,
+          created_by: newRule.created_by || null,
+          client_id: newRule.client_id || null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const createdRule = {
+        ...data,
+        actions: Array.isArray(data.actions) ? data.actions : []
       };
 
-      // In a real implementation, this would save to database
-      setRules(prev => [...prev, rule]);
+      setRules(prev => [...prev, createdRule]);
 
       toast({
         title: "Regra Criada",
         description: "Nova regra de automação criada com sucesso."
       });
 
-      return rule;
+      return createdRule;
     } catch (error: any) {
       console.error('Error creating rule:', error);
       toast({
@@ -239,6 +249,15 @@ export const useTaskAutomation = () => {
 
   const deleteRule = useCallback(async (ruleId: string) => {
     try {
+      // Delete rule from database
+      const { error } = await supabase
+        .from('automation_rules')
+        .delete()
+        .eq('id', ruleId);
+
+      if (error) throw error;
+
+      // Update local state
       setRules(prev => prev.filter(rule => rule.id !== ruleId));
 
       toast({
