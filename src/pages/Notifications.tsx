@@ -14,36 +14,44 @@ const Notifications = () => {
       title: 'Prazo DARF se aproximando',
       message: 'O prazo para pagamento do DARF vence em 3 dias',
       type: 'prazo',
-      date: new Date(new Date().getTime() - 1000 * 60 * 30).toISOString(),
-      isRead: false,
-      priority: 'alta'
+      created_at: new Date(new Date().getTime() - 1000 * 60 * 30).toISOString(),
+      is_read: false,
+      priority: 3,
+      category: 'fiscal',
+      is_acknowledged: false
     },
     {
       id: '2',
       title: 'Divergência encontrada',
       message: 'Foram encontradas divergências entre os saldos contábeis e bancários',
       type: 'alerta',
-      date: new Date(new Date().getTime() - 1000 * 60 * 60 * 2).toISOString(),
-      isRead: false,
-      priority: 'alta'
+      created_at: new Date(new Date().getTime() - 1000 * 60 * 60 * 2).toISOString(),
+      is_read: false,
+      priority: 3,
+      category: 'automation',
+      is_acknowledged: false
     },
     {
       id: '3',
       title: 'Novos documentos disponíveis',
       message: 'O cliente Tech Solutions enviou 5 novos documentos',
       type: 'info',
-      date: new Date(new Date().getTime() - 1000 * 60 * 60 * 24).toISOString(),
-      isRead: true,
-      priority: 'media'
+      created_at: new Date(new Date().getTime() - 1000 * 60 * 60 * 24).toISOString(),
+      is_read: true,
+      priority: 2,
+      category: 'automation',
+      is_acknowledged: false
     },
     {
       id: '4',
       title: 'Lembrete de obrigações',
       message: 'Você tem 2 obrigações fiscais pendentes para o próximo mês',
       type: 'prazo',
-      date: new Date(new Date().getTime() - 1000 * 60 * 60 * 48).toISOString(),
-      isRead: true,
-      priority: 'baixa'
+      created_at: new Date(new Date().getTime() - 1000 * 60 * 60 * 48).toISOString(),
+      is_read: true,
+      priority: 1,
+      category: 'fiscal',
+      is_acknowledged: false
     },
   ]);
   const [activeTab, setActiveTab] = useState('all');
@@ -52,7 +60,7 @@ const Notifications = () => {
   // Marcar todas como lidas
   const markAllAsRead = () => {
     setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
+      prev.map(notification => ({ ...notification, is_read: true }))
     );
     
     toast({
@@ -66,7 +74,7 @@ const Notifications = () => {
     setNotifications(prev => 
       prev.map(notification => 
         notification.id === id 
-          ? { ...notification, isRead: true } 
+          ? { ...notification, is_read: true } 
           : notification
       )
     );
@@ -88,7 +96,7 @@ const Notifications = () => {
     : notifications.filter(n => n.type === activeTab);
   
   // Contar notificações não lidas
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
   
   return (
     <div className="flex flex-col space-y-4">
@@ -192,16 +200,29 @@ const NotificationsList = ({ notifications, onMarkAsRead, onDelete }: Notificati
     }
   };
   
-  const getPriorityClass = (priority?: string) => {
+  const getPriorityClass = (priority?: number) => {
     switch (priority) {
-      case 'alta':
+      case 3:
         return 'text-red-500';
-      case 'media':
+      case 2:
         return 'text-amber-500';
-      case 'baixa':
+      case 1:
         return 'text-green-500';
       default:
         return 'text-muted-foreground';
+    }
+  };
+
+  const getPriorityText = (priority?: number) => {
+    switch (priority) {
+      case 3:
+        return 'Alta';
+      case 2:
+        return 'Média';
+      case 1:
+        return 'Baixa';
+      default:
+        return '';
     }
   };
   
@@ -210,7 +231,7 @@ const NotificationsList = ({ notifications, onMarkAsRead, onDelete }: Notificati
       {notifications.map(notification => (
         <div 
           key={notification.id}
-          className={`border rounded-md p-4 ${!notification.isRead ? 'bg-muted/30' : ''}`}
+          className={`border rounded-md p-4 ${!notification.is_read ? 'bg-muted/30' : ''}`}
         >
           <div className="flex gap-4">
             <div className="shrink-0 mt-1">
@@ -220,13 +241,13 @@ const NotificationsList = ({ notifications, onMarkAsRead, onDelete }: Notificati
               <div className="flex justify-between">
                 <h4 className="font-medium">
                   {notification.title}
-                  {!notification.isRead && (
+                  {!notification.is_read && (
                     <span className="ml-2 inline-block w-2 h-2 bg-primary rounded-full"></span>
                   )}
                 </h4>
                 {notification.priority && (
                   <span className={`text-xs ${getPriorityClass(notification.priority)}`}>
-                    {notification.priority}
+                    {getPriorityText(notification.priority)}
                   </span>
                 )}
               </div>
@@ -234,7 +255,7 @@ const NotificationsList = ({ notifications, onMarkAsRead, onDelete }: Notificati
                 {notification.message}
               </p>
               <p className="text-xs text-muted-foreground">
-                {new Date(notification.date).toLocaleString('pt-BR', { 
+                {new Date(notification.created_at).toLocaleString('pt-BR', { 
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
@@ -243,7 +264,7 @@ const NotificationsList = ({ notifications, onMarkAsRead, onDelete }: Notificati
                 })}
               </p>
               <div className="pt-2 flex gap-2">
-                {!notification.isRead && (
+                {!notification.is_read && (
                   <Button 
                     size="sm" 
                     variant="outline"
