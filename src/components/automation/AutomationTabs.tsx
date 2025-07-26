@@ -6,6 +6,7 @@ import AutomationScheduler from './AutomationScheduler';
 import RealTimeMonitoringDashboard from '@/components/monitoring/RealTimeMonitoringDashboard';
 import { AutomationRulesTable } from './AutomationRulesTable';
 import { AutomationAnalytics } from './AutomationAnalytics';
+import { AutomationTester } from './AutomationTester';
 import { AutomationRule } from '@/types/automation';
 
 interface AutomationTabsProps {
@@ -23,9 +24,10 @@ export const AutomationTabs: React.FC<AutomationTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="rules" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-7">
         <TabsTrigger value="rules">Regras</TabsTrigger>
         <TabsTrigger value="create">Criar Regra</TabsTrigger>
+        <TabsTrigger value="test">Testar</TabsTrigger>
         <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
         <TabsTrigger value="realtime">Tempo Real</TabsTrigger>
         <TabsTrigger value="scheduler">Agendador</TabsTrigger>
@@ -65,6 +67,10 @@ export const AutomationTabs: React.FC<AutomationTabsProps> = ({
 
       <TabsContent value="scheduler" className="space-y-4">
         <AutomationScheduler />
+      </TabsContent>
+
+      <TabsContent value="test" className="space-y-4">
+        <AutomationTester rules={rules} />
       </TabsContent>
 
       <TabsContent value="analytics" className="space-y-4">
