@@ -8,6 +8,7 @@ import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
+import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 
 import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 import { BackButton } from '@/components/navigation/BackButton';
@@ -16,6 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAccountant, isAdmin, isClient } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   // Clean any stale auth state when the login page loads
   useEffect(() => {
@@ -50,6 +52,14 @@ const Login = () => {
     setActiveTab("login");
   };
 
+  const handleForgotPassword = () => {
+    setShowPasswordReset(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowPasswordReset(false);
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-purple-100 via-pink-50 to-cyan-100 p-4 flex flex-col relative overflow-hidden">
       {/* Background decoration with bright colors */}
@@ -79,20 +89,24 @@ const Login = () => {
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-20 mb-8 bg-gradient-to-r from-purple-100 to-cyan-100">
-                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Cadastro</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="mt-0">
-                  <LoginForm />
-                </TabsContent>
-                
-                <TabsContent value="signup" className="mt-0">
-                  <SignupForm onSuccess={handleSignupSuccess} />
-                </TabsContent>
-              </Tabs>
+              {showPasswordReset ? (
+                <PasswordResetForm onBack={handleBackToLogin} />
+              ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-2 h-20 mb-8 bg-gradient-to-r from-purple-100 to-cyan-100">
+                    <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Login</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Cadastro</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="login" className="mt-0">
+                    <LoginForm onForgotPassword={handleForgotPassword} />
+                  </TabsContent>
+                  
+                  <TabsContent value="signup" className="mt-0">
+                    <SignupForm onSuccess={handleSignupSuccess} />
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardContent>
             
             <CardFooter className="p-8 pt-0">

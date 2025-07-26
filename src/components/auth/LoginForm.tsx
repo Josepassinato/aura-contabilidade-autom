@@ -30,7 +30,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function LoginForm() {
+interface LoginFormProps {
+  onForgotPassword?: () => void;
+}
+
+export function LoginForm({ onForgotPassword }: LoginFormProps = {}) {
   const { enhancedLogin } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -164,6 +168,18 @@ export function LoginForm() {
           )}
         </Button>
       </form>
+      
+      {onForgotPassword && (
+        <div className="text-center mt-4">
+          <Button 
+            variant="link" 
+            className="text-sm text-muted-foreground hover:text-primary"
+            onClick={onForgotPassword}
+          >
+            Esqueceu sua senha?
+          </Button>
+        </div>
+      )}
     </Form>
   );
 }
