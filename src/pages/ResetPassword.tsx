@@ -50,9 +50,23 @@ export const ResetPassword = () => {
     const refreshToken = searchParams.get('refresh_token');
     const type = searchParams.get('type');
 
-    if (type !== 'recovery' || !accessToken) {
+    console.log('Reset password params:', { type, accessToken, refreshToken });
+
+    if (type !== 'recovery') {
+      console.log('Not a recovery type, redirecting to login');
       toast({
         title: "Link inválido",
+        description: "Este link de recuperação é inválido ou expirou",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    if (!accessToken) {
+      console.log('No access token found, redirecting to login');
+      toast({
+        title: "Link inválido", 
         description: "Este link de recuperação é inválido ou expirou",
         variant: "destructive",
       });
