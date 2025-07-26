@@ -18,6 +18,7 @@ import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
 import { DeleteConfirmation } from '@/components/ui/confirmation';
 import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toast';
 import { getDemoData, clearDemoData } from '@/data/demoData';
+import { AIStatusChecker } from '@/components/ai/AIStatusChecker';
 
 export const DashboardView = () => {
   const { enhancedLogout, isAccountant, isAdmin } = useAuth();
@@ -235,6 +236,9 @@ export const DashboardView = () => {
             upcomingDeadlines={0}
           />
         </div>
+
+        {/* Testador de IA */}
+        <AIStatusChecker />
 
         {/* Calendário e Documentos */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
