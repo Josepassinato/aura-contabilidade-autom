@@ -44,10 +44,22 @@ export const AccountingDashboard = () => {
   const [clients, setClients] = useState<ClientSummary[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState(new Date().toISOString().substring(0, 7));
   
+  // Limpar dados demo ao carregar
+  useEffect(() => {
+    // Limpar dados demo quando entrar no dashboard real
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('contaflix_demo_mode');
+      localStorage.removeItem('contaflix_demo_clients');
+      localStorage.removeItem('contaflix_demo_documents');
+      localStorage.removeItem('contaflix_demo_events');
+      localStorage.removeItem('contaflix_demo_stats');
+    }
+  }, []);
+
   // Buscar dados reais dos clientes e obrigações
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAccountant) return;
+      if (!isAccountant || !user?.id) return;
 
       try {
         // Buscar clientes do contador logado

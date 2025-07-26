@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, Search, User, ChevronDown, Menu } from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,7 @@ const routeLabels: Record<string, string> = {
 export function AppHeader() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { profile } = useAuth();
 
   const generateBreadcrumbs = () => {
     const pathSegments = currentPath.split('/').filter(Boolean);
@@ -121,12 +123,15 @@ export function AppHeader() {
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/api/placeholder/32/32" alt="User" />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    JD
+                    {profile?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">João Silva</p>
-                  <p className="text-xs text-muted-foreground">Contador</p>
+                  <p className="text-sm font-medium">{profile?.full_name || 'Usuário'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {profile?.role === 'admin' ? 'Administrador' : 
+                     profile?.role === 'accountant' ? 'Contador' : 'Cliente'}
+                  </p>
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
