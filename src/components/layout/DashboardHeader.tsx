@@ -56,7 +56,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
           </>
         ) : (
-          <Button onClick={() => navigateToLogin()} className="bg-gradient-primary hover:shadow-glow transition-smooth">
+          <Button onClick={() => navigateToLogin()} variant="vibrant" className="transition-smooth">
             Fazer Login
           </Button>
         )}

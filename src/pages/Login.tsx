@@ -51,31 +51,37 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-muted/30 p-4 flex flex-col">
-      <div className="flex-1 flex flex-col w-full">
+    <div className="min-h-screen w-full bg-gradient-secondary p-4 flex flex-col relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-brand opacity-20"></div>
+      <div className="absolute top-20 left-20 w-32 h-32 bg-primary/30 rounded-full blur-xl"></div>
+      <div className="absolute bottom-20 right-20 w-40 h-40 bg-accent/40 rounded-full blur-2xl"></div>
+      <div className="absolute top-1/3 right-1/4 w-24 h-24 bg-primary-glow/25 rounded-full blur-lg"></div>
+      
+      <div className="flex-1 flex flex-col w-full relative z-10">
         <div className="mb-6">
           <BackButton />
         </div>
         
         <div className="text-center mb-8">
-          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight">contaflows</h1>
-          <p className="text-muted-foreground mt-3 text-3xl sm:text-4xl">Sistema de gestão contábil</p>
+          <h1 className="text-brand text-6xl sm:text-7xl font-brand tracking-tighter bg-gradient-primary bg-clip-text text-transparent">contaflows</h1>
+          <p className="text-body text-muted-foreground mt-3 text-3xl sm:text-4xl font-light">Sistema de gestão contábil</p>
         </div>
         
         <div className="flex-1 flex items-center justify-center">
-          <Card className="border shadow-lg w-full">
+          <Card className="border shadow-2xl w-full bg-white/90 backdrop-blur-sm border-primary/20">
             <CardHeader className="p-8">
-              <CardTitle className="text-5xl sm:text-6xl">Acesso ao Sistema</CardTitle>
-              <CardDescription className="text-2xl sm:text-3xl mt-3">
+              <CardTitle className="text-display text-5xl sm:text-6xl bg-gradient-primary bg-clip-text text-transparent">Acesso ao Sistema</CardTitle>
+              <CardDescription className="text-body text-2xl sm:text-3xl mt-3 text-muted-foreground">
                 Faça login ou cadastre-se para acessar o sistema
               </CardDescription>
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-20 mb-8">
-                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium">Cadastro</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 h-20 mb-8 bg-gradient-secondary">
+                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium text-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium text-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastro</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login" className="mt-0">

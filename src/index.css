@@ -13,18 +13,18 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 18%;
 
-    --primary: 220 100% 50%;
+    --primary: 270 95% 65%;
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 220 100% 66%;
+    --primary-glow: 285 100% 75%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 18%;
+    --secondary: 320 45% 96%;
+    --secondary-foreground: 270 95% 25%;
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 220 13% 91%;
-    --accent-foreground: 220 13% 18%;
+    --accent: 195 100% 90%;
+    --accent-foreground: 270 95% 25%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -41,10 +41,10 @@
 
     --radius: 0.75rem;
 
-    /* Brand Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 50%), hsl(220 100% 66%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%), hsl(220 13% 91%));
-    --gradient-brand: linear-gradient(135deg, hsl(220 100% 50%), hsl(240 100% 60%));
+    /* Brand Gradients - Cores Jovens */
+    --gradient-primary: linear-gradient(135deg, hsl(270 95% 65%), hsl(285 100% 75%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 75%), hsl(285 100% 85%));
+    --gradient-brand: linear-gradient(135deg, hsl(270 95% 65%), hsl(195 100% 65%));
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(220 13% 69% / 0.05);
@@ -84,9 +84,9 @@
     --popover: 220 13% 9%;
     --popover-foreground: 220 14% 96%;
 
-    --primary: 220 100% 66%;
-    --primary-foreground: 220 13% 9%;
-    --primary-glow: 220 100% 76%;
+    --primary: 285 100% 75%;
+    --primary-foreground: 270 95% 15%;
+    --primary-glow: 300 100% 85%;
 
     --secondary: 220 13% 14%;
     --secondary-foreground: 220 14% 96%;
@@ -110,10 +110,10 @@
     --input: 220 13% 14%;
     --ring: 220 100% 66%;
 
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 66%), hsl(220 100% 76%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 14%), hsl(220 13% 18%));
-    --gradient-brand: linear-gradient(135deg, hsl(220 100% 66%), hsl(240 100% 70%));
+    /* Dark mode gradients - Cores Jovens */
+    --gradient-primary: linear-gradient(135deg, hsl(285 100% 75%), hsl(300 100% 85%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 65%), hsl(285 100% 75%));
+    --gradient-brand: linear-gradient(135deg, hsl(285 100% 75%), hsl(195 100% 75%));
     
     /* Dark mode shadows */
     --shadow-sm: 0 1px 2px 0 hsl(220 13% 4% / 0.1);
@@ -173,6 +173,14 @@
 
   .gradient-brand {
     background: var(--gradient-brand);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary-glow)));
+  }
+
+  .gradient-vibrant {
+    background: linear-gradient(135deg, hsl(300 100% 70%), hsl(195 100% 70%));
   }
 
   /* Shadow utilities */
