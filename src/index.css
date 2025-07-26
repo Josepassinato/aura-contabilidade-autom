@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 13% 18%;
+    --background: 280 100% 99%;
+    --foreground: 270 95% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
+    --card: 280 100% 98%;
+    --card-foreground: 270 95% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
+    --popover: 280 100% 98%;
+    --popover-foreground: 270 95% 15%;
 
     --primary: 270 95% 65%;
     --primary-foreground: 0 0% 98%;
@@ -20,8 +20,8 @@
     --secondary: 320 45% 96%;
     --secondary-foreground: 270 95% 25%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 300 50% 95%;
+    --muted-foreground: 270 30% 40%;
 
     --accent: 195 100% 90%;
     --accent-foreground: 270 95% 25%;
@@ -35,9 +35,9 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 100% 50%;
+    --border: 280 50% 88%;
+    --input: 280 50% 88%;
+    --ring: 270 95% 65%;
 
     --radius: 0.75rem;
 
@@ -50,28 +50,21 @@
     --shadow-sm: 0 1px 2px 0 hsl(220 13% 69% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(220 13% 69% / 0.1), 0 2px 4px -1px hsl(220 13% 69% / 0.06);
     --shadow-lg: 0 10px 15px -3px hsl(220 13% 69% / 0.1), 0 4px 6px -2px hsl(220 13% 69% / 0.05);
-    --shadow-glow: 0 0 20px hsl(220 100% 50% / 0.3);
+    --shadow-glow: 0 0 20px hsl(270 95% 65% / 0.4);
 
     /* Animation durations */
     --duration-fast: 150ms;
     --duration-normal: 250ms;
     --duration-slow: 350ms;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-background: 285 60% 96%;
+    --sidebar-foreground: 270 95% 25%;
+    --sidebar-primary: 270 95% 65%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 300 50% 93%;
+    --sidebar-accent-foreground: 270 95% 25%;
+    --sidebar-border: 280 50% 88%;
+    --sidebar-ring: 270 95% 65%;
   }
 
   .dark {

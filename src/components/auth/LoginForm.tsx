@@ -153,7 +153,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" variant="vibrant" className="w-full h-12 font-medium mt-6" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium mt-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

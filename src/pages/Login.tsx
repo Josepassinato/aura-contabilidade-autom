@@ -51,12 +51,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-secondary p-4 flex flex-col relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-brand opacity-20"></div>
-      <div className="absolute top-20 left-20 w-32 h-32 bg-primary/30 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 right-20 w-40 h-40 bg-accent/40 rounded-full blur-2xl"></div>
-      <div className="absolute top-1/3 right-1/4 w-24 h-24 bg-primary-glow/25 rounded-full blur-lg"></div>
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-100 via-pink-50 to-cyan-100 p-4 flex flex-col relative overflow-hidden">
+      {/* Background decoration with bright colors */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-cyan-400/20"></div>
+      <div className="absolute top-20 left-20 w-32 h-32 bg-purple-400/40 rounded-full blur-xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-40 h-40 bg-cyan-400/50 rounded-full blur-2xl animate-pulse"></div>
+      <div className="absolute top-1/3 right-1/4 w-24 h-24 bg-pink-400/30 rounded-full blur-lg animate-pulse"></div>
+      <div className="absolute bottom-1/3 left-1/4 w-36 h-36 bg-indigo-400/30 rounded-full blur-xl animate-pulse"></div>
       
       <div className="flex-1 flex flex-col w-full relative z-10">
         <div className="mb-6">
@@ -64,24 +65,24 @@ const Login = () => {
         </div>
         
         <div className="text-center mb-8">
-          <h1 className="text-brand text-6xl sm:text-7xl font-brand tracking-tighter bg-gradient-primary bg-clip-text text-transparent">contaflows</h1>
-          <p className="text-body text-muted-foreground mt-3 text-3xl sm:text-4xl font-light">Sistema de gestão contábil</p>
+          <h1 className="text-6xl sm:text-7xl font-bold tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 bg-clip-text text-transparent">contaflows</h1>
+          <p className="text-gray-700 mt-3 text-3xl sm:text-4xl font-light">Sistema de gestão contábil</p>
         </div>
         
         <div className="flex-1 flex items-center justify-center">
-          <Card className="border shadow-2xl w-full bg-white/90 backdrop-blur-sm border-primary/20">
+          <Card className="border shadow-2xl w-full bg-white/95 backdrop-blur-md border-purple-200/50 border-2">
             <CardHeader className="p-8">
-              <CardTitle className="text-display text-5xl sm:text-6xl bg-gradient-primary bg-clip-text text-transparent">Acesso ao Sistema</CardTitle>
-              <CardDescription className="text-body text-2xl sm:text-3xl mt-3 text-muted-foreground">
+              <CardTitle className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">Acesso ao Sistema</CardTitle>
+              <CardDescription className="text-2xl sm:text-3xl mt-3 text-gray-600">
                 Faça login ou cadastre-se para acessar o sistema
               </CardDescription>
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-20 mb-8 bg-gradient-secondary">
-                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium text-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium text-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastro</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 h-20 mb-8 bg-gradient-to-r from-purple-100 to-cyan-100">
+                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Cadastro</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login" className="mt-0">
