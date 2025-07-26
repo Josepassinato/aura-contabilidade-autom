@@ -87,3 +87,6 @@ verify_jwt = false
 
 [functions.automation-worker]
 verify_jwt = false
+
+[functions.queue-processor]
+verify_jwt = false

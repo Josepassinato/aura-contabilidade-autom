@@ -53,54 +53,37 @@ const AutomationScheduler = () => {
   const loadScheduledJobs = async () => {
     setIsLoading(true);
     try {
-      // Since we don't have a scheduled_jobs table, we'll simulate this
-      // In a real implementation, you would create a proper scheduled jobs table
-      const simulatedJobs: ScheduledJob[] = [
-        {
-          id: '1',
-          name: 'Trigger Automation Engine',
-          description: 'Executa o engine de automação a cada hora',
-          cron_expression: '0 * * * *',
-          function_name: 'automation-trigger-engine',
-          parameters: {},
-          enabled: true,
-          last_run: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          next_run: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-          success_count: 24,
-          error_count: 1,
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          name: 'Process Worker Queue',
-          description: 'Executa workers para processar fila de tarefas',
-          cron_expression: '*/5 * * * *',
-          function_name: 'automation-worker',
-          parameters: {},
-          enabled: true,
-          last_run: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-          next_run: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-          success_count: 288,
-          error_count: 2,
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '3',
-          name: 'Daily Reports Generation',
-          description: 'Gera relatórios diários automaticamente',
-          cron_expression: '0 6 * * *',
-          function_name: 'automation-trigger-engine',
-          parameters: { trigger_type: 'daily_reports' },
-          enabled: true,
-          last_run: new Date().toISOString().split('T')[0] + 'T06:00:00.000Z',
-          next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] + 'T06:00:00.000Z',
-          success_count: 7,
-          error_count: 0,
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
+      // Load from real scheduled_jobs table
+      const { data: jobsData, error: jobsError } = await supabase
+        .from('scheduled_jobs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (jobsError) throw jobsError;
+
+      // Calculate next run times for jobs that don't have one
+      const jobsWithNextRun = await Promise.all(
+        (jobsData || []).map(async (job) => {
+          if (!job.next_run && job.enabled) {
+            const { data: nextRunData } = await supabase.rpc('calculate_next_cron_run', {
+              cron_expression: job.cron_expression
+            });
+            
+            if (nextRunData) {
+              // Update the job with calculated next run time
+              await supabase
+                .from('scheduled_jobs')
+                .update({ next_run: nextRunData })
+                .eq('id', job.id);
+              
+              return { ...job, next_run: nextRunData };
+            }
+          }
+          return job;
+        })
+      );
       
-      setJobs(simulatedJobs);
+      setJobs(jobsWithNextRun);
     } catch (error: any) {
       console.error('Error loading scheduled jobs:', error);
       toast({
@@ -124,18 +107,30 @@ const AutomationScheduler = () => {
         return;
       }
 
-      // In a real implementation, you would save this to the database
-      // and set up the actual cron job
-      const job: ScheduledJob = {
-        id: Date.now().toString(),
-        ...newJob,
-        success_count: 0,
-        error_count: 0,
-        created_at: new Date().toISOString(),
-        next_run: calculateNextRun(newJob.cron_expression)
-      };
+      // Calculate next run time
+      const { data: nextRunTime } = await supabase.rpc('calculate_next_cron_run', {
+        cron_expression: newJob.cron_expression
+      });
 
-      setJobs(prev => [...prev, job]);
+      // Insert into real database
+      const { data: createdJob, error: insertError } = await supabase
+        .from('scheduled_jobs')
+        .insert({
+          name: newJob.name,
+          description: newJob.description || null,
+          cron_expression: newJob.cron_expression,
+          function_name: newJob.function_name,
+          parameters: newJob.parameters,
+          enabled: newJob.enabled,
+          next_run: nextRunTime
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Add to local state
+      setJobs(prev => [...prev, createdJob]);
       
       toast({
         title: "Tarefa Agendada",
@@ -164,6 +159,15 @@ const AutomationScheduler = () => {
 
   const toggleJob = async (jobId: string, enabled: boolean) => {
     try {
+      // Update in database
+      const { error } = await supabase
+        .from('scheduled_jobs')
+        .update({ enabled })
+        .eq('id', jobId);
+
+      if (error) throw error;
+
+      // Update local state
       setJobs(prev => prev.map(job => 
         job.id === jobId ? { ...job, enabled } : job
       ));
@@ -227,6 +231,15 @@ const AutomationScheduler = () => {
 
   const deleteJob = async (jobId: string) => {
     try {
+      // Delete from database
+      const { error } = await supabase
+        .from('scheduled_jobs')
+        .delete()
+        .eq('id', jobId);
+
+      if (error) throw error;
+
+      // Update local state
       setJobs(prev => prev.filter(job => job.id !== jobId));
       
       toast({

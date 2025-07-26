@@ -2179,6 +2179,57 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_jobs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cron_expression: string
+          description: string | null
+          enabled: boolean
+          error_count: number
+          function_name: string
+          id: string
+          last_run: string | null
+          name: string
+          next_run: string | null
+          parameters: Json
+          success_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression: string
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          function_name: string
+          id?: string
+          last_run?: string | null
+          name: string
+          next_run?: string | null
+          parameters?: Json
+          success_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          function_name?: string
+          id?: string
+          last_run?: string | null
+          name?: string
+          next_run?: string | null
+          parameters?: Json
+          success_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_reports: {
         Row: {
           client_id: string
@@ -2559,6 +2610,10 @@ export type Database = {
       archive_old_data: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      calculate_next_cron_run: {
+        Args: { cron_expression: string; from_time?: string }
+        Returns: string
       }
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
