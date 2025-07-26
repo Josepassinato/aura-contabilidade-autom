@@ -20,6 +20,7 @@ import { consultarCNPJ } from "@/services/governamental/apiIntegration";
 import { formatCNPJ } from "@/components/client-access/formatCNPJ";
 import { validateCNPJ } from "@/utils/validators";
 import { addClient } from "@/services/supabase/clientsService";
+import { logger } from "@/utils/logger";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -61,8 +62,8 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
     setIsSubmitting(true);
     
     try {
-      console.log("=== INICIANDO CADASTRO DE CLIENTE ===");
-      console.log("Dados do cliente:", data);
+      logger.info("=== INICIANDO CADASTRO DE CLIENTE ===", undefined, "ClientForm");
+      logger.info("Dados do cliente:", data, "ClientForm");
       
       // Preparar dados para inserção (sem accounting_firm_id nem accountant_id - o serviço vai adicionar)
       const clientData = {
@@ -76,7 +77,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         accounting_firm_id: null // Cliente não tem escritório associado por padrão
       };
       
-      console.log("Dados preparados para inserção:", clientData);
+      logger.info("Dados preparados para inserção:", clientData, "ClientForm");
       
       // Usar o serviço que já funciona com RLS
       const clientId = await addClient(clientData);
@@ -85,7 +86,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         throw new Error("Erro ao cadastrar cliente - dados não foram salvos");
       }
       
-      console.log(`✅ Cliente cadastrado com ID: ${clientId}`);
+      logger.info(`✅ Cliente cadastrado com ID: ${clientId}`, undefined, "ClientForm");
       
       // Exibir mensagem de sucesso
       toast({
@@ -98,11 +99,11 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       
       // Chamar callback de sucesso
       if (onSuccess) {
-        console.log("Chamando callback de sucesso...");
+        logger.info("Chamando callback de sucesso...", undefined, "ClientForm");
         onSuccess();
       }
     } catch (error: any) {
-      console.error("❌ ERRO NO CADASTRO:", error);
+      logger.error("❌ ERRO NO CADASTRO:", error, "ClientForm");
       toast({
         title: "Erro ao cadastrar cliente",
         description: error.message || "Ocorreu um erro ao salvar os dados do cliente.",
@@ -110,7 +111,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       });
     } finally {
       setIsSubmitting(false);
-      console.log("=== FIM DO CADASTRO ===");
+      logger.info("=== FIM DO CADASTRO ===", undefined, "ClientForm");
     }
   };
 
@@ -146,7 +147,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
           });
         }
       } catch (error) {
-        console.log("Erro ao consultar CNPJ:", error);
+        logger.error("Erro ao consultar CNPJ:", error, "ClientForm");
         // Não mostrar erro ao usuário, apenas não preencher automaticamente
       } finally {
         setIsLoadingCNPJ(false);

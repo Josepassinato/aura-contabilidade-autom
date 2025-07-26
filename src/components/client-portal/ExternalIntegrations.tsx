@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { Link2, Database, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { blingService } from "@/services/integracoes/blingService";
+import { logger } from "@/utils/logger";
 
 interface ExternalIntegrationsProps {
   clientId: string;
@@ -63,7 +64,7 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
         }
       } else {
         // Para outros sistemas, manter simulação
-        console.log(`Connecting to ${integrationType} with credentials:`, values);
+        logger.info(`Connecting to ${integrationType} with credentials:`, values, "ExternalIntegrations");
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         toast({
@@ -75,7 +76,7 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Error connecting integration:", error);
+      logger.error("Error connecting integration:", error, "ExternalIntegrations");
       toast({
         title: "Erro na integração",
         description: "Não foi possível estabelecer a conexão. Verifique as credenciais e tente novamente.",

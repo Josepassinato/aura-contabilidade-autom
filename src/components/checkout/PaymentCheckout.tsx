@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth";
+import { logger } from "@/utils/logger";
 
 export type PlanDetails = {
   name: string;
@@ -48,7 +49,7 @@ const PaymentCheckout = ({ plan, onSuccess, onCancel }: PaymentCheckoutProps) =>
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock successful checkout
-      console.log(`Checkout for plan: ${plan.name} with price ID: ${plan.priceId}`);
+      logger.info(`Checkout for plan: ${plan.name} with price ID: ${plan.priceId}`, undefined, "PaymentCheckout");
       
       toast({
         title: "Pagamento realizado com sucesso!",
@@ -57,7 +58,7 @@ const PaymentCheckout = ({ plan, onSuccess, onCancel }: PaymentCheckoutProps) =>
       
       if (onSuccess) onSuccess();
     } catch (error) {
-      console.error("Checkout error:", error);
+      logger.error("Checkout error:", error, "PaymentCheckout");
       toast({
         title: "Erro ao processar pagamento",
         description: "Ocorreu um erro ao processar seu pagamento. Por favor, tente novamente.",
