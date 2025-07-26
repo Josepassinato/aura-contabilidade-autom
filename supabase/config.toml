@@ -81,3 +81,9 @@ verify_jwt = true
 
 [functions.validation-service]
 verify_jwt = true
+
+[functions.automation-trigger-engine]
+verify_jwt = false
+
+[functions.automation-worker]
+verify_jwt = false
