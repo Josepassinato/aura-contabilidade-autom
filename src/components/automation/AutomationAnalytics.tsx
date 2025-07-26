@@ -9,16 +9,8 @@ import {
   Mail,
   Cog
 } from 'lucide-react';
+import { AutomationRule } from '@/types/automation';
 
-interface AutomationRule {
-  id: string;
-  name: string;
-  enabled: boolean;
-  last_run?: string;
-  success_count: number;
-  error_count: number;
-  actions?: Array<{ type: string }>;
-}
 
 interface AutomationAnalyticsProps {
   rules: AutomationRule[];

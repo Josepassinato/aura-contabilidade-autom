@@ -6,24 +6,13 @@ import AutomationScheduler from './AutomationScheduler';
 import RealTimeMonitoringDashboard from '@/components/monitoring/RealTimeMonitoringDashboard';
 import { AutomationRulesTable } from './AutomationRulesTable';
 import { AutomationAnalytics } from './AutomationAnalytics';
-
-interface AutomationRule {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  enabled: boolean;
-  last_run?: string;
-  success_count: number;
-  error_count: number;
-  actions?: Array<{ type: string }>;
-}
+import { AutomationRule } from '@/types/automation';
 
 interface AutomationTabsProps {
   rules: AutomationRule[];
   onToggleRule: (ruleId: string, enabled: boolean) => void;
   onExecuteRule: (ruleId: string) => void;
-  onCreateRule: (ruleData: any) => Promise<void>;
+  onCreateRule: (ruleData: any) => Promise<AutomationRule>;
 }
 
 export const AutomationTabs: React.FC<AutomationTabsProps> = ({
@@ -55,7 +44,7 @@ export const AutomationTabs: React.FC<AutomationTabsProps> = ({
         <AutomationRuleBuilder
           onRuleCreate={async (ruleData) => {
             try {
-              await onCreateRule(ruleData);
+              const newRule = await onCreateRule(ruleData);
               // Reset to rules tab after successful creation
               const tabsTrigger = document.querySelector('[value="rules"]') as HTMLElement;
               if (tabsTrigger) tabsTrigger.click();
