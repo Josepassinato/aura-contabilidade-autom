@@ -3,7 +3,7 @@ import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryProvider } from "./hooks/useSupabaseQuery";
-import { GlobalErrorBoundary } from "./components/layout/GlobalErrorBoundary";
+import { EnhancedErrorBoundary } from "./components/ui/enhanced-error-boundary";
 import { LoadingProvider } from "./hooks/useLoadingState";
 import { GlobalLoadingIndicator } from "./components/layout/GlobalLoadingIndicator";
 import AppRoutes from "./routes";
@@ -19,13 +19,19 @@ const router = createBrowserRouter([
 function App() {
   return (
     <QueryProvider>
-      <GlobalErrorBoundary>
+      <EnhancedErrorBoundary 
+        showDetails={true}
+        onError={(error, errorInfo) => {
+          // Log error to external service in production
+          console.error('Global app error:', error, errorInfo);
+        }}
+      >
         <LoadingProvider>
           <RouterProvider router={router} />
           <Toaster />
           <GlobalLoadingIndicator />
         </LoadingProvider>
-      </GlobalErrorBoundary>
+      </EnhancedErrorBoundary>
     </QueryProvider>
   );
 }

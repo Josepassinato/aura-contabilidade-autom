@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useLoadingState } from '@/hooks/useLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useCleanupTimer } from '@/hooks/useCleanupTimer';
 import { 
   LineChart, 
   Line, 
@@ -61,11 +62,12 @@ export function AnalyticsDashboard() {
   
   const { setLoading, isLoading } = useLoadingState();
   const { toast } = useToast();
+  const { safeSetInterval, clearAllTimers } = useCleanupTimer();
 
   useEffect(() => {
     loadAnalyticsData();
-    const interval = setInterval(loadAnalyticsData, 60000); // Atualizar a cada minuto
-    return () => clearInterval(interval);
+    safeSetInterval(loadAnalyticsData, 60000); // Atualizar a cada minuto
+    return () => clearAllTimers();
   }, []);
 
   const loadAnalyticsData = async () => {
@@ -187,7 +189,7 @@ export function AnalyticsDashboard() {
         return acc;
       }, {});
 
-      const chartData = Object.values(hourlyData).map((hour: any) => ({
+    const chartData = Object.values(hourlyData).map((hour: any) => ({
         date: new Date(hour.timestamp).toLocaleDateString('pt-BR', { 
           month: 'short', 
           day: 'numeric', 
