@@ -42,9 +42,7 @@ export const PasswordResetForm = ({ onBack }: PasswordResetFormProps) => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.protocol}//${window.location.host}/login`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email);
       
       if (!error) {
         setIsEmailSent(true);
