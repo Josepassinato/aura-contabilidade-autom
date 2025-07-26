@@ -14,7 +14,7 @@ import VoiceAgentSetupPage from '../pages/VoiceAgentSetupPage';
 import VoiceAgentPage from '../pages/VoiceAgentPage';
 
 // Rotas que NÃO devem usar o layout principal
-const NO_LAYOUT_ROUTES = ['/login', '/register', '/ux-demo', '/voice-agent/setup', '/voice-agent'];
+const NO_LAYOUT_ROUTES = ['/login', '/register', '/reset-password', '/ux-demo', '/voice-agent/setup', '/voice-agent'];
 
 const AppRoutes = () => {
   console.log("AppRoutes - Rendering routes");
