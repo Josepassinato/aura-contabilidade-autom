@@ -2,7 +2,7 @@ import React from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useAuth } from '@/contexts/auth';
 import { Navigate } from 'react-router-dom';
-import { ProblemsDashboard } from "@/components/workflow/ProblemsDashboard";
+import { WorkflowDashboard } from "@/components/workflow";
 
 const WorkflowDashboardPage = () => {
   const { isAuthenticated, isAccountant, isLoading } = useAuth();
@@ -21,7 +21,9 @@ const WorkflowDashboardPage = () => {
 
   return (
     <DashboardLayout>
-      <ProblemsDashboard />
+      <div className="container mx-auto p-6 max-w-7xl">
+        <WorkflowDashboard />
+      </div>
     </DashboardLayout>
   );
 };

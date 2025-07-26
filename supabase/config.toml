@@ -105,3 +105,6 @@ verify_jwt = false
 
 [functions.apply-auto-fix]
 verify_jwt = false
+
+[functions.workflow-executor]
+verify_jwt = false
