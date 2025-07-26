@@ -54,7 +54,6 @@ export function LoginForm() {
       const result = await enhancedLogin(data.email, data.password);
       
       if (result?.success) {
-        console.log('Login successful, navigating...');
         // Navegação será tratada pelo enhancedLogin
       } else {
         toast({
@@ -64,7 +63,6 @@ export function LoginForm() {
         });
       }
     } catch (error) {
-      console.error('Error in login form:', error);
       toast({
         title: 'Erro no sistema',
         description: 'Não foi possível processar sua solicitação',

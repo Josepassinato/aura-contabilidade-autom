@@ -94,7 +94,6 @@ export const InviteSignupForm = () => {
         form.setValue('email', data.email);
         setValidatingInvite(false);
       } catch (error) {
-        console.error('Erro ao validar convite:', error);
         setInviteError('Erro ao validar convite');
         setValidatingInvite(false);
       }
@@ -136,7 +135,6 @@ export const InviteSignupForm = () => {
           });
 
         if (profileError) {
-          console.error('Erro ao criar perfil:', profileError);
           // Continuar mesmo se houver erro no perfil, pois pode ser criado pelo trigger
         }
 
@@ -159,7 +157,6 @@ export const InviteSignupForm = () => {
         navigate('/login');
       }
     } catch (error: any) {
-      console.error('Erro no registro:', error);
       toast({
         title: "Erro no registro",
         description: error.message || "Não foi possível criar sua conta",
