@@ -93,3 +93,15 @@ verify_jwt = false
 
 [functions.performance-monitor]
 verify_jwt = false
+
+[functions.classify-document-ai]
+verify_jwt = false
+
+[functions.generate-automation-rule]
+verify_jwt = false
+
+[functions.analyze-errors-ai]
+verify_jwt = false
+
+[functions.apply-auto-fix]
+verify_jwt = false
