@@ -50,7 +50,7 @@ export const AIStatusChecker = () => {
     try {
       const { data, error } = await supabase.functions.invoke('classify-document-ai', {
         body: {
-          documentContent: "NOTA FISCAL ELETRÔNICA - NFe\nEmpresa: Tech Solutions LTDA\nCNPJ: 12.345.678/0001-90\nValor: R$ 1.500,00\nServiços de consultoria em TI",
+          documentContent: "NOTA FISCAL ELETRÔNICA - NFe\nENPJ: 12.345.678/0001-90\nValor: R$ 1.500,00\nServiços de consultoria em TI",
           documentType: "nfe",
           metadata: { test: true }
         }

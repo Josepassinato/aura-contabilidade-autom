@@ -6,7 +6,6 @@ import { supabase, supabaseAuth, getUserProfile } from '@/lib/supabaseService';
 import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
 import { cleanupAuthState, checkForAuthLimboState } from './cleanupUtils';
-import { cleanupAllMockData } from '@/utils/cleanupMockData';
 
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -21,8 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     setIsLoading(true);
     
-    // Force production mode - clean all mock data
-    cleanupAllMockData();
+    // Garantir que está em modo produção
     
     // Check for and report potential limbo states
     checkForAuthLimboState();

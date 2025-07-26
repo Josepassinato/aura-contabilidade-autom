@@ -138,8 +138,8 @@ export function GovernmentIntegrationsManager({ clientId }: GovernmentIntegratio
               identificacao: 'INFO_EMPREGADOR',
               dados: {
                 cnpj: '12345678000190',
-                razaoSocial: 'Empresa Teste LTDA',
-                endereco: 'Rua Teste, 123'
+                razaoSocial: 'Empresa Exemplo LTDA',
+                endereco: 'Rua Exemplo, 123'
               }
             },
             { 
@@ -147,7 +147,7 @@ export function GovernmentIntegrationsManager({ clientId }: GovernmentIntegratio
               identificacao: 'ADM_TRABALHADOR',
               dados: {
                 cpf: '12345678901',
-                nome: 'João Silva',
+                nome: 'Funcionário Exemplo',
                 dataAdmissao: '2024-01-01'
               }
             }

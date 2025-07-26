@@ -11,197 +11,173 @@ import {
   ArrowRight,
   CheckCircle,
   Play,
-  BookOpen
+  BookOpen,
+  Calculator
 } from 'lucide-react';
-import { demoFeatures, initializeDemoData } from '@/data/demoData';
 
 interface OnboardingWelcomeProps {
   onStartTour?: () => void;
-  onLoadDemo: () => void;
   onSkip: () => void;
 }
 
+const features = [
+  {
+    title: 'Gestão de Clientes',
+    description: 'Centralize todas as informações dos seus clientes em um só lugar.',
+    icon: 'Users',
+    benefits: ['Perfis completos', 'Histórico detalhado', 'Comunicação integrada']
+  },
+  {
+    title: 'Automação Fiscal',
+    description: 'Automatize cálculos e geração de documentos fiscais.',
+    icon: 'Calculator',
+    benefits: ['Cálculos automáticos', 'Conformidade garantida', 'Redução de erros']
+  },
+  {
+    title: 'Calendário Inteligente',
+    description: 'Nunca mais perca um prazo fiscal importante.',
+    icon: 'Calendar',
+    benefits: ['Alertas automáticos', 'Sincronização', 'Priorização inteligente']
+  },
+  {
+    title: 'Relatórios Avançados',
+    description: 'Insights poderosos para tomada de decisão.',
+    icon: 'BarChart',
+    benefits: ['Dashboards interativos', 'Análises preditivas', 'Exportação flexível']
+  }
+];
+
 export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({
   onStartTour,
-  onLoadDemo,
   onSkip
 }) => {
-  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
-  const handleLoadDemo = async () => {
-    setIsLoadingDemo(true);
-    initializeDemoData();
-    
-    // Simular carregamento
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    onLoadDemo();
-    setIsLoadingDemo(false);
+  const getIcon = (iconName: string) => {
+    const icons = {
+      Users: Users,
+      Calculator: Calculator,
+      Calendar: Calendar,
+      BarChart: BarChart
+    };
+    const IconComponent = icons[iconName as keyof typeof icons] || Users;
+    return <IconComponent className="h-8 w-8" />;
   };
 
-  const iconMap = {
-    Users,
-    Calculator: BarChart,
-    Calendar,
-    BarChart
+  const nextStep = () => {
+    if (currentStep < features.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onSkip();
+    }
   };
+
+  const currentFeature = features[currentStep];
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-scale-in shadow-glow">
-        <CardHeader className="text-center pb-6 bg-gradient-to-br from-primary/5 to-primary-glow/5">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-primary rounded-full shadow-glow animate-float">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-4xl bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-primary/20 shadow-2xl">
+        <CardHeader className="text-center pb-6">
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-gradient-primary rounded-full shadow-lg">
               <Sparkles className="h-8 w-8 text-white" />
             </div>
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Bem-vindo ao ContaFlix! 🎉
+            Bem-vindo ao ContaFlix!
           </CardTitle>
-          <CardDescription className="text-lg text-muted-foreground">
-            Sua plataforma completa para gestão contábil e fiscal inteligente
+          <CardDescription className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            A plataforma de gestão contábil mais avançada do mercado. 
+            Vamos conhecer as principais funcionalidades.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-8">
-          {/* Recursos Principais */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-primary" />
-              O que você pode fazer com o ContaFlix
-            </h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              {demoFeatures.map((feature, index) => {
-                const IconComponent = iconMap[feature.icon as keyof typeof iconMap] || BarChart;
-                return (
-                  <Card key={index} className="border-muted interactive-card animate-slide-up" style={{animationDelay: `${index * 100}ms`}}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-primary rounded-lg shadow-sm">
-                          <IconComponent className="h-5 w-5 text-white" />
-                        </div>
-                        <CardTitle className="text-base">{feature.title}</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="mb-3">
-                        {feature.description}
-                      </CardDescription>
-                      <div className="flex flex-wrap gap-1">
-                        {feature.benefits.map((benefit, benefitIndex) => (
-                          <Badge key={benefitIndex} variant="secondary" className="text-xs hover:bg-primary/10 transition-smooth">
-                            {benefit}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          {/* Progress Bar */}
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-2">
+              {features.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index <= currentStep ? 'bg-primary shadow-glow' : 'bg-muted'
+                  }`}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Opções de Início */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Play className="h-5 w-5 text-primary" />
-              Como você gostaria de começar?
+          {/* Current Feature */}
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full border border-primary/20">
+                {getIcon(currentFeature.icon)}
+              </div>
+            </div>
+            
+            <h3 className="text-2xl font-bold mb-3 text-foreground">
+              {currentFeature.title}
             </h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Assistente IA */}
-              <Card className="border-primary/20 hover:border-primary/40 hover:shadow-glow transition-smooth cursor-pointer interactive-card">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-primary rounded-lg shadow-sm">
-                      <BookOpen className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Assistente IA</CardTitle>
-                      <Badge className="text-xs bg-success text-success-foreground">Novo!</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="mb-4">
-                    Use nosso assistente inteligente para obter ajuda e orientações sobre qualquer funcionalidade.
-                  </CardDescription>
-                  <Button onClick={onSkip} className="w-full bg-gradient-primary hover:shadow-glow transition-smooth">
-                    <Play className="h-4 w-4 mr-2" />
-                    Começar com Assistente
-                  </Button>
-                </CardContent>
-              </Card>
+            
+            <p className="text-muted-foreground text-lg mb-6 max-w-xl mx-auto">
+              {currentFeature.description}
+            </p>
 
-              {/* Dados de Demonstração */}
-              <Card className="border-muted hover:border-muted/80 hover:shadow-md transition-smooth interactive-card">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
-                      <FileText className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">Explorar com Dados Demo</CardTitle>
-                      <Badge variant="secondary" className="text-xs">Prático</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="mb-4">
-                    Explore a plataforma com dados de exemplo: 3 clientes, documentos e eventos fiscais.
-                  </CardDescription>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleLoadDemo}
-                    disabled={isLoadingDemo}
-                    className="w-full hover:bg-blue-50 hover:border-blue-300 transition-smooth"
-                  >
-                    {isLoadingDemo ? (
-                      <>
-                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-r-transparent" />
-                        Carregando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        Carregar Dados Demo
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
+            <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              {currentFeature.benefits.map((benefit, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 p-3 bg-background/50 rounded-lg border border-muted"
+                >
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <span className="text-sm font-medium">{benefit}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Botões de Ação */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              onClick={onSkip}
-              className="flex-1"
-            >
-              Pular Introdução
-            </Button>
-            <Button 
-              onClick={onSkip}
-              className="flex-1 bg-gradient-primary hover:shadow-glow transition-smooth"
-            >
-              Começar com Assistente IA
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
+          {/* Navigation */}
+          <div className="flex justify-between items-center pt-6 border-t border-muted">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{currentStep + 1} de {features.length}</span>
+            </div>
 
-          {/* Dica */}
-          <div className="bg-gradient-to-r from-primary/5 to-primary-glow/5 p-4 rounded-lg border-l-4 border-primary shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="p-1.5 bg-gradient-primary rounded-full shadow-sm">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-primary">💡 Dica Profissional</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Você pode acessar o assistente IA a qualquer momento através do botão no canto inferior direito da tela.
-                </p>
-              </div>
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                onClick={onSkip}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Pular Tour
+              </Button>
+              
+              {onStartTour && (
+                <Button
+                  variant="outline"
+                  onClick={onStartTour}
+                  className="flex items-center gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  Tour Guiado
+                </Button>
+              )}
+              
+              <Button
+                onClick={nextStep}
+                className="flex items-center gap-2 bg-gradient-primary text-white hover:opacity-90 transition-opacity"
+              >
+                {currentStep < features.length - 1 ? (
+                  <>
+                    Próximo
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Começar
+                    <CheckCircle className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </CardContent>
