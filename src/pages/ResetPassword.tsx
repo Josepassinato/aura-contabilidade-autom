@@ -45,12 +45,27 @@ export const ResetPassword = () => {
   });
 
   useEffect(() => {
-    // Verificar se há parâmetros de recuperação de senha na URL
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    const type = searchParams.get('type');
+    console.log('ResetPassword page loaded');
+    console.log('Current URL:', window.location.href);
+    console.log('Search params:', window.location.search);
+    console.log('Hash:', window.location.hash);
+    
+    // Verificar parâmetros tanto na query string quanto no hash
+    let accessToken = searchParams.get('access_token');
+    let refreshToken = searchParams.get('refresh_token');
+    let type = searchParams.get('type');
 
-    console.log('Reset password params:', { type, accessToken, refreshToken });
+    // Se não encontrou nos query params, verificar no hash
+    if (!accessToken && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      accessToken = hashParams.get('access_token');
+      refreshToken = hashParams.get('refresh_token');
+      type = hashParams.get('type');
+      
+      console.log('Hash params:', { type, accessToken: !!accessToken, refreshToken: !!refreshToken });
+    }
+
+    console.log('Reset password params:', { type, accessToken: !!accessToken, refreshToken: !!refreshToken });
 
     if (type !== 'recovery') {
       console.log('Not a recovery type, redirecting to login');
@@ -74,6 +89,7 @@ export const ResetPassword = () => {
       return;
     }
 
+    console.log('Setting session with tokens');
     // Configurar a sessão com os tokens da URL
     supabase.auth.setSession({
       access_token: accessToken,
