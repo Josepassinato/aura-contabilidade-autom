@@ -1441,6 +1441,148 @@ export type Database = {
           },
         ]
       }
+      ml_models: {
+        Row: {
+          client_id: string
+          created_at: string
+          feature_importance: Json | null
+          hyperparameters: Json | null
+          id: string
+          last_prediction: string | null
+          model_data: Json
+          model_id: string
+          model_type: string
+          performance_metrics: Json
+          prediction_count: number | null
+          status: string
+          training_data_size: number | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          feature_importance?: Json | null
+          hyperparameters?: Json | null
+          id?: string
+          last_prediction?: string | null
+          model_data?: Json
+          model_id: string
+          model_type: string
+          performance_metrics?: Json
+          prediction_count?: number | null
+          status?: string
+          training_data_size?: number | null
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          feature_importance?: Json | null
+          hyperparameters?: Json | null
+          id?: string
+          last_prediction?: string | null
+          model_data?: Json
+          model_id?: string
+          model_type?: string
+          performance_metrics?: Json
+          prediction_count?: number | null
+          status?: string
+          training_data_size?: number | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      ml_performance_metrics: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          measurement_date: string
+          metric_metadata: Json | null
+          metric_name: string
+          metric_value: number | null
+          model_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_metadata?: Json | null
+          metric_name: string
+          metric_value?: number | null
+          model_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_metadata?: Json | null
+          metric_name?: string
+          metric_value?: number | null
+          model_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_performance_metrics_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_predictions: {
+        Row: {
+          client_id: string
+          confidence_score: number
+          created_at: string
+          feedback: string | null
+          id: string
+          input_data: Json
+          is_correct: boolean | null
+          model_id: string
+          prediction_result: Json
+          processing_time_ms: number | null
+        }
+        Insert: {
+          client_id: string
+          confidence_score: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          input_data: Json
+          is_correct?: boolean | null
+          model_id: string
+          prediction_result: Json
+          processing_time_ms?: number | null
+        }
+        Update: {
+          client_id?: string
+          confidence_score?: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          input_data?: Json
+          is_correct?: boolean | null
+          model_id?: string
+          prediction_result?: Json
+          processing_time_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_predictions_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_closing_status: {
         Row: {
           assigned_to: string | null
