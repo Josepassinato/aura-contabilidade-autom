@@ -54,7 +54,6 @@ export function CustomerSubscriptionForm({
   });
   
   const onSubmit = async (values: FormValues) => {
-    console.log("Atualizando assinatura da contabilidade:", customer.name, values);
     const success = await updateCustomerSubscription(customer.id, {
       status: values.status,
       plan_type: values.plan_type,

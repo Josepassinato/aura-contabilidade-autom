@@ -19,7 +19,8 @@ class Logger {
   private maxHistorySize = 1000;
 
   private shouldLog(level: LogLevel): boolean {
-    if (!this.isDevelopment && level === 'debug') return false;
+    // Em produção, só mostrar errors e warns críticos
+    if (!this.isDevelopment && (level === 'debug' || level === 'info')) return false;
     return true;
   }
 

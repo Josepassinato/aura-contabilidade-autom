@@ -51,9 +51,7 @@ export function PerformanceDashboard() {
     setAnalyzing(true);
     try {
       const result = await analyzePerformance('24h');
-      if (result) {
-        console.log('Performance analysis:', result);
-      }
+      // Analysis completed successfully
     } finally {
       setAnalyzing(false);
     }
@@ -63,9 +61,7 @@ export function PerformanceDashboard() {
     setOptimizing(true);
     try {
       const result = await optimizeDatabase();
-      if (result) {
-        console.log('Database optimization:', result);
-      }
+      // Optimization completed successfully
     } finally {
       setOptimizing(false);
     }
