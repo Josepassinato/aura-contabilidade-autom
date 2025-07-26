@@ -178,14 +178,14 @@ export const DashboardView = () => {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">Dashboard</h1>
+              <h1 className="text-brand text-4xl font-brand tracking-tighter bg-gradient-primary bg-clip-text text-transparent">Dashboard</h1>
               {isDemoMode && (
                 <div className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md animate-pulse">
                   ✨ Modo Demo
                 </div>
               )}
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-body text-muted-foreground text-lg font-light">
               Visão geral dos seus clientes e obrigações fiscais
             </p>
           </div>
@@ -244,12 +244,12 @@ export const DashboardView = () => {
                 <div className="p-2 bg-gradient-primary rounded-lg shadow-sm">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <CardTitle className="text-lg">Calendário Fiscal</CardTitle>
-                  <CardDescription>
-                    Próximas obrigações e eventos fiscais
-                  </CardDescription>
-                </div>
+                 <div>
+                   <CardTitle className="text-display text-lg font-semibold">Calendário Fiscal</CardTitle>
+                   <CardDescription className="text-body">
+                     Próximas obrigações e eventos fiscais
+                   </CardDescription>
+                 </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -267,12 +267,12 @@ export const DashboardView = () => {
                 <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm">
                   <FileText className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <CardTitle className="text-lg">Documentos Recentes</CardTitle>
-                  <CardDescription>
-                    Últimos documentos enviados pelos clientes
-                  </CardDescription>
-                </div>
+                 <div>
+                   <CardTitle className="text-display text-lg font-semibold">Documentos Recentes</CardTitle>
+                   <CardDescription className="text-body">
+                     Últimos documentos enviados pelos clientes
+                   </CardDescription>
+                 </div>
               </div>
             </CardHeader>
             <CardContent>

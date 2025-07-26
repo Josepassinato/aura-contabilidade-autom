@@ -31,7 +31,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {isAuthenticated ? (
           <ClientSelector />
         ) : (
-          <div className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
+          <div className="text-brand text-lg font-brand tracking-tight bg-gradient-primary bg-clip-text text-transparent">
             ContaFlix
           </div>
         )}

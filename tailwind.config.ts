@@ -22,6 +22,18 @@ export default {
 				'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
 				'mono': ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
 				'tech': ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+				'brand': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				'display': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			},
+			fontSize: {
+				'brand': ['2.5rem', { lineHeight: '1.1', letterSpacing: '-0.025em', fontWeight: '700' }],
+				'hero': ['3.5rem', { lineHeight: '1', letterSpacing: '-0.03em', fontWeight: '800' }],
+				'tech': ['0.875rem', { lineHeight: '1.5', letterSpacing: '-0.01em', fontWeight: '500' }],
+			},
+			letterSpacing: {
+				'tighter': '-0.03em',
+				'tight': '-0.025em',
+				'tech': '-0.01em',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
