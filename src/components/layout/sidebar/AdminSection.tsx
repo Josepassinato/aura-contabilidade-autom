@@ -60,6 +60,21 @@ export function AdminSection() {
       icon: Bot,
     },
     {
+      title: "Queue Management",
+      href: "/queue-management",
+      icon: Activity,
+    },
+    {
+      title: "Sistema Analytics",
+      href: "/sistema-analytics",
+      icon: BarChart,
+    },
+    {
+      title: "Email Service",
+      href: "/email-service",
+      icon: Mail,
+    },
+    {
       title: "Segurança",
       href: "/admin/security",
       icon: Shield,
