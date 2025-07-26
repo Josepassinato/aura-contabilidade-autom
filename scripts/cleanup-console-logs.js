@@ -8,11 +8,14 @@
 const fs = require('fs');
 const path = require('path');
 
-// Padrões para remover
+// Padrões para remover (mais agressivos para produção)
 const PATTERNS_TO_REMOVE = [
   /console\.log\([^)]*\);?\s*\n?/g,
   /console\.warn\([^)]*\);?\s*\n?/g,
-  // Manter console.error apenas em componentes críticos
+  /console\.info\([^)]*\);?\s*\n?/g,
+  /console\.debug\([^)]*\);?\s*\n?/g,
+  // Remover console.error também, exceto em arquivos críticos
+  /console\.error\([^)]*\);?\s*\n?/g,
 ];
 
 // Padrões para preservar (em desenvolvimento)
@@ -31,10 +34,11 @@ const DIRECTORIES = [
   'src/utils',
 ];
 
-// Arquivos para não modificar
+// Arquivos para não modificar (manter logger utilitários)
 const SKIP_FILES = [
   'src/utils/logger.ts',
   'src/utils/debug.ts',
+  'src/components/layout/GlobalErrorBoundary.tsx', // Manter erro crítico
 ];
 
 function shouldSkipFile(filePath) {

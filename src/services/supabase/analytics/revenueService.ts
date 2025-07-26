@@ -2,13 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { addMonths, startOfMonth, format } from "date-fns";
 import { RevenueTrend } from "./types";
+import { logger } from "@/utils/logger";
 
 /**
  * Fetch monthly revenue trends from real database
  */
 export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
   try {
-    console.log("Buscando tendências de receita reais...");
+    logger.info("Buscando tendências de receita reais", undefined, "RevenueService");
     
     // Get the last 12 months
     const months: Date[] = [];
@@ -26,7 +27,7 @@ export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
         .eq('month', monthString);
       
       if (error) {
-        console.warn(`Aviso ao buscar receita para ${monthString}:`, error);
+        logger.warn(`Aviso ao buscar receita para ${monthString}`, error, "RevenueService");
       }
       
       const revenue = data?.reduce((sum, item) => sum + Number(item.revenue_amount || 0), 0) || 0;
@@ -37,10 +38,10 @@ export async function fetchRevenueTrends(): Promise<RevenueTrend[]> {
       });
     }
     
-    console.log("Tendências de receita reais:", result);
+    logger.debug("Tendências de receita reais", result, "RevenueService");
     return result;
   } catch (error) {
-    console.error('Erro ao buscar tendências de receita:', error);
+    logger.error('Erro ao buscar tendências de receita', error, "RevenueService");
     return [];
   }
 }
