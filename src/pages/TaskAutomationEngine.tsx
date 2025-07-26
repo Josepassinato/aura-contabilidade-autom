@@ -11,6 +11,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AutomationRuleBuilder } from '@/components/automation/AutomationRuleBuilder';
 import AutomationMonitoringDashboard from '@/components/automation/AutomationMonitoringDashboard';
 import AutomationScheduler from '@/components/automation/AutomationScheduler';
+import RealTimeMonitoringDashboard from '@/components/monitoring/RealTimeMonitoringDashboard';
 import { 
   Bot, 
   Play, 
@@ -192,10 +193,11 @@ const TaskAutomationEngine = () => {
         </div>
 
         <Tabs defaultValue="rules" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="rules">Regras</TabsTrigger>
             <TabsTrigger value="create">Criar Regra</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
+            <TabsTrigger value="realtime">Tempo Real</TabsTrigger>
             <TabsTrigger value="scheduler">Agendador</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -305,6 +307,10 @@ const TaskAutomationEngine = () => {
 
           <TabsContent value="monitoring" className="space-y-4">
             <AutomationMonitoringDashboard />
+          </TabsContent>
+
+          <TabsContent value="realtime" className="space-y-4">
+            <RealTimeMonitoringDashboard />
           </TabsContent>
 
           <TabsContent value="scheduler" className="space-y-4">

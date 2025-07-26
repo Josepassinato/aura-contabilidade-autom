@@ -90,3 +90,6 @@ verify_jwt = false
 
 [functions.queue-processor]
 verify_jwt = false
+
+[functions.performance-monitor]
+verify_jwt = false
