@@ -13,11 +13,30 @@ interface Document {
   type: string;
   size: number;
   url: string;
+  hash?: string; // Para detecção de duplicados
   classification?: {
     category: string;
     confidence: number;
+    priority: 'low' | 'medium' | 'high' | 'critical';
     tags: string[];
     suggested_actions: string[];
+    is_duplicate?: boolean;
+    duplicate_of?: string;
+    risk_level?: 'low' | 'medium' | 'high';
+    content_analysis?: {
+      invoice_data?: {
+        cnpj?: string;
+        value?: number;
+        due_date?: string;
+        invoice_number?: string;
+      };
+      contract_data?: {
+        parties?: string[];
+        start_date?: string;
+        end_date?: string;
+        value?: number;
+      };
+    };
   };
 }
 
@@ -42,12 +61,21 @@ export function AIDocumentClassifier({ documents, onClassificationComplete }: AI
       for (let i = 0; i < documents.length; i++) {
         const doc = documents[i];
         
-        // Chamar edge function para classificação com IA
+        // Chamar edge function para classificação avançada com IA
         const { data, error } = await supabase.functions.invoke('classify-document-ai', {
           body: {
             documentUrl: doc.url,
             documentName: doc.name,
-            documentType: doc.type
+            documentType: doc.type,
+            documentSize: doc.size,
+            documentHash: doc.hash,
+            existingDocuments: documents.map(d => ({
+              name: d.name,
+              hash: d.hash,
+              type: d.type
+            })),
+            enableDuplicateDetection: true,
+            enableAdvancedAnalysis: true
           }
         });
 
@@ -94,6 +122,26 @@ export function AIDocumentClassifier({ documents, onClassificationComplete }: AI
     if (confidence >= 0.8) return "Alta";
     if (confidence >= 0.6) return "Média";
     return "Baixa";
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical': return "bg-red-600 text-white";
+      case 'high': return "bg-orange-500 text-white";
+      case 'medium': return "bg-yellow-500 text-black";
+      case 'low': return "bg-green-500 text-white";
+      default: return "bg-gray-500 text-white";
+    }
+  };
+
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case 'critical': return "Crítica";
+      case 'high': return "Alta";
+      case 'medium': return "Média";
+      case 'low': return "Baixa";
+      default: return "Normal";
+    }
   };
 
   return (
@@ -165,6 +213,11 @@ export function AIDocumentClassifier({ documents, onClassificationComplete }: AI
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-green-600">Classificado</span>
+                    {doc.classification.is_duplicate && (
+                      <Badge variant="destructive" className="text-xs">
+                        Duplicado
+                      </Badge>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -177,7 +230,19 @@ export function AIDocumentClassifier({ documents, onClassificationComplete }: AI
               {doc.classification && (
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary">{doc.classification.category}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{doc.classification.category}</Badge>
+                      {doc.classification.priority && (
+                        <Badge className={getPriorityColor(doc.classification.priority)}>
+                          {getPriorityText(doc.classification.priority)}
+                        </Badge>
+                      )}
+                      {doc.classification.is_duplicate && (
+                        <Badge variant="destructive">
+                          Duplicado
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <div className={`h-2 w-2 rounded-full ${getConfidenceColor(doc.classification.confidence)}`} />
                       <span className="text-sm text-muted-foreground">
@@ -193,6 +258,52 @@ export function AIDocumentClassifier({ documents, onClassificationComplete }: AI
                           {tag}
                         </Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {doc.classification.is_duplicate && doc.classification.duplicate_of && (
+                    <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                      <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
+                        Documento Duplicado Detectado
+                      </h4>
+                      <p className="text-sm text-red-600 dark:text-red-300">
+                        Similar ao documento: {doc.classification.duplicate_of}
+                      </p>
+                    </div>
+                  )}
+
+                  {doc.classification.content_analysis?.invoice_data && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                        Análise de Nota Fiscal
+                      </h4>
+                      <div className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
+                        {doc.classification.content_analysis.invoice_data.cnpj && (
+                          <p>CNPJ: {doc.classification.content_analysis.invoice_data.cnpj}</p>
+                        )}
+                        {doc.classification.content_analysis.invoice_data.value && (
+                          <p>Valor: R$ {doc.classification.content_analysis.invoice_data.value.toLocaleString()}</p>
+                        )}
+                        {doc.classification.content_analysis.invoice_data.invoice_number && (
+                          <p>Número: {doc.classification.content_analysis.invoice_data.invoice_number}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {doc.classification.content_analysis?.contract_data && (
+                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <h4 className="text-sm font-medium text-purple-800 dark:text-purple-200 mb-2">
+                        Análise de Contrato
+                      </h4>
+                      <div className="text-sm text-purple-600 dark:text-purple-300 space-y-1">
+                        {doc.classification.content_analysis.contract_data.parties && (
+                          <p>Partes: {doc.classification.content_analysis.contract_data.parties.join(', ')}</p>
+                        )}
+                        {doc.classification.content_analysis.contract_data.value && (
+                          <p>Valor: R$ {doc.classification.content_analysis.contract_data.value.toLocaleString()}</p>
+                        )}
+                      </div>
                     </div>
                   )}
 
