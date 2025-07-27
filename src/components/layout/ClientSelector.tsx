@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { fetchAllClients } from "@/services/supabase/clientsService";
 import { Tables } from "@/integrations/supabase/types";
+import { logger } from "@/utils/logger";
 
 export interface ClientSelectorProps {
   onClientSelect?: (client: { id: string; name: string }) => void;
@@ -27,12 +28,12 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
   
   // Buscar clientes do Supabase quando o componente inicializar
   const loadClients = async () => {
-    console.log("ClientSelector: Carregando clientes...");
+    logger.info("ClientSelector: Carregando clientes...", undefined, "ClientSelector");
     setIsLoading(true);
     try {
       const data = await fetchAllClients();
       
-      console.log(`ClientSelector: ${data.length} clientes encontrados`);
+      logger.info(`ClientSelector: ${data.length} clientes encontrados`, undefined, "ClientSelector");
       
       // Adicionar os clientes do banco aos existentes, mantendo "Visão Geral"
       if (data && data.length > 0) {
@@ -46,12 +47,12 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
             }))
         ];
         setClients(clientsData);
-        console.log("ClientSelector: Lista atualizada:", clientsData);
+        logger.info("ClientSelector: Lista atualizada:", clientsData, "ClientSelector");
       } else {
-        console.log("ClientSelector: Nenhum cliente encontrado, mantendo apenas 'Visão Geral'");
+        logger.info("ClientSelector: Nenhum cliente encontrado, mantendo apenas 'Visão Geral'", undefined, "ClientSelector");
       }
     } catch (error) {
-      console.error('ClientSelector: Erro ao buscar clientes:', error);
+      logger.error('ClientSelector: Erro ao buscar clientes:', error, "ClientSelector");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +63,7 @@ export function ClientSelector({ onClientSelect, onSelectClient, onClientChange,
   }, []);
   
   const handleChange = (value: string) => {
-    console.log(`ClientSelector: Cliente selecionado: ${value}`);
+    logger.info(`ClientSelector: Cliente selecionado: ${value}`, undefined, "ClientSelector");
     setSelectedClient(value);
     
     // Encontrar o cliente selecionado pelo nome

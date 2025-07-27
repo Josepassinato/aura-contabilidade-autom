@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { checkForAuthLimboState, cleanupAuthState } from '@/contexts/auth/cleanupUtils';
+import { logger } from "@/utils/logger";
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -24,11 +25,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   
   // Verificar possíveis problemas de estado de autenticação inconsistente
   useEffect(() => {
-    console.log("DashboardLayout - Verificando estado de autenticação");
+    logger.info("DashboardLayout - Verificando estado de autenticação", undefined, "DashboardLayout");
     
     // Verificar e corrigir estado de autenticação inconsistente
     if (checkForAuthLimboState()) {
-      console.log("Estado de autenticação inconsistente detectado, limpando");
+      logger.info("Estado de autenticação inconsistente detectado, limpando", undefined, "DashboardLayout");
       cleanupAuthState();
       toast({
         title: "Estado de autenticação inconsistente detectado",
@@ -40,10 +41,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
 
     // Log da rota atual para ajudar na depuração
-    console.log("Rota atual:", location.pathname);
+    logger.info("Rota atual:", location.pathname, "DashboardLayout");
     
     if (!isLoading && !isAuthenticated) {
-      console.log("Usuário não autenticado no DashboardLayout, redirecionando para login");
+      logger.info("Usuário não autenticado no DashboardLayout, redirecionando para login", undefined, "DashboardLayout");
       navigateToLogin();
     }
   }, [location, navigateToLogin, isAuthenticated, isLoading]);
