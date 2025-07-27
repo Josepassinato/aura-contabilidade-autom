@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { PayrollEntry } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { logger } from "@/utils/logger";
 
 export function usePayrollData(clientId: string | null, period: string) {
   const [payrolls, setPayrolls] = useState<PayrollEntry[]>([]);
@@ -9,7 +10,7 @@ export function usePayrollData(clientId: string | null, period: string) {
   const [error, setError] = useState<Error | null>(null);
   
   useEffect(() => {
-    console.log("usePayrollData hook called with:", { clientId, period });
+    logger.debug("usePayrollData hook called with:", { clientId, period }, "usePayrollData");
     
     const fetchPayrolls = async () => {
       try {
@@ -23,7 +24,7 @@ export function usePayrollData(clientId: string | null, period: string) {
         setPayrolls([]);
         setError(null);
       } catch (err) {
-        console.error('Error fetching payroll data:', err);
+        logger.error('Error fetching payroll data:', err, "usePayrollData");
         setError(err as Error);
         setPayrolls([]);
         toast({
@@ -54,7 +55,7 @@ export function usePayrollData(clientId: string | null, period: string) {
         description: "Folhas de pagamento atualizadas com sucesso",
       });
     } catch (err) {
-      console.error('Error refreshing payroll data:', err);
+      logger.error('Error refreshing payroll data:', err, "usePayrollData");
       setError(err as Error);
       toast({
         title: "Erro ao atualizar",

@@ -8,6 +8,7 @@ import { Shield, AlertTriangle, CheckCircle, Activity, RefreshCw } from 'lucide-
 import { useToast } from '@/hooks/use-toast';
 import { useSafeInterval } from '@/hooks/useTimerManager';
 import { supabase } from '@/lib/supabase/client';
+import { logger } from "@/utils/logger";
 
 interface SecurityMetric {
   metric_name: string;
@@ -83,7 +84,7 @@ export function SecurityDashboard() {
       setLastUpdate(new Date());
 
     } catch (error) {
-      console.error('Error loading security data:', error);
+      logger.error('Error loading security data:', error, "SecurityDashboard");
       toast({
         title: 'Erro ao carregar dados',
         description: 'Não foi possível carregar os dados de segurança',
@@ -110,7 +111,7 @@ export function SecurityDashboard() {
       await loadSecurityData();
 
     } catch (error) {
-      console.error('Error running security monitoring:', error);
+      logger.error('Error running security monitoring:', error, "SecurityDashboard");
       toast({
         title: 'Erro no monitoramento',
         description: 'Não foi possível executar o monitoramento de segurança',
@@ -139,7 +140,7 @@ export function SecurityDashboard() {
       await loadSecurityData();
 
     } catch (error) {
-      console.error('Error running validation service:', error);
+      logger.error('Error running validation service:', error, "SecurityDashboard");
       toast({
         title: 'Erro na validação',
         description: 'Não foi possível executar o serviço de validação',

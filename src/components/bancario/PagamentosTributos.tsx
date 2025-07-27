@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { pagarTributo, PagamentoTributo, obterConfiguracaoBancaria } from "@/services/bancario/automacaoBancaria";
+import { logger } from "@/utils/logger";
 
 interface PagamentosTributosProps {
   bancoSelecionado: string;
@@ -65,7 +66,7 @@ export function PagamentosTributos({ bancoSelecionado }: PagamentosTributosProps
       };
       
       const pagamento = await pagarTributo(dadosPagamento);
-      console.log("Pagamento de tributo realizado:", pagamento);
+      logger.info("Pagamento de tributo realizado:", pagamento, "PagamentosTributos");
       
       // Limpar formulário
       setFormTributo({
@@ -78,7 +79,7 @@ export function PagamentosTributos({ bancoSelecionado }: PagamentosTributosProps
       });
       
     } catch (error) {
-      console.error("Erro ao pagar tributo:", error);
+      logger.error("Erro ao pagar tributo:", error, "PagamentosTributos");
     } finally {
       setIsLoading(false);
     }

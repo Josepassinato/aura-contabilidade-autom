@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ClientSelector } from "@/components/layout/ClientSelector";
 import { Filter } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { logger } from "@/utils/logger";
 
 export function EmployeesList() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -85,7 +86,7 @@ export function EmployeesList() {
           <EmployeesUploadTab 
             selectedClientId={selectedClientId}
             clientName={clientName}
-            onUploadComplete={() => console.log('Upload concluído')}
+            onUploadComplete={() => logger.info('Upload concluído', undefined, 'EmployeesList')}
           />
         </TabsContent>
       </Tabs>

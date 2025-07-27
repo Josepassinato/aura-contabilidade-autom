@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { Copy, Link2, Send, Share2 } from "lucide-react";
 import { criarLinkCompartilhado, gerarUrlChatIA } from "@/services/chatia/linkCompartilhado";
+import { logger } from "@/utils/logger";
 
 interface CompartilharLinkClienteProps {
   clienteId: string;
@@ -48,7 +49,7 @@ export const CompartilharLinkCliente: React.FC<CompartilharLinkClienteProps> = (
       // Se a opção de envio por email estiver ativa
       if (envioPorEmail && emailCliente) {
         // Simulação de envio de email
-        console.log(`Enviando link para ${emailCliente}: ${url}`);
+        logger.info(`Enviando link para ${emailCliente}: ${url}`, undefined, "CompartilharLinkCliente");
         setTimeout(() => {
           toast({
             title: 'Link enviado por email',
@@ -57,7 +58,7 @@ export const CompartilharLinkCliente: React.FC<CompartilharLinkClienteProps> = (
         }, 1500);
       }
     } catch (error) {
-      console.error('Erro ao criar link compartilhado:', error);
+      logger.error('Erro ao criar link compartilhado:', error, "CompartilharLinkCliente");
     }
   };
   
@@ -70,7 +71,7 @@ export const CompartilharLinkCliente: React.FC<CompartilharLinkClienteProps> = (
         description: 'O link foi copiado para a área de transferência',
       });
     }).catch(err => {
-      console.error('Erro ao copiar link:', err);
+      logger.error('Erro ao copiar link:', err, "CompartilharLinkCliente");
       toast({
         title: 'Erro ao copiar link',
         description: 'Não foi possível copiar o link',
