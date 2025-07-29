@@ -13,6 +13,7 @@ import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
 import { EmptyState } from './EmptyState';
 import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
 import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toast';
+import { logger } from "@/utils/logger";
 import { AIStatusChecker } from '@/components/ai/AIStatusChecker';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -87,7 +88,7 @@ export const DashboardView = () => {
         }
 
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        logger.error('Erro ao carregar dados:', error, 'DashboardView');
       }
     };
 

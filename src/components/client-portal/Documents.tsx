@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from "@/utils/logger";
 
 interface DocumentsProps {
   clientId: string;
@@ -36,7 +37,7 @@ export const Documents = ({ clientId }: DocumentsProps) => {
           .limit(3);
 
         if (error) {
-          console.error('Erro ao buscar documentos:', error);
+          logger.error('Erro ao buscar documentos:', error, 'Documents');
           setDocuments([]);
           return;
         }
@@ -54,7 +55,7 @@ export const Documents = ({ clientId }: DocumentsProps) => {
           setDocuments([]);
         }
       } catch (error) {
-        console.error('Erro ao buscar documentos:', error);
+        logger.error('Erro ao buscar documentos:', error, 'Documents');
         setDocuments([]);
       } finally {
         setIsLoading(false);

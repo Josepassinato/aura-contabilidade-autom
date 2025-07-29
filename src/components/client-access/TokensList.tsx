@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ClientAccessToken, fetchTokensByClient, deactivateToken, deleteToken } from "@/services/supabase/clientAccessService";
 import { Trash2, XCircle } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 interface TokensListProps {
   clientId: string;
@@ -43,7 +44,7 @@ export function TokensList({ clientId, refreshKey = 0 }: TokensListProps) {
         const data = await fetchTokensByClient(clientId);
         setTokens(data);
       } catch (error) {
-        console.error("Erro ao carregar tokens:", error);
+        logger.error("Erro ao carregar tokens:", error, 'TokensList');
         toast({
           title: "Erro ao carregar tokens",
           description: "Não foi possível carregar os tokens do cliente.",
@@ -80,7 +81,7 @@ export function TokensList({ clientId, refreshKey = 0 }: TokensListProps) {
           });
         }
       } catch (error) {
-        console.error("Erro ao revogar token:", error);
+        logger.error("Erro ao revogar token:", error, 'TokensList');
         toast({
           title: "Erro ao revogar token",
           description: "Ocorreu um erro ao revogar o token.",
@@ -111,7 +112,7 @@ export function TokensList({ clientId, refreshKey = 0 }: TokensListProps) {
           });
         }
       } catch (error) {
-        console.error("Erro ao excluir token:", error);
+        logger.error("Erro ao excluir token:", error, 'TokensList');
         toast({
           title: "Erro ao excluir token",
           description: "Ocorreu um erro ao excluir o token.",

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from "@/utils/logger";
 import { 
   Brain, 
   TrendingUp, 
@@ -97,7 +98,7 @@ export function IntelligentDashboard() {
         loadAnomalies()
       ]);
     } catch (error) {
-      console.error('Erro ao carregar métricas inteligentes:', error);
+      logger.error('Erro ao carregar métricas inteligentes:', error, 'IntelligentDashboard');
       toast({
         title: "Erro",
         description: "Falha ao carregar dados do dashboard",
@@ -155,7 +156,7 @@ export function IntelligentDashboard() {
       }));
 
     } catch (error) {
-      console.error('Erro ao carregar métricas de conformidade:', error);
+      logger.error('Erro ao carregar métricas de conformidade:', error, 'IntelligentDashboard');
     }
   };
 
@@ -209,7 +210,7 @@ export function IntelligentDashboard() {
         }));
       }
     } catch (error) {
-      console.error('Erro ao carregar recomendações de IA:', error);
+      logger.error('Erro ao carregar recomendações de IA:', error, 'IntelligentDashboard');
     }
   };
 
@@ -266,7 +267,7 @@ export function IntelligentDashboard() {
       }));
 
     } catch (error) {
-      console.error('Erro ao carregar prazos:', error);
+      logger.error('Erro ao carregar prazos:', error, 'IntelligentDashboard');
     }
   };
 
@@ -298,7 +299,7 @@ export function IntelligentDashboard() {
       }));
 
     } catch (error) {
-      console.error('Erro ao carregar anomalias:', error);
+      logger.error('Erro ao carregar anomalias:', error, 'IntelligentDashboard');
     }
   };
 
