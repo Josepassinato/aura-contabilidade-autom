@@ -123,9 +123,20 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
         });
         onSuccess();
       } else {
+        let errorMessage = error.message || "Não foi possível criar sua conta";
+        
+        // Tratar casos específicos de erro de cadastro
+        if (error.message?.includes('User already registered')) {
+          errorMessage = "Este email já está cadastrado. Tente fazer login ou use outro email.";
+        } else if (error.message?.includes('Invalid email')) {
+          errorMessage = "Email inválido. Verifique o formato do email.";
+        } else if (error.message?.includes('Password')) {
+          errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+        }
+        
         toast({
           title: "Erro no cadastro",
-          description: error.message || "Não foi possível criar sua conta",
+          description: errorMessage,
           variant: "destructive",
         });
       }

@@ -75,6 +75,7 @@ export const useAuth = () => {
       // Check for and clean any limbo states
       checkForAuthLimboState();
       
+      // Verificar se o login é para email não confirmado
       const result = await context.login?.(email, password);
       
       if (result?.success) {

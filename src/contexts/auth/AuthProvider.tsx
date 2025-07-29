@@ -139,12 +139,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Login error:', error);
+        
+        // Tratar casos específicos de erro
+        let errorMessage = error.message || "Credenciais inválidas";
+        
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = "Email ou senha incorretos. Verifique suas credenciais.";
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = "Por favor, confirme seu email antes de fazer login.";
+        } else if (error.message?.includes('User not found')) {
+          errorMessage = "Usuário não encontrado. Verifique o email ou cadastre-se.";
+        }
+        
         toast({
           title: "Erro no login",
-          description: error.message || "Credenciais inválidas",
+          description: errorMessage,
           variant: "destructive",
         });
-        return { success: false, error: error.message };
+        return { success: false, error: errorMessage };
       }
       
       if (data.user) {
@@ -229,11 +241,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      // Use real Supabase signup
+      // Use real Supabase signup com URL de redirecionamento correta
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: userData.full_name || userData.name,
             role: userData.role || 'client',

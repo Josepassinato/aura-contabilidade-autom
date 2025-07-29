@@ -9,6 +9,7 @@ import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
+import { AuthDebugPanel } from '@/components/auth/AuthDebugPanel';
 
 import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
 import { BackButton } from '@/components/navigation/BackButton';
@@ -89,6 +90,7 @@ const Login = () => {
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
+              <AuthDebugPanel />
               {showPasswordReset ? (
                 <PasswordResetForm onBack={handleBackToLogin} />
               ) : (
