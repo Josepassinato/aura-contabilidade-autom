@@ -85,18 +85,22 @@ export const useAuth = () => {
           description: "Bem-vindo de volta!",
         });
         
-        // Navegação apropriada com base no perfil
-        const role = localStorage.getItem('user_role');
-        console.log("Role do usuário:", role);
+        // Navegação apropriada com base no perfil do contexto
+        console.log("UserProfile context:", context.userProfile);
+        const userRole = context.userProfile?.role;
+        console.log("Role do contexto:", userRole);
         
-        if (role === 'admin') {
+        if (userRole === 'admin') {
+          console.log("Redirecionando admin para business-analytics");
           navigate('/admin/business-analytics', { replace: true });
-        } else if (role === 'client') {
+        } else if (userRole === 'client') {
+          console.log("Redirecionando client para client-portal");
           navigate('/client-portal', { replace: true });
-        } else if (role === 'accountant') {
+        } else if (userRole === 'accountant') {
+          console.log("Redirecionando accountant para dashboard");
           navigate('/dashboard', { replace: true });
         } else {
-          // Fallback
+          console.log("Fallback para dashboard, role:", userRole);
           navigate('/dashboard', { replace: true });
         }
         
