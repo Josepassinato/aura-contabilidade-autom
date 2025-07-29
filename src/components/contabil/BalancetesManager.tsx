@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 interface Balancete {
   id: string;
@@ -82,7 +83,7 @@ export function BalancetesManager() {
 
       setBalancetes(balancetesWithClient);
     } catch (error) {
-      console.error('Erro ao carregar balancetes:', error);
+      logger.error('Erro ao carregar balancetes:', error, 'BalancetesManager');
       toast({
         title: "Erro",
         description: "Não foi possível carregar os balancetes.",
@@ -131,7 +132,7 @@ export function BalancetesManager() {
 
       setBalanceteItems(mockItems);
     } catch (error) {
-      console.error('Erro ao carregar itens do balancete:', error);
+      logger.error('Erro ao carregar itens do balancete:', error, 'BalancetesManager');
     }
   };
 
@@ -158,7 +159,7 @@ export function BalancetesManager() {
       });
       loadBalancetes();
     } catch (error) {
-      console.error('Erro ao criar balancete:', error);
+      logger.error('Erro ao criar balancete:', error, 'BalancetesManager');
       toast({
         title: "Erro",
         description: "Não foi possível criar o balancete.",
