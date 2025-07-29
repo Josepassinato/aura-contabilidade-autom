@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertTriangle, Mail, Clock, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from "@/utils/logger";
 
 interface PaymentAlert {
   alert_id: string;
@@ -40,7 +41,7 @@ export function PaymentAlertsManager() {
       
       setAlerts(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar alertas:', error);
+      logger.error('Erro ao carregar alertas:', error, 'PaymentAlertsManager');
       toast({
         title: 'Erro',
         description: 'Não foi possível carregar os alertas de pagamento.',
@@ -66,7 +67,7 @@ export function PaymentAlertsManager() {
       // Recarregar alertas
       await loadPendingAlerts();
     } catch (error: any) {
-      console.error('Erro ao verificar pagamentos:', error);
+      logger.error('Erro ao verificar pagamentos:', error, 'PaymentAlertsManager');
       toast({
         title: 'Erro',
         description: 'Erro ao executar verificação de pagamentos.',
@@ -113,7 +114,7 @@ export function PaymentAlertsManager() {
       // Recarregar alertas
       await loadPendingAlerts();
     } catch (error: any) {
-      console.error('Erro ao enviar emails:', error);
+      logger.error('Erro ao enviar emails:', error, 'PaymentAlertsManager');
       toast({
         title: 'Erro',
         description: 'Erro ao enviar emails de alerta.',

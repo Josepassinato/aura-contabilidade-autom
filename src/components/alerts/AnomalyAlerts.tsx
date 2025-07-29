@@ -17,6 +17,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 interface AnomalyAlert {
   id: string;
@@ -49,7 +50,7 @@ export function AnomalyAlerts() {
       // For now, return empty array until real implementation
       setAlerts([]);
     } catch (error) {
-      console.error('Error loading alerts:', error);
+      logger.error('Error loading alerts:', error, 'AnomalyAlerts');
       setAlerts([]);
     }
   };

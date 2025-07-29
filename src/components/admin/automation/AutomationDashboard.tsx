@@ -19,6 +19,7 @@ import { useSafeInterval } from '@/hooks/useTimerManager';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemHealthChecker } from "./SystemHealthChecker";
+import { logger } from "@/utils/logger";
 
 interface AutomationLog {
   id: string;
@@ -53,7 +54,7 @@ export function AutomationDashboard() {
       if (error) throw error;
       setLogs(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar logs:', error);
+      logger.error('Erro ao carregar logs:', error, 'AutomationDashboard');
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar os logs de automação.",
@@ -91,7 +92,7 @@ export function AutomationDashboard() {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Erro ao executar teste de estresse:', error);
+      logger.error('Erro ao executar teste de estresse:', error, 'AutomationDashboard');
       toast({
         title: "Erro no teste de estresse",
         description: error.message || "Não foi possível executar o teste.",
@@ -137,7 +138,7 @@ export function AutomationDashboard() {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Erro ao disparar processo:', error);
+      logger.error('Erro ao disparar processo:', error, 'AutomationDashboard');
       toast({
         title: "Erro ao iniciar processo",
         description: error.message || "Não foi possível iniciar o processo.",
