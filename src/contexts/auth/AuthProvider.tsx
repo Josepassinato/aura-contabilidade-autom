@@ -108,14 +108,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data) {
-        setUserProfile({
+        const profile = {
           id: data.id,
           email: data.email,
           name: data.full_name,
           role: data.role as UserRole,
           full_name: data.full_name,
           company_id: data.company_id
-        });
+        };
+        
+        setUserProfile(profile);
+        
+        // Salvar role no localStorage para redirecionamento correto
+        localStorage.setItem('user_role', data.role);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
