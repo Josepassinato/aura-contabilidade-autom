@@ -5,6 +5,7 @@
  */
 
 import { toast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 // Tipos de transações bancárias
 export type TipoTransacao = 'PIX' | 'TED' | 'Boleto' | 'DebitoAutomatico';
@@ -81,7 +82,7 @@ export const salvarConfiguracaoBancaria = (config: ConexaoBancaria): void => {
       description: `Conexão com o banco ${config.banco} configurada com sucesso.`
     });
   } catch (error) {
-    console.error("Erro ao salvar configuração bancária:", error);
+    logger.error("Erro ao salvar configuração bancária:", error, 'AutomacaoBancaria');
     toast({
       title: "Erro ao salvar configuração",
       description: error instanceof Error ? error.message : "Ocorreu um erro ao salvar a configuração bancária",
@@ -104,7 +105,7 @@ export const obterConfiguracaoBancaria = (banco: string): ConexaoBancaria | null
       agencia: localStorage.getItem(`banco-${banco}-agencia`) || undefined
     };
   } catch (error) {
-    console.error("Erro ao obter configuração bancária:", error);
+    logger.error("Erro ao obter configuração bancária:", error, 'AutomacaoBancaria');
     return null;
   }
 };
@@ -117,7 +118,7 @@ export const realizarPagamentoPIX = async (
 ): Promise<Transacao> => {
   try {
     // Em uma implementação real, aqui teríamos a integração com API do banco
-    console.log("Iniciando pagamento PIX:", dados);
+    logger.info("Iniciando pagamento PIX:", dados, 'AutomacaoBancaria');
     
     // Simulação de processamento
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -145,7 +146,7 @@ export const realizarPagamentoPIX = async (
     
     return transacao;
   } catch (error) {
-    console.error("Erro ao realizar pagamento PIX:", error);
+    logger.error("Erro ao realizar pagamento PIX:", error, 'AutomacaoBancaria');
     toast({
       title: "Erro no pagamento PIX",
       description: error instanceof Error ? error.message : "Ocorreu um erro ao processar o pagamento",
@@ -163,7 +164,7 @@ export const pagarTributo = async (
   dados: Omit<PagamentoTributo, 'id' | 'status' | 'dataPagamento' | 'comprovante'>
 ): Promise<PagamentoTributo> => {
   try {
-    console.log("Iniciando pagamento de tributo:", dados);
+    logger.info("Iniciando pagamento de tributo:", dados, 'AutomacaoBancaria');
     
     // Verificar se há código de barras ou informações do tributo
     if (!dados.codigoBarras && !dados.tipoTributo) {
@@ -192,7 +193,7 @@ export const pagarTributo = async (
     
     return pagamento;
   } catch (error) {
-    console.error("Erro ao pagar tributo:", error);
+    logger.error("Erro ao pagar tributo:", error, 'AutomacaoBancaria');
     toast({
       title: "Erro no pagamento do tributo",
       description: error instanceof Error ? error.message : "Ocorreu um erro ao processar o pagamento do tributo",
@@ -211,7 +212,7 @@ export const agendarPagamento = async (
   dataAgendamento: string
 ): Promise<Transacao> => {
   try {
-    console.log("Agendando pagamento para:", dataAgendamento, dados);
+    logger.info("Agendando pagamento para:", dataAgendamento, 'AutomacaoBancaria');
     
     // Validação da data
     const dataAgend = new Date(dataAgendamento);
@@ -245,7 +246,7 @@ export const agendarPagamento = async (
     
     return transacao;
   } catch (error) {
-    console.error("Erro ao agendar pagamento:", error);
+    logger.error("Erro ao agendar pagamento:", error, 'AutomacaoBancaria');
     toast({
       title: "Erro no agendamento",
       description: error instanceof Error ? error.message : "Ocorreu um erro ao agendar o pagamento",
@@ -273,11 +274,11 @@ export const consultarSaldoBancario = async (banco: string): Promise<number> => 
     // Em um ambiente real, isso viria da API do banco
     const saldo = Math.random() * 50000 + 1000;
     
-    console.log(`Saldo da conta ${config.contaCorrente}: R$ ${saldo.toFixed(2)}`);
+    logger.info(`Saldo da conta ${config.contaCorrente}: R$ ${saldo.toFixed(2)}`, undefined, 'AutomacaoBancaria');
     
     return Number(saldo.toFixed(2));
   } catch (error) {
-    console.error("Erro ao consultar saldo:", error);
+    logger.error("Erro ao consultar saldo:", error, 'AutomacaoBancaria');
     toast({
       title: "Erro na consulta de saldo",
       description: error instanceof Error ? error.message : "Ocorreu um erro ao consultar o saldo",

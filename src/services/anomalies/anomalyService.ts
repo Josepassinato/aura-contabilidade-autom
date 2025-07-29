@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 export interface AnomalyDetectionConfig {
   client_id: string;
@@ -55,7 +56,7 @@ class AnomalyService {
 
       return data;
     } catch (error) {
-      console.error('Error in anomaly detection:', error);
+      logger.error('Error in anomaly detection:', error, 'AnomalyService');
       return {
         success: false,
         anomalies: [],
@@ -110,7 +111,7 @@ class AnomalyService {
         ...anomaly
       };
     } catch (error) {
-      console.error('Error saving anomaly:', error);
+      logger.error('Error saving anomaly:', error, 'AnomalyService');
       return null;
     }
   }
@@ -155,7 +156,7 @@ class AnomalyService {
         };
       });
     } catch (error) {
-      console.error('Error fetching anomalies:', error);
+      logger.error('Error fetching anomalies:', error, 'AnomalyService');
       return [];
     }
   }
@@ -182,7 +183,7 @@ class AnomalyService {
 
       return !error;
     } catch (error) {
-      console.error('Error updating anomaly status:', error);
+      logger.error('Error updating anomaly status:', error, 'AnomalyService');
       return false;
     }
   }
@@ -223,7 +224,7 @@ class AnomalyService {
 
       return { patterns, anomalies, insights };
     } catch (error) {
-      console.error('Error in pattern analysis:', error);
+      logger.error('Error in pattern analysis:', error, 'AnomalyService');
       return {
         patterns: [],
         anomalies: [],

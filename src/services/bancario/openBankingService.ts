@@ -1,5 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
+import { logger } from "@/utils/logger";
 
 // Tipos para as requisições
 export interface BankCredentials {
