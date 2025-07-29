@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { logger } from "@/utils/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -130,7 +129,7 @@ export const IntelligentApuracaoForm: React.FC<IntelligentApuracaoFormProps> = (
       
       onApuracaoProcessada(resultado);
     } catch (error) {
-      logger.error("Erro ao processar apuração contábil", error, "IntelligentApuracaoForm");
+      console.error("Erro ao processar apuração:", error);
       toast({
         title: "Falha no processamento",
         description: error instanceof Error ? error.message : "Ocorreu um erro ao processar a apuração",
@@ -155,11 +154,11 @@ export const IntelligentApuracaoForm: React.FC<IntelligentApuracaoFormProps> = (
     try {
       // Processar texto com o NLP para extrair entidades e intenção
       const nlpResult = await processCommand(voiceCommand);
-      logger.debug("Resultado NLP processado", nlpResult, "IntelligentApuracaoForm");
+      console.log("Resultado NLP:", nlpResult);
       
       // Extrair parâmetros do comando processado
       const parametros = extrairParametrosApuracaoDeNLP(nlpResult);
-      logger.debug("Parâmetros extraídos do comando", parametros, "IntelligentApuracaoForm");
+      console.log("Parâmetros extraídos:", parametros);
       
       // Atualizar o estado do formulário com os parâmetros extraídos
       setFormState(prev => ({
@@ -195,7 +194,7 @@ export const IntelligentApuracaoForm: React.FC<IntelligentApuracaoFormProps> = (
       setVoiceCommand("");
       
     } catch (error) {
-      logger.error("Erro ao processar comando de voz", error, "IntelligentApuracaoForm");
+      console.error("Erro ao processar comando de voz:", error);
       toast({
         title: "Erro no processamento",
         description: error instanceof Error 

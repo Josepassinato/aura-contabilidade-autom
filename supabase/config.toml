@@ -81,30 +81,3 @@ verify_jwt = true
 
 [functions.validation-service]
 verify_jwt = true
-
-[functions.automation-trigger-engine]
-verify_jwt = false
-
-[functions.automation-worker]
-verify_jwt = false
-
-[functions.queue-processor]
-verify_jwt = false
-
-[functions.performance-monitor]
-verify_jwt = false
-
-[functions.classify-document-ai]
-verify_jwt = false
-
-[functions.generate-automation-rule]
-verify_jwt = false
-
-[functions.analyze-errors-ai]
-verify_jwt = false
-
-[functions.apply-auto-fix]
-verify_jwt = false
-
-[functions.workflow-executor]
-verify_jwt = false

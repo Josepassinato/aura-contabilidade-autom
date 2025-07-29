@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from "@/utils/logger";
 
 interface VoiceToken {
   id: string;
@@ -101,7 +100,7 @@ export function VoiceAgentConfig() {
         loadConfig()
       ]);
     } catch (error) {
-      logger.error('Erro ao carregar dados:', error, 'VoiceAgentConfig');
+      console.error('Erro ao carregar dados:', error);
     } finally {
       setLoading(false);
     }
@@ -118,7 +117,7 @@ export function VoiceAgentConfig() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      logger.error('Erro ao carregar tokens:', error, 'VoiceAgentConfig');
+      console.error('Erro ao carregar tokens:', error);
       return;
     }
 
@@ -136,7 +135,7 @@ export function VoiceAgentConfig() {
       .order('name');
 
     if (error) {
-      logger.error('Erro ao carregar clientes:', error, 'VoiceAgentConfig');
+      console.error('Erro ao carregar clientes:', error);
       return;
     }
 
@@ -192,7 +191,7 @@ export function VoiceAgentConfig() {
       await loadVoiceTokens();
 
     } catch (error) {
-      logger.error('Erro ao gerar token:', error, 'VoiceAgentConfig');
+      console.error('Erro ao gerar token:', error);
       toast({
         title: "Erro",
         description: "Não foi possível gerar o token de acesso.",
@@ -229,7 +228,7 @@ export function VoiceAgentConfig() {
       await loadVoiceTokens();
 
     } catch (error) {
-      logger.error('Erro ao revogar token:', error, 'VoiceAgentConfig');
+      console.error('Erro ao revogar token:', error);
       toast({
         title: "Erro",
         description: "Não foi possível revogar o token.",

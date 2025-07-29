@@ -18,7 +18,6 @@ import {
 import { obterTodasFontesDados } from "@/services/apuracao/fontesDadosService";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { BackButton } from "@/components/navigation/BackButton";
-import { ClientSelector } from "@/components/layout/ClientSelector";
 import { useAuth } from "@/contexts/auth";
 
 const ApuracaoAutomatica = () => {
@@ -158,7 +157,6 @@ const ApuracaoAutomatica = () => {
               Sistema de processamento automático para apuração contábil e fiscal
             </p>
           </div>
-          <ClientSelector />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

@@ -18,7 +18,6 @@ import { fetchAllClients } from '@/services/supabase/clientsService';
 import { AccountingClient } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { ClientInviteForm } from './ClientInviteForm';
-import { logger } from "@/utils/logger";
 
 interface ClientListProps {
   refreshKey?: number;
@@ -32,22 +31,22 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
   const { toast } = useToast();
   
   const fetchClients = async () => {
-    logger.info("=== CARREGANDO LISTA DE CLIENTES ===", undefined, "ClientList");
+    console.log("=== CARREGANDO LISTA DE CLIENTES ===");
     setIsLoading(true);
     setError(null);
     
     try {
       const data = await fetchAllClients();
-      logger.info(`Lista atualizada: ${data.length} clientes encontrados`, undefined, "ClientList");
+      console.log(`Lista atualizada: ${data.length} clientes encontrados`);
       setClients(data);
       
       if (data.length === 0) {
-        logger.info("ℹ️ Nenhum cliente encontrado no banco de dados", undefined, "ClientList");
+        console.log("ℹ️ Nenhum cliente encontrado no banco de dados");
       } else {
-        logger.info("Clientes carregados:", data.map(c => ({ id: c.id, name: c.name, status: c.status })), "ClientList");
+        console.log("Clientes carregados:", data.map(c => ({ id: c.id, name: c.name, status: c.status })));
       }
     } catch (error: any) {
-      logger.error("❌ Erro ao carregar clientes:", error, "ClientList");
+      console.error("❌ Erro ao carregar clientes:", error);
       setError("Não foi possível carregar a lista de clientes.");
       toast({
         title: "Erro",
@@ -56,12 +55,12 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
       });
     } finally {
       setIsLoading(false);
-      logger.info("=== FIM DO CARREGAMENTO ===", undefined, "ClientList");
+      console.log("=== FIM DO CARREGAMENTO ===");
     }
   };
 
   useEffect(() => {
-    logger.info(`Efeito disparado - refreshKey: ${refreshKey}`, undefined, "ClientList");
+    console.log(`Efeito disparado - refreshKey: ${refreshKey}`);
     fetchClients();
   }, [refreshKey]);
 
@@ -73,7 +72,7 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
   };
 
   const handleRefresh = () => {
-    logger.info("🔄 Atualizando lista manualmente...", undefined, "ClientList");
+    console.log("🔄 Atualizando lista manualmente...");
     fetchClients();
   };
   
@@ -122,7 +121,7 @@ export function ClientList({ refreshKey = 0 }: ClientListProps) {
             Você ainda não possui clientes cadastrados ou a busca não retornou resultados.
           </p>
           <Button asChild>
-            <Link to="/clientes?tab=cadastrar">
+            <Link to="/gerenciar-clientes?tab=cadastrar">
               <Plus className="mr-2 h-4 w-4" />
               Adicionar Cliente
             </Link>

@@ -7,7 +7,6 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useLoadingState } from '@/hooks/useLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from "@/utils/logger";
 import { 
   LineChart, 
   Line, 
@@ -84,7 +83,7 @@ export function BIDashboard() {
         loadClientAnalysis()
       ]);
     } catch (error) {
-      logger.error('Erro ao carregar dados de BI:', error, 'BIDashboard');
+      console.error('Erro ao carregar dados de BI:', error);
       toast({
         title: "Erro",
         description: "Falha ao carregar dados de Business Intelligence",

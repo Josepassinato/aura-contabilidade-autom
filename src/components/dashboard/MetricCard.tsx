@@ -17,11 +17,11 @@ export function MetricCard({ title, value, icon, trend, className = "" }: Metric
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-body">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <div className="text-muted-foreground">{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-display text-2xl font-semibold mb-1">{value}</div>
+        <div className="text-2xl font-bold mb-1">{value}</div>
         {trend && (
           <div className="flex items-center text-xs">
             <span className={trend.isPositive ? 'text-green-600' : 'text-red-600'}>

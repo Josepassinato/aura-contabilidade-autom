@@ -16,7 +16,6 @@ export interface UserProfile {
   role: UserRole;
   company_id?: string;
   avatar_url?: string;
-  cnpj?: string;
 }
 
 // Employee type
@@ -73,8 +72,6 @@ export interface AccountingClient {
   status: string;
   address?: string;
   phone?: string;
-  accountant_id?: string;
-  accounting_firm_id?: string;
   created_at?: string;
   updated_at?: string;
 }

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useLoadingState } from '@/hooks/useLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useCleanupTimer } from '@/hooks/useCleanupTimer';
 import { 
   LineChart, 
   Line, 
@@ -63,12 +61,11 @@ export function AnalyticsDashboard() {
   
   const { setLoading, isLoading } = useLoadingState();
   const { toast } = useToast();
-  const { safeSetInterval, clearAllTimers } = useCleanupTimer();
 
   useEffect(() => {
     loadAnalyticsData();
-    safeSetInterval(loadAnalyticsData, 60000); // Atualizar a cada minuto
-    return () => clearAllTimers();
+    const interval = setInterval(loadAnalyticsData, 60000); // Atualizar a cada minuto
+    return () => clearInterval(interval);
   }, []);
 
   const loadAnalyticsData = async () => {
@@ -82,7 +79,7 @@ export function AnalyticsDashboard() {
         loadAlerts()
       ]);
     } catch (error) {
-      logger.error('Erro ao carregar dados de analytics', error, 'AnalyticsDashboard');
+      console.error('Erro ao carregar dados de analytics:', error);
       toast({
         title: "Erro",
         description: "Falha ao carregar dados de analytics",
@@ -190,7 +187,7 @@ export function AnalyticsDashboard() {
         return acc;
       }, {});
 
-    const chartData = Object.values(hourlyData).map((hour: any) => ({
+      const chartData = Object.values(hourlyData).map((hour: any) => ({
         date: new Date(hour.timestamp).toLocaleDateString('pt-BR', { 
           month: 'short', 
           day: 'numeric', 
@@ -317,7 +314,7 @@ export function AnalyticsDashboard() {
 
       await loadAnalyticsData();
     } catch (error) {
-      logger.error('Erro ao coletar métricas do sistema', error, 'AnalyticsDashboard');
+      console.error('Erro ao coletar métricas:', error);
       toast({
         title: "Erro",
         description: "Falha ao coletar métricas",

@@ -5,24 +5,25 @@
  */
 
 import { toast } from "@/hooks/use-toast";
-import { 
-  StandardError, 
-  ErrorSource, 
-  SupabaseError, 
-  AuthError, 
-  NetworkError, 
-  FormValidationError,
-  ErrorHandlerOptions,
-  ErrorDetails,
-  ErrorContext
-} from "@/types/errorHandling";
+
+// Tipos de erros que podemos tratar
+type ErrorSource = 'api' | 'database' | 'auth' | 'form' | 'unknown';
+
+// Interface para erro padronizado
+interface StandardError {
+  message: string;
+  code?: string;
+  source: ErrorSource;
+  details?: any;
+  timestamp: string;
+}
 
 /**
  * Normaliza diferentes tipos de erros em um formato padrão
  */
-export function normalizeError(error: unknown): StandardError {
+export function normalizeError(error: any): StandardError {
   // Se já for um erro padronizado, retorna como está
-  if (isStandardError(error)) {
+  if (error && error.source && error.message) {
     return {
       ...error,
       timestamp: error.timestamp || new Date().toISOString()
@@ -30,12 +31,12 @@ export function normalizeError(error: unknown): StandardError {
   }
 
   // Supabase error
-  if (isSupabaseError(error)) {
+  if (error && error.code && (error.message || error.error_description)) {
     return {
-      message: error.message || error.error_description || 'Erro do Supabase',
+      message: error.message || error.error_description,
       code: error.code,
-      source: 'api' as ErrorSource,
-      details: createErrorDetails(error),
+      source: 'api',
+      details: error,
       timestamp: new Date().toISOString()
     };
   }
@@ -44,23 +45,8 @@ export function normalizeError(error: unknown): StandardError {
   if (error instanceof Error) {
     return {
       message: error.message,
-      source: 'unknown' as ErrorSource,
-      details: createErrorDetails({ stack: error.stack }),
-      timestamp: new Date().toISOString()
-    };
-  }
-
-  // Network error
-  if (isNetworkError(error)) {
-    return {
-      message: `Erro de rede: ${error.statusText || error.message}`,
-      code: error.status?.toString(),
-      source: 'api' as ErrorSource,
-      details: createErrorDetails({
-        status: error.status,
-        statusText: error.statusText,
-        url: error.url
-      }),
+      source: 'unknown',
+      details: { stack: error.stack },
       timestamp: new Date().toISOString()
     };
   }
@@ -69,17 +55,17 @@ export function normalizeError(error: unknown): StandardError {
   if (typeof error === 'string') {
     return {
       message: error,
-      source: 'unknown' as ErrorSource,
+      source: 'unknown',
       timestamp: new Date().toISOString()
     };
   }
 
   // Object with message
-  if (isErrorLike(error)) {
+  if (error && error.message) {
     return {
       message: error.message,
-      source: 'unknown' as ErrorSource,
-      details: createErrorDetails(error),
+      source: 'unknown',
+      details: error,
       timestamp: new Date().toISOString()
     };
   }
@@ -87,59 +73,16 @@ export function normalizeError(error: unknown): StandardError {
   // Fallback for unknown error formats
   return {
     message: 'Ocorreu um erro desconhecido',
-    source: 'unknown' as ErrorSource,
-    details: createErrorDetails(error),
+    source: 'unknown',
+    details: error,
     timestamp: new Date().toISOString()
   };
-}
-
-// Type guards para verificação de tipos
-function isStandardError(error: unknown): error is StandardError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'source' in error &&
-    'message' in error &&
-    typeof (error as any).message === 'string'
-  );
-}
-
-function isSupabaseError(error: unknown): error is SupabaseError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    ('message' in error || 'error_description' in error)
-  );
-}
-
-function isNetworkError(error: unknown): error is NetworkError {
-  return (
-    error instanceof Error &&
-    ('status' in error || 'statusText' in error || 'response' in error)
-  );
-}
-
-function isErrorLike(error: unknown): error is { message: string; [key: string]: unknown } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as any).message === 'string'
-  );
-}
-
-function createErrorDetails(data: unknown): ErrorDetails {
-  if (typeof data === 'object' && data !== null) {
-    return data as ErrorDetails;
-  }
-  return { originalError: data };
 }
 
 /**
  * Registra erro no console e opcionalmente em serviços de monitoramento
  */
-export function logError(error: unknown, context?: string): void {
+export function logError(error: any, context?: string): void {
   const standardError = normalizeError(error);
   console.error(
     `[${standardError.timestamp}] ${context ? `[${context}] ` : ''}Error: ${standardError.message}`,
@@ -152,7 +95,7 @@ export function logError(error: unknown, context?: string): void {
 /**
  * Apresenta erro para o usuário através de um toast
  */
-export function notifyError(error: unknown): void {
+export function notifyError(error: any): void {
   const standardError = normalizeError(error);
   
   toast({
@@ -164,34 +107,11 @@ export function notifyError(error: unknown): void {
 
 /**
  * Trata erros de forma abrangente - loga e notifica
- * Sobrecarga para manter compatibilidade com código existente
  */
-export function handleError(error: unknown, context?: string, shouldNotify?: boolean): void;
-export function handleError(error: unknown, options?: ErrorHandlerOptions): void;
-export function handleError(
-  error: unknown, 
-  contextOrOptions?: string | ErrorHandlerOptions, 
-  shouldNotify = true
-): void {
-  let context: string | undefined;
-  let shouldLog = true;
-  let notify = shouldNotify;
-
-  // Verificar se o segundo parâmetro é string (compatibilidade) ou objeto (nova API)
-  if (typeof contextOrOptions === 'string') {
-    context = contextOrOptions;
-  } else if (typeof contextOrOptions === 'object' && contextOrOptions !== null) {
-    const options = contextOrOptions as ErrorHandlerOptions;
-    context = options.context;
-    shouldLog = options.shouldLog ?? true;
-    notify = options.shouldNotify ?? true;
-  }
-
-  if (shouldLog) {
-    logError(error, context);
-  }
+export function handleError(error: any, context?: string, shouldNotify = true): void {
+  logError(error, context);
   
-  if (notify) {
+  if (shouldNotify) {
     notifyError(error);
   }
 }
@@ -199,7 +119,7 @@ export function handleError(
 /**
  * Trata erros específicos de autenticação
  */
-export function handleAuthError(error: unknown): void {
+export function handleAuthError(error: any): void {
   const standardError = normalizeError(error);
   
   console.error('[AUTH ERROR]', standardError);
@@ -215,7 +135,7 @@ export function handleAuthError(error: unknown): void {
     userMessage = 'Cadastro temporariamente desabilitado.';
   } else if (standardError.code === 'weak_password') {
     userMessage = 'A senha deve ter pelo menos 6 caracteres.';
-  } else if (isErrorLike(error) && error.message.includes('User already registered')) {
+  } else if (error?.message?.includes('User already registered')) {
     userMessage = 'Este email já está cadastrado. Tente fazer login.';
   }
   
@@ -229,10 +149,8 @@ export function handleAuthError(error: unknown): void {
 /**
  * Trata erros de validação de formulário
  */
-export function handleValidationError(errors: FormValidationError): void {
-  const errorMessages = Object.values(errors)
-    .flat()
-    .join('\n');
+export function handleValidationError(errors: Record<string, string>): void {
+  const errorMessages = Object.values(errors).join('\n');
   
   toast({
     title: "Erro de Validação",

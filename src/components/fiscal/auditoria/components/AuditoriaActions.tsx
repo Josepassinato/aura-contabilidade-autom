@@ -2,7 +2,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Settings2, Play, PauseCircle } from "lucide-react";
-import { logger } from "@/utils/logger";
 
 interface AuditoriaActionsProps {
   ativa: boolean;
@@ -24,8 +23,8 @@ export function AuditoriaActions({
   onSave
 }: AuditoriaActionsProps) {
   // Use appropriate handlers based on what's provided
-  const handleReset = onReset || (() => logger.info("Reset clicked", undefined, "AuditoriaActions"));
-  const handleSave = onSave || onSalvar || (() => logger.info("Save clicked", undefined, "AuditoriaActions"));
+  const handleReset = onReset || (() => console.log("Reset clicked"));
+  const handleSave = onSave || onSalvar || (() => console.log("Save clicked"));
   const handleToggle = onToggleActive || (() => {
     if (ativa && onParar) onParar();
     if (!ativa && onIniciar) onIniciar();

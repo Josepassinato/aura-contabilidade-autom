@@ -22,7 +22,6 @@ import {
 import { generateToken } from "@/services/supabase/clientAccessService";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Copy, Check } from "lucide-react";
-import { logger } from "@/utils/logger";
 
 interface TokenGeneratorProps {
   clientId: string;
@@ -72,7 +71,7 @@ export function TokenGenerator({ clientId, clientName, onTokenGenerated }: Token
         });
       }
     } catch (error) {
-      logger.error("Erro ao gerar token:", error, 'TokenGenerator');
+      console.error("Erro ao gerar token:", error);
       toast({
         title: "Erro ao gerar token",
         description: "Ocorreu um erro ao gerar o token. Tente novamente.",

@@ -4,27 +4,27 @@
 
 @layer base {
   :root {
-    --background: 280 100% 99%;
-    --foreground: 270 95% 15%;
+    --background: 0 0% 100%;
+    --foreground: 220 13% 18%;
 
-    --card: 280 100% 98%;
-    --card-foreground: 270 95% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 18%;
 
-    --popover: 280 100% 98%;
-    --popover-foreground: 270 95% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 18%;
 
-    --primary: 270 95% 65%;
+    --primary: 220 100% 50%;
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 285 100% 75%;
+    --primary-glow: 220 100% 66%;
 
-    --secondary: 320 45% 96%;
-    --secondary-foreground: 270 95% 25%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 18%;
 
-    --muted: 300 50% 95%;
-    --muted-foreground: 270 30% 40%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 195 100% 90%;
-    --accent-foreground: 270 95% 25%;
+    --accent: 220 13% 91%;
+    --accent-foreground: 220 13% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -35,36 +35,43 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    --border: 280 50% 88%;
-    --input: 280 50% 88%;
-    --ring: 270 95% 65%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 100% 50%;
 
     --radius: 0.75rem;
 
-    /* Brand Gradients - Cores Jovens */
-    --gradient-primary: linear-gradient(135deg, hsl(270 95% 65%), hsl(285 100% 75%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 75%), hsl(285 100% 85%));
-    --gradient-brand: linear-gradient(135deg, hsl(270 95% 65%), hsl(195 100% 65%));
+    /* Brand Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 100% 50%), hsl(220 100% 66%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%), hsl(220 13% 91%));
+    --gradient-brand: linear-gradient(135deg, hsl(220 100% 50%), hsl(240 100% 60%));
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(220 13% 69% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(220 13% 69% / 0.1), 0 2px 4px -1px hsl(220 13% 69% / 0.06);
     --shadow-lg: 0 10px 15px -3px hsl(220 13% 69% / 0.1), 0 4px 6px -2px hsl(220 13% 69% / 0.05);
-    --shadow-glow: 0 0 20px hsl(270 95% 65% / 0.4);
+    --shadow-glow: 0 0 20px hsl(220 100% 50% / 0.3);
 
     /* Animation durations */
     --duration-fast: 150ms;
     --duration-normal: 250ms;
     --duration-slow: 350ms;
 
-    --sidebar-background: 285 60% 96%;
-    --sidebar-foreground: 270 95% 25%;
-    --sidebar-primary: 270 95% 65%;
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 300 50% 93%;
-    --sidebar-accent-foreground: 270 95% 25%;
-    --sidebar-border: 280 50% 88%;
-    --sidebar-ring: 270 95% 65%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -77,9 +84,9 @@
     --popover: 220 13% 9%;
     --popover-foreground: 220 14% 96%;
 
-    --primary: 285 100% 75%;
-    --primary-foreground: 270 95% 15%;
-    --primary-glow: 300 100% 85%;
+    --primary: 220 100% 66%;
+    --primary-foreground: 220 13% 9%;
+    --primary-glow: 220 100% 76%;
 
     --secondary: 220 13% 14%;
     --secondary-foreground: 220 14% 96%;
@@ -103,10 +110,10 @@
     --input: 220 13% 14%;
     --ring: 220 100% 66%;
 
-    /* Dark mode gradients - Cores Jovens */
-    --gradient-primary: linear-gradient(135deg, hsl(285 100% 75%), hsl(300 100% 85%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 65%), hsl(285 100% 75%));
-    --gradient-brand: linear-gradient(135deg, hsl(285 100% 75%), hsl(195 100% 75%));
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 100% 66%), hsl(220 100% 76%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 14%), hsl(220 13% 18%));
+    --gradient-brand: linear-gradient(135deg, hsl(220 100% 66%), hsl(240 100% 70%));
     
     /* Dark mode shadows */
     --shadow-sm: 0 1px 2px 0 hsl(220 13% 4% / 0.1);
@@ -131,9 +138,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "ss02" 1;
-    font-optical-sizing: auto;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   /* Scrollbar styling */
@@ -166,14 +171,6 @@
 
   .gradient-brand {
     background: var(--gradient-brand);
-  }
-
-  .gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary-glow)));
-  }
-
-  .gradient-vibrant {
-    background: linear-gradient(135deg, hsl(300 100% 70%), hsl(195 100% 70%));
   }
 
   /* Shadow utilities */
@@ -217,33 +214,6 @@
     backdrop-filter: blur(10px);
     background: hsl(var(--background) / 0.8);
     border: 1px solid hsl(var(--border) / 0.5);
-  }
-
-  /* Typography utilities with modern fonts */
-  .text-brand {
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    font-feature-settings: "ss01" 1, "ss02" 1;
-  }
-
-  .text-tech {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
-
-  .text-display {
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    font-feature-settings: "ss01" 1, "ss02" 1, "cv01" 1;
-  }
-
-  .text-body {
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 400;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 

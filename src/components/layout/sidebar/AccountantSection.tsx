@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar, TestTubeIcon, Settings2Icon, Bot, BarChart } from 'lucide-react';
+import { CircleDollarSign, FileSpreadsheet, Calculator, CalendarDays, FileText, Network, Users, Layers, FileBarChart2, CoinsIcon, BriefcaseIcon, Settings, Activity, Calendar, TestTubeIcon, Settings2Icon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function AccountantSection() {
@@ -124,14 +124,6 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/task-automation')}>
-              <Link to="/task-automation">
-                <Bot className="h-4 w-4 mr-2" />
-                <span>Motor de Automação</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/documentos')}>
               <Link to="/documentos">
                 <FileText className="h-4 w-4 mr-2" />
@@ -160,62 +152,6 @@ export function AccountantSection() {
               <Link to="/dados-teste">
                 <TestTubeIcon className="h-4 w-4 mr-2" />
                 <span>Dados de Teste</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/contabilidade')}>
-              <Link to="/contabilidade">
-                <Calculator className="h-4 w-4 mr-2" />
-                <span>Módulo Contábil</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/analises-preditivas')}>
-              <Link to="/analises-preditivas">
-                <BriefcaseIcon className="h-4 w-4 mr-2" />
-                <span>Análises Preditivas</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/auditoria-continua')}>
-              <Link to="/auditoria-continua">
-                <Settings2Icon className="h-4 w-4 mr-2" />
-                <span>Auditoria Contínua</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/business-intelligence')}>
-              <Link to="/business-intelligence">
-                <BarChart className="h-4 w-4 mr-2" />
-                <span>Business Intelligence</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/automacao-bancaria')}>
-              <Link to="/automacao-bancaria">
-                <CoinsIcon className="h-4 w-4 mr-2" />
-                <span>Automação Bancária</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/monitor-anomalias')}>
-              <Link to="/monitor-anomalias">
-                <Activity className="h-4 w-4 mr-2" />
-                <span>Monitor de Anomalias</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/colaboradores')}>
-              <Link to="/colaboradores">
-                <Users className="h-4 w-4 mr-2" />
-                <span>Colaboradores</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -22,7 +22,6 @@ import {
   Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { logger } from "@/utils/logger";
 
 interface IndicadorFinanceiro {
   nome: string;
@@ -165,7 +164,7 @@ export function AnaliseFinanceira() {
       setIndicadores(mockIndicadores);
       setAnaliseComparativa(mockAnaliseComparativa);
     } catch (error) {
-      logger.error('Erro ao carregar dados financeiros:', error, 'AnaliseFinanceira');
+      console.error('Erro ao carregar dados financeiros:', error);
       toast({
         title: "Erro",
         description: "Não foi possível carregar os dados financeiros.",

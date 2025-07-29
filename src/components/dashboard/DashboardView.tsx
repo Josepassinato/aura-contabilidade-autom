@@ -1,35 +1,29 @@
+
 import React, { useState, useEffect } from 'react';
 import { ClientSummaryCard } from './ClientSummaryCard';
 import { FiscalCalendar } from './FiscalCalendar';
 import { DocumentsTable } from './DocumentsTable';
-import { AccountingDashboard } from './AccountingDashboard';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut, Plus, HelpCircle, Calendar, FileText } from 'lucide-react';
+import { LogOut, Sparkles, Plus, HelpCircle, Calendar, FileText } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { Link } from 'react-router-dom';
 import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { EmptyState } from './EmptyState';
 import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
+import { DeleteConfirmation } from '@/components/ui/confirmation';
 import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toast';
-import { logger } from "@/utils/logger";
-import { AIStatusChecker } from '@/components/ai/AIStatusChecker';
-import { supabase } from '@/integrations/supabase/client';
+import { getDemoData, clearDemoData } from '@/data/demoData';
 
 export const DashboardView = () => {
-  const { enhancedLogout, isAccountant, isAdmin, user } = useAuth();
+  const { enhancedLogout } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const [demoData, setDemoData] = useState(getDemoData());
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [clients, setClients] = useState([]);
-  const [documents, setDocuments] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [stats, setStats] = useState({
-    totalClients: 0,
-    totalDocumentsPending: 0,
-    totalUpcomingDeadlines: 0,
-    fiscalSavings: 0
-  });
   
   // Verificar se é primeira visita
   useEffect(() => {
@@ -39,71 +33,52 @@ export const DashboardView = () => {
     }
   }, []);
 
-  // Carregar dados reais da base de dados
-  useEffect(() => {
-    const loadRealData = async () => {
-      if (!user?.id) return;
-
-      try {
-        // Buscar clientes reais
-        const { data: clientsData, error: clientsError } = await supabase
-          .from('accounting_clients')
-          .select('*')
-          .eq('accountant_id', user.id);
-
-        if (!clientsError && clientsData) {
-          setClients(clientsData);
-          setStats(prev => ({
-            ...prev,
-            totalClients: clientsData.length
-          }));
-        }
-
-        // Buscar documentos reais
-        const { data: documentsData, error: documentsError } = await supabase
-          .from('generated_reports')
-          .select('*')
-          .eq('created_by', user.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (!documentsError && documentsData) {
-          setDocuments(documentsData);
-        }
-
-        // Buscar eventos fiscais reais
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('obrigacoes_fiscais')
-          .select('*')
-          .gte('prazo', new Date().toISOString())
-          .order('prazo', { ascending: true })
-          .limit(10);
-
-        if (!eventsError && eventsData) {
-          setEvents(eventsData);
-          setStats(prev => ({
-            ...prev,
-            totalUpcomingDeadlines: eventsData.length
-          }));
-        }
-
-      } catch (error) {
-        logger.error('Erro ao carregar dados:', error, 'DashboardView');
-      }
-    };
-
-    loadRealData();
-  }, [user]);
-
   const handleOnboardingComplete = () => {
     localStorage.setItem('contaflix_onboarding_completed', 'true');
     setShowOnboarding(false);
+    setShowTour(false);
     successToast('Onboarding concluído!', 'Você pode acessar a ajuda novamente pelo menu.');
+  };
+
+  const handleStartTour = () => {
+    setShowOnboarding(false);
+    setShowTour(true);
+  };
+
+  const handleLoadDemo = async () => {
+    setIsLoadingDemo(true);
+    const toastId = actionToasts.upload.loading();
+    
+    try {
+      // Simular carregamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setDemoData(getDemoData());
+      setShowOnboarding(false);
+      
+      successToast('Dados demo carregados!', 'Explore os recursos com dados de exemplo.');
+    } catch (error) {
+      actionToasts.upload.error();
+    } finally {
+      setIsLoadingDemo(false);
+    }
   };
 
   const handleRestartOnboarding = () => {
     localStorage.removeItem('contaflix_onboarding_completed');
     setShowOnboarding(true);
+  };
+
+  const handleClearDemo = async () => {
+    const toastId = actionToasts.delete.loading();
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      clearDemoData();
+      setDemoData(getDemoData());
+      actionToasts.delete.success('Dados demo');
+    } catch (error) {
+      actionToasts.delete.error();
+    }
   };
 
   const handleLogout = async () => {
@@ -119,39 +94,11 @@ export const DashboardView = () => {
     }
   };
 
-  // Para admins, mostra o dashboard administrativo
-  if (isAdmin) {
-    return (
-      <>
-        <AdminDashboard />
-        
-        {/* Componentes de Onboarding */}
-        {showOnboarding && (
-           <OnboardingWelcome
-             onSkip={handleOnboardingComplete}
-           />
-        )}
-        
-      </>
-    );
-  }
-
-  // Para contadores, mostra o dashboard contábil
-  if (isAccountant) {
-    return (
-      <>
-        <AccountingDashboard />
-        
-        {/* Componentes de Onboarding */}
-        {showOnboarding && (
-          <OnboardingWelcome
-            onSkip={handleOnboardingComplete}
-          />
-        )}
-
-      </>
-    );
-  }
+  const isDemoMode = localStorage.getItem('contaflix_demo_mode') === 'true';
+  const mockEvents = demoData.events || [];
+  const mockDocuments = demoData.documents || [];
+  
+  const stats = demoData.stats || { totalClients: 0, totalDocumentsPending: 0, totalUpcomingDeadlines: 0, fiscalSavings: 0 };
 
   return (
     <>
@@ -180,11 +127,31 @@ export const DashboardView = () => {
                   </>
                 )}
               </Button>
+              {isDemoMode && (
+                <DeleteConfirmation
+                  trigger={
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center"
+                    >
+                      Limpar Demo
+                    </Button>
+                  }
+                  itemName="dados de demonstração"
+                  onConfirm={handleClearDemo}
+                />
+              )}
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-brand text-4xl font-brand tracking-tighter bg-gradient-primary bg-clip-text text-transparent">Dashboard</h1>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-primary bg-clip-text text-transparent">Dashboard</h1>
+              {isDemoMode && (
+                <div className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md animate-pulse">
+                  ✨ Modo Demo
+                </div>
+              )}
             </div>
-            <p className="text-body text-muted-foreground text-lg font-light">
+            <p className="text-muted-foreground">
               Visão geral dos seus clientes e obrigações fiscais
             </p>
           </div>
@@ -198,6 +165,12 @@ export const DashboardView = () => {
               <HelpCircle className="h-4 w-4" />
               Ajuda
             </Button>
+            <Link to="/ux-demo">
+              <Button variant="gradient" className="flex items-center gap-2 shadow-glow">
+                <Sparkles className="h-4 w-4" />
+                Demo UX
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -229,9 +202,6 @@ export const DashboardView = () => {
           />
         </div>
 
-        {/* Testador de IA */}
-        <AIStatusChecker />
-
         {/* Calendário e Documentos */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4 interactive-card bg-gradient-to-br from-primary/5 to-transparent border-primary/10" data-tour="fiscal-calendar">
@@ -240,19 +210,19 @@ export const DashboardView = () => {
                 <div className="p-2 bg-gradient-primary rounded-lg shadow-sm">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
-                 <div>
-                   <CardTitle className="text-display text-lg font-semibold">Calendário Fiscal</CardTitle>
-                   <CardDescription className="text-body">
-                     Próximas obrigações e eventos fiscais
-                   </CardDescription>
-                 </div>
+                <div>
+                  <CardTitle className="text-lg">Calendário Fiscal</CardTitle>
+                  <CardDescription>
+                    Próximas obrigações e eventos fiscais
+                  </CardDescription>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {events.length === 0 ? (
-                <EmptyState type="events" />
+              {mockEvents.length === 0 ? (
+                <EmptyState type="events" onLoadDemo={handleLoadDemo} />
               ) : (
-                <FiscalCalendar events={events} />
+                <FiscalCalendar events={mockEvents} />
               )}
             </CardContent>
           </Card>
@@ -263,19 +233,19 @@ export const DashboardView = () => {
                 <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-sm">
                   <FileText className="h-5 w-5 text-white" />
                 </div>
-                 <div>
-                   <CardTitle className="text-display text-lg font-semibold">Documentos Recentes</CardTitle>
-                   <CardDescription className="text-body">
-                     Últimos documentos gerados
-                   </CardDescription>
-                 </div>
+                <div>
+                  <CardTitle className="text-lg">Documentos Recentes</CardTitle>
+                  <CardDescription>
+                    Últimos documentos enviados pelos clientes
+                  </CardDescription>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {documents.length === 0 ? (
-                <EmptyState type="documents" />
+              {mockDocuments.length === 0 ? (
+                <EmptyState type="documents" onLoadDemo={handleLoadDemo} />
               ) : (
-                <DocumentsTable documents={documents} />
+                <DocumentsTable documents={mockDocuments} />
               )}
             </CardContent>
           </Card>
@@ -285,10 +255,19 @@ export const DashboardView = () => {
       {/* Componentes de Onboarding */}
       {showOnboarding && (
         <OnboardingWelcome
+          onStartTour={handleStartTour}
+          onLoadDemo={handleLoadDemo}
           onSkip={handleOnboardingComplete}
         />
       )}
 
+      {showTour && (
+        <OnboardingTour
+          isOpen={showTour}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingComplete}
+        />
+      )}
     </>
   );
 };

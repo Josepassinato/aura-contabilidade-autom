@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import { FileText, Loader2 } from 'lucide-react';
 import { formatCurrency, formatPeriod, getStatusBadge } from '../utils/payrollFormatters';
-import { logger } from "@/utils/logger";
 
 interface PayrollTableProps {
   payrolls: PayrollEntry[];
@@ -30,7 +29,7 @@ export function PayrollTable({
   clientNames = {}
 }: PayrollTableProps) {
   
-  logger.debug("PayrollTable rendering with data:", { payrollsCount: payrolls?.length, isLoading }, "PayrollTable");
+  console.log("PayrollTable rendering with data:", { payrollsCount: payrolls?.length, isLoading });
   
   const renderEmptyState = () => {
     if (isLoading) {

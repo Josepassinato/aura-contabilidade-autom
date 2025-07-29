@@ -1,7 +1,6 @@
 
 import { supabase } from "@/lib/supabase/client";
 import { LogProcuracao } from "./types";
-import { logger } from "@/utils/logger";
 
 /**
  * Adiciona uma entrada de log ao processamento da procuração
@@ -16,7 +15,7 @@ export async function adicionarLogProcuracao(procuracaoId: string, log: LogProcu
       .single();
 
     if (fetchError) {
-      logger.error('Erro ao buscar procuração para adicionar log', fetchError, 'ProcuracaoLogger');
+      console.error('Erro ao buscar procuração para adicionar log:', fetchError);
       return;
     }
 
@@ -34,9 +33,9 @@ export async function adicionarLogProcuracao(procuracaoId: string, log: LogProcu
       .eq('id', procuracaoId);
 
     if (updateError) {
-      logger.error('Erro ao atualizar log da procuração', updateError, 'ProcuracaoLogger');
+      console.error('Erro ao atualizar log da procuração:', updateError);
     }
   } catch (error) {
-    logger.error('Erro ao adicionar log da procuração', error, 'ProcuracaoLogger');
+    console.error('Erro ao adicionar log da procuração:', error);
   }
 }

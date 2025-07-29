@@ -10,7 +10,6 @@ import { BalancetesManager } from "@/components/contabil/BalancetesManager";
 import { CentroCustosManager } from "@/components/contabil/CentroCustosManager";
 import { RelatoriosContabeis } from "@/components/contabil/RelatoriosContabeis";
 import { AnaliseFinanceira } from "@/components/contabil/AnaliseFinanceira";
-import { ClientSelector } from "@/components/layout/ClientSelector";
 
 export default function Contabilidade() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -177,18 +176,6 @@ export default function Contabilidade() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header com ClientSelector */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Contabilidade</h1>
-            <p className="text-muted-foreground">
-              Sistema completo de gestão contábil
-            </p>
-          </div>
-          <ClientSelector />
-        </div>
-        
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -228,7 +215,6 @@ export default function Contabilidade() {
           <AnaliseFinanceira />
         </TabsContent>
       </Tabs>
-      </div>
     </DashboardLayout>
   );
 }

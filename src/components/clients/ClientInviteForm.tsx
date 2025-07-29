@@ -6,7 +6,6 @@ import { Mail } from "lucide-react";
 import { AccountingClient } from "@/lib/supabase";
 import { useClientInvite } from "./hooks/useClientInvite";
 import { InviteDialog } from "./components/InviteDialog";
-import { logger } from "@/utils/logger";
 
 interface ClientInviteFormProps {
   client: AccountingClient;
@@ -18,7 +17,7 @@ export function ClientInviteForm({ client, onInviteSent }: ClientInviteFormProps
   const { isGenerating, inviteLink, generateClientInvite, resetInvite } = useClientInvite();
 
   const handleGenerateInvite = async () => {
-    logger.info('Calling onInviteSent callback', undefined, "ClientInviteForm");
+    console.log('Calling onInviteSent callback');
     try {
       await generateClientInvite(client.email);
       if (onInviteSent) {

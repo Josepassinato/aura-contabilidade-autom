@@ -11,12 +11,10 @@ import ClientAccess from '../pages/ClientAccess';
 import ClientPortal from '../pages/ClientPortal';
 import InviteSignup from '../pages/InviteSignup';
 import NotFound from '../pages/NotFound';
-import { ResetPassword } from '../pages/ResetPassword';
 
 // Export an array of Route elements instead of a component
 export const publicRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
-  <Route key="reset-password" path="/reset-password" element={<ResetPassword />} />,
   <Route key="plans" path="/plans" element={<PlansAndPricing />} />,
   <Route key="payment-success" path="/payment/success" element={<PaymentSuccess />} />,
   <Route key="payment-canceled" path="/payment/canceled" element={<PaymentCanceled />} />,

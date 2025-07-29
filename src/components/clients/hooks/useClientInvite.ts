@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/utils/logger";
 
 // Helper function to validate UUID format
 const isValidUUID = (str: string): boolean => {
@@ -18,12 +17,12 @@ export function useClientInvite() {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const generateClientInvite = async (clientEmail: string) => {
-    logger.info('=== Starting invitation generation process ===', undefined, "useClientInvite");
-    logger.info('User profile:', userProfile, "useClientInvite");
-    logger.info('Client email:', clientEmail, "useClientInvite");
+    console.log('=== Starting invitation generation process ===');
+    console.log('User profile:', userProfile);
+    console.log('Client email:', clientEmail);
     
     if (!userProfile) {
-      logger.error('No user profile available', undefined, "useClientInvite");
+      console.error('No user profile available');
       toast({
         title: "Erro",
         description: "Perfil do usuário não encontrado",
@@ -34,7 +33,7 @@ export function useClientInvite() {
 
     setIsGenerating(true);
     try {
-      logger.info('Checking for existing invitation for email:', clientEmail, "useClientInvite");
+      console.log('Checking for existing invitation for email:', clientEmail);
       
       // Verificar se já existe um convite pendente para este cliente
       const { data: existingInvite, error: checkError } = await supabase
@@ -44,25 +43,25 @@ export function useClientInvite() {
         .eq('status', 'pending')
         .maybeSingle();
 
-      logger.info('Existing invite check result:', { data: existingInvite, error: checkError }, "useClientInvite");
+      console.log('Existing invite check result:', { data: existingInvite, error: checkError });
 
       let token;
       if (existingInvite && !checkError) {
         token = existingInvite.token;
-        logger.info('Using existing invitation token:', token, "useClientInvite");
+        console.log('Using existing invitation token:', token);
         toast({
           title: "Convite existente",
           description: "Já existe um convite pendente para este cliente. Link atualizado.",
         });
       } else {
-        logger.info('Creating new invitation', undefined, "useClientInvite");
+        console.log('Creating new invitation');
         // Gerar novo token
         token = crypto.randomUUID();
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30); // Expira em 30 dias
 
-        logger.info('Generated token:', token, "useClientInvite");
-        logger.info('Expires at:', expiresAt, "useClientInvite");
+        console.log('Generated token:', token);
+        console.log('Expires at:', expiresAt);
         
         // Prepare invitation data - handle potentially invalid UUID
         const invitationData: any = {
@@ -76,12 +75,12 @@ export function useClientInvite() {
         // Only include invited_by if we have a valid UUID
         if (userProfile.id && isValidUUID(userProfile.id)) {
           invitationData.invited_by = userProfile.id;
-          logger.info('Using valid UUID for invited_by:', userProfile.id, "useClientInvite");
+          console.log('Using valid UUID for invited_by:', userProfile.id);
         } else {
-          logger.info('Skipping invited_by due to invalid UUID format:', userProfile.id, "useClientInvite");
+          console.log('Skipping invited_by due to invalid UUID format:', userProfile.id);
         }
         
-        logger.info('Creating invitation with data:', invitationData, "useClientInvite");
+        console.log('Creating invitation with data:', invitationData);
 
         // Criar convite para o cliente
         const { data: insertData, error } = await supabase
@@ -90,11 +89,11 @@ export function useClientInvite() {
           .select();
 
         if (error) {
-          logger.error('Error creating invitation:', error, "useClientInvite");
+          console.error('Error creating invitation:', error);
           throw error;
         }
 
-        logger.info('Invitation created successfully:', insertData, "useClientInvite");
+        console.log('Invitation created successfully:', insertData);
         toast({
           title: "Convite gerado!",
           description: `Convite foi criado com sucesso`,
@@ -103,15 +102,15 @@ export function useClientInvite() {
 
       // Gerar link do convite
       const link = `${window.location.origin}/invite-signup?token=${token}`;
-      logger.info('Generated invite link:', link, "useClientInvite");
+      console.log('Generated invite link:', link);
       setInviteLink(link);
 
       return link;
     } catch (error: any) {
-      logger.error('=== Erro ao gerar convite ===', undefined, "useClientInvite");
-      logger.error('Error details:', error, "useClientInvite");
-      logger.error('Error message:', error.message, "useClientInvite");
-      logger.error('Error code:', error.code, "useClientInvite");
+      console.error('=== Erro ao gerar convite ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
       
       toast({
         title: "Erro",

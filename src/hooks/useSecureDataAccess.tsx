@@ -10,30 +10,14 @@ export const useSecureDataAccess = () => {
   const { userProfile, isAuthenticated } = useAuth();
 
   // Função para validar se o usuário pode acessar dados de um cliente específico
-  const validateClientAccess = useCallback(async (clientId: string): Promise<boolean> => {
+  const validateClientAccess = useCallback((clientId: string): boolean => {
     if (!isAuthenticated || !userProfile) {
       return false;
     }
 
-    // Admins podem acessar qualquer cliente
-    if (userProfile.role === 'admin') {
+    // Admins e contadores podem acessar qualquer cliente
+    if (userProfile.role === 'admin' || userProfile.role === 'accountant') {
       return true;
-    }
-
-    // Contadores só podem acessar clientes associados a eles
-    if (userProfile.role === 'accountant') {
-      try {
-        const { data } = await supabase
-          .from('accounting_clients')
-          .select('id')
-          .eq('id', clientId)
-          .eq('accountant_id', userProfile.id)
-          .maybeSingle();
-        
-        return !!data;
-      } catch {
-        return false;
-      }
     }
 
     // Clientes só podem acessar dados da própria empresa
@@ -50,8 +34,20 @@ export const useSecureDataAccess = () => {
       throw new Error('Usuário não autenticado');
     }
 
-    // Usar a função RPC que já aplica filtros de segurança baseados no role
-    return supabase.rpc('get_accountant_clients');
+    let query = supabase
+      .from('accounting_clients')
+      .select('*');
+
+    // Se for cliente, filtrar apenas sua empresa
+    if (userProfile.role === 'client') {
+      if (!userProfile.company_id) {
+        throw new Error('Cliente não possui empresa associada');
+      }
+      query = query.eq('id', userProfile.company_id);
+    }
+    // Contadores e admins podem ver todos os clientes
+
+    return query;
   }, [isAuthenticated, userProfile]);
 
   // Função segura para buscar relatórios

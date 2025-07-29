@@ -75,7 +75,6 @@ export const useAuth = () => {
       // Check for and clean any limbo states
       checkForAuthLimboState();
       
-      // Verificar se o login é para email não confirmado
       const result = await context.login?.(email, password);
       
       if (result?.success) {
@@ -85,22 +84,18 @@ export const useAuth = () => {
           description: "Bem-vindo de volta!",
         });
         
-        // Navegação apropriada com base no perfil do contexto
-        console.log("UserProfile context:", context.userProfile);
-        const userRole = context.userProfile?.role;
-        console.log("Role do contexto:", userRole);
+        // Navegação apropriada com base no perfil
+        const role = localStorage.getItem('user_role');
+        console.log("Role do usuário:", role);
         
-        if (userRole === 'admin') {
-          console.log("Redirecionando admin para business-analytics");
+        if (role === 'admin') {
           navigate('/admin/business-analytics', { replace: true });
-        } else if (userRole === 'client') {
-          console.log("Redirecionando client para client-portal");
+        } else if (role === 'client') {
           navigate('/client-portal', { replace: true });
-        } else if (userRole === 'accountant') {
-          console.log("Redirecionando accountant para dashboard");
+        } else if (role === 'accountant') {
           navigate('/dashboard', { replace: true });
         } else {
-          console.log("Fallback para dashboard, role:", userRole);
+          // Fallback
           navigate('/dashboard', { replace: true });
         }
         

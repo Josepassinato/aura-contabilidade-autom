@@ -7,10 +7,9 @@ import { PayrollFilter } from './components/PayrollFilter';
 import { PayrollDialogs } from './components/PayrollDialogs';
 import { usePayrollData } from './hooks/usePayrollData';
 import { toast } from '@/hooks/use-toast';
-import { logger } from "@/utils/logger";
 
 export function PayrollList() {
-  logger.debug("PayrollList component rendering", undefined, "PayrollList");
+  console.log("PayrollList component rendering");
 
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -25,7 +24,7 @@ export function PayrollList() {
   
   // Initialize with safer defaults
   useEffect(() => {
-    logger.debug("PayrollList component mounted", undefined, "PayrollList");
+    console.log("PayrollList component mounted");
   }, []);
   
   // Use our custom hook for payroll data with error handling
@@ -37,7 +36,7 @@ export function PayrollList() {
   }
   
   const handleClientSelect = (client: { id: string, name: string }) => {
-    logger.debug("Client selected:", client, "PayrollList");
+    console.log("Client selected:", client);
     setSelectedClientId(client.id);
     
     // If a client is directly selected, add to client names map
@@ -50,7 +49,7 @@ export function PayrollList() {
   };
   
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    logger.debug("Period changed:", e.target.value, "PayrollList");
+    console.log("Period changed:", e.target.value);
     setPeriod(e.target.value);
   };
   
@@ -64,7 +63,7 @@ export function PayrollList() {
   };
   
   const handleViewPayroll = (payroll: PayrollEntry) => {
-    logger.debug("View payroll:", payroll, "PayrollList");
+    console.log("View payroll:", payroll);
     setSelectedPayroll(payroll);
     setIsDetailsOpen(true);
   };

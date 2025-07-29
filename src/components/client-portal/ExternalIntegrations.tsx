@@ -16,8 +16,6 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { useForm } from "react-hook-form";
 import { Link2, Database, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { blingService } from "@/services/integracoes/blingService";
-import { logger } from "@/utils/logger";
 
 interface ExternalIntegrationsProps {
   clientId: string;
@@ -25,15 +23,13 @@ interface ExternalIntegrationsProps {
 
 export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) => {
   const [open, setOpen] = useState(false);
-  const [integrationType, setIntegrationType] = useState<string>("bling");
+  const [integrationType, setIntegrationType] = useState<string>("quickbooks");
   const [isConnecting, setIsConnecting] = useState(false);
 
   const form = useForm({
     defaultValues: {
       apiKey: "",
       apiSecret: "",
-      clientId: "",
-      clientSecret: ""
     }
   });
 
@@ -41,42 +37,21 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
     setIsConnecting(true);
     
     try {
-      if (integrationType === "bling") {
-        // Usar o serviço específico do Bling
-        const credentials = {
-          clientId: values.clientId,
-          clientSecret: values.clientSecret
-        };
-        
-        // Testar conexão primeiro
-        const isConnected = await blingService.testConnection(credentials);
-        
-        if (isConnected) {
-          // Salvar credenciais
-          await blingService.saveCredentials(clientId, credentials);
-          
-          toast({
-            title: "Integração com Bling configurada",
-            description: "Conexão estabelecida com sucesso! Agora você pode sincronizar seus dados.",
-          });
-        } else {
-          throw new Error("Falha na conexão com Bling");
-        }
-      } else {
-        // Para outros sistemas, manter simulação
-        logger.info(`Connecting to ${integrationType} with credentials:`, values, "ExternalIntegrations");
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        toast({
-          title: "Integração iniciada",
-          description: `A solicitação de integração com ${getIntegrationName(integrationType)} foi enviada com sucesso.`,
-        });
-      }
+      // Simulating API connection - in a real app, this would call an API endpoint
+      console.log(`Connecting to ${integrationType} with credentials:`, values);
+      
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast({
+        title: "Integração iniciada",
+        description: `A solicitação de integração com ${getIntegrationName(integrationType)} foi enviada com sucesso.`,
+      });
       
       setOpen(false);
       form.reset();
     } catch (error) {
-      logger.error("Error connecting integration:", error, "ExternalIntegrations");
+      console.error("Error connecting integration:", error);
       toast({
         title: "Erro na integração",
         description: "Não foi possível estabelecer a conexão. Verifique as credenciais e tente novamente.",
@@ -89,7 +64,6 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
   
   const getIntegrationName = (type: string) => {
     switch (type) {
-      case "bling": return "Bling";
       case "quickbooks": return "QuickBooks";
       case "xero": return "Xero";
       case "sage": return "Sage";
@@ -138,7 +112,6 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
                       <SelectValue placeholder="Selecione um sistema" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bling">Bling</SelectItem>
                       <SelectItem value="quickbooks">QuickBooks</SelectItem>
                       <SelectItem value="xero">Xero</SelectItem>
                       <SelectItem value="sage">Sage</SelectItem>
@@ -147,87 +120,43 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
                   </Select>
                 </div>
                 
-{integrationType === "bling" ? (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="clientId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Client ID</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Seu Client ID do Bling" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Encontre no painel de API do Bling em Configurações &gt; API.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="clientSecret"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Client Secret</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="Seu Client Secret do Bling" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Mantenha este segredo protegido e nunca o compartilhe.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="apiKey"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Chave API</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Insira sua chave API" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Encontre esta informação no painel de desenvolvedor do seu sistema.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="apiSecret"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Segredo API</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="Insira o segredo API" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Nunca compartilhe este segredo com terceiros.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
+                <FormField
+                  control={form.control}
+                  name="apiKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chave API</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Insira sua chave API" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Encontre esta informação no painel de desenvolvedor do seu sistema.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="apiSecret"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Segredo API</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="Insira o segredo API" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Nunca compartilhe este segredo com terceiros.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <div className="flex justify-between items-center pt-2">
                   <div className="flex items-center text-xs text-muted-foreground">

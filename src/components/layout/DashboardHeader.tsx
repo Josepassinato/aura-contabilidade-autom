@@ -4,7 +4,6 @@ import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoiceAssistantButton } from "./VoiceAssistantButton";
 import { ClientSelector } from "./ClientSelector";
-import { AccountingStatus } from "./AccountingStatus";
 import { useAuth } from "@/contexts/auth";
 
 interface DashboardHeaderProps {
@@ -31,17 +30,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {isAuthenticated ? (
           <ClientSelector />
         ) : (
-          <div className="text-brand text-lg font-brand tracking-tight bg-gradient-primary bg-clip-text text-transparent">
+          <div className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
             ContaFlix
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {isAuthenticated ? (
           <>
-            <AccountingStatus />
-            
             <Button variant="ghost" size="icon" className="relative transition-smooth hover:bg-primary/10 hover:shadow-glow">
               <Bell className="h-5 w-5" />
               <div className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
@@ -56,7 +53,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
           </>
         ) : (
-          <Button onClick={() => navigateToLogin()} variant="vibrant" className="transition-smooth">
+          <Button onClick={() => navigateToLogin()} className="bg-gradient-primary hover:shadow-glow transition-smooth">
             Fazer Login
           </Button>
         )}

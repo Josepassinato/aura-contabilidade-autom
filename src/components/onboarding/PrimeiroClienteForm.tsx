@@ -19,7 +19,6 @@ import { toast } from "@/hooks/use-toast";
 import { formatCNPJ } from "@/components/client-access/formatCNPJ";
 import { validateCNPJ } from "@/utils/validators";
 import { consultarCNPJ } from "@/services/governamental/apiIntegration";
-import { logger } from "@/utils/logger";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -57,7 +56,7 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
   const handleSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
-      logger.info("Dados do primeiro cliente:", data, "PrimeiroClienteForm");
+      console.log("Dados do primeiro cliente:", data);
       
       // Exemplo de uso de Promise.all para paralelizar requisições
       // (substituir com chamadas reais ao backend quando implementado)
@@ -67,7 +66,7 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
         simulateInitialSetup(data.regime)
       ]);
       
-      logger.info("Resultados em paralelo:", { clienteRegistrado, configuracoesIniciais }, "PrimeiroClienteForm");
+      console.log("Resultados em paralelo:", { clienteRegistrado, configuracoesIniciais });
       
       onSubmit(data);
       
@@ -76,7 +75,7 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
         description: "Seu primeiro cliente foi cadastrado com sucesso!"
       });
     } catch (error) {
-      logger.error("Erro ao adicionar cliente:", error, "PrimeiroClienteForm");
+      console.error("Erro ao adicionar cliente:", error);
       toast({
         title: "Erro ao adicionar cliente",
         description: error instanceof Error ? error.message : "Ocorreu um erro ao cadastrar o cliente. Tente novamente.",
@@ -116,7 +115,7 @@ export function PrimeiroClienteForm({ onSubmit }: PrimeiroClienteFormProps) {
           });
         }
       } catch (error) {
-        logger.info("Erro ao consultar CNPJ:", error, "PrimeiroClienteForm");
+        console.log("Erro ao consultar CNPJ:", error);
         // Não mostrar erro ao usuário, apenas não preencher automaticamente
       } finally {
         setIsLoadingCNPJ(false);

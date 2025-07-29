@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,51 +27,35 @@ interface Colaborador {
 }
 
 const Colaboradores = () => {
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([
+    {
+      id: "1",
+      nome: "João Silva",
+      cpf: "12345678900",
+      cargo: "Analista Contábil",
+      departamento: "contabilidade",
+      dataAdmissao: "2023-01-15",
+      salarioBase: "3500.00",
+      status: "ativo",
+    },
+    {
+      id: "2",
+      nome: "Maria Oliveira",
+      cpf: "98765432100",
+      cargo: "Gerente Contábil",
+      departamento: "fiscal",
+      dataAdmissao: "2021-03-10",
+      salarioBase: "5200.00",
+      status: "ferias",
+    }
+  ]);
+  
   const { toast } = useToast();
   const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [editingColaboradorId, setEditingColaboradorId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [deletingColaboradorId, setDeletingColaboradorId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("lista");
-
-  // Carregar colaboradores reais da base de dados
-  useEffect(() => {
-    const loadColaboradores = async () => {
-      if (!selectedClientId) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('client_id', selectedClientId)
-          .order('name');
-
-        if (error) {
-          console.error('Erro ao carregar colaboradores:', error);
-          return;
-        }
-
-        // Mapear dados da base para o formato do componente
-        const colaboradoresData = data?.map(emp => ({
-          id: emp.id,
-          nome: emp.name,
-          cpf: emp.cpf,
-          cargo: emp.position,
-          departamento: emp.department || 'geral',
-          dataAdmissao: emp.hire_date,
-          salarioBase: emp.base_salary?.toString() || '0.00',
-          status: emp.status as "ativo" | "inativo" | "ferias" | "licenca"
-        })) || [];
-
-        setColaboradores(colaboradoresData);
-      } catch (error) {
-        console.error('Erro ao carregar colaboradores:', error);
-      }
-    };
-
-    loadColaboradores();
-  }, [selectedClientId]);
   
   const handleClientSelect = (client: { id: string, name: string }) => {
     setSelectedClientId(client.id);

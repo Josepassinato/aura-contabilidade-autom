@@ -88,7 +88,7 @@ export function CertificadoWizard({ onComplete }: CertificadoWizardProps) {
         },
         {
           id: 'cert-2', 
-          name: 'Usuário Exemplo:12345678901',
+          name: 'João Silva:12345678901',
           issuer: 'AC Serasa',
           validUntil: '2024-08-15',
           type: 'A3',

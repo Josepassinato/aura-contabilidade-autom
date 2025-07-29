@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -173,7 +172,7 @@ export function SystemReadinessCheck() {
       }
 
     } catch (error) {
-      logger.error('Erro ao verificar status do sistema', error, 'SystemReadinessCheck');
+      console.error('Error checking system status:', error);
       toast({
         title: 'Erro na verificação',
         description: 'Não foi possível verificar o status do sistema',

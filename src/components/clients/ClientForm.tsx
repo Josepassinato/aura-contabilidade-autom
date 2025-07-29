@@ -15,12 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { consultarCNPJ } from "@/services/governamental/apiIntegration";
 import { formatCNPJ } from "@/components/client-access/formatCNPJ";
 import { validateCNPJ } from "@/utils/validators";
-import { addClient } from "@/services/supabase/clientsService";
-import { logger } from "@/utils/logger";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "O nome deve ter pelo menos 3 caracteres" }),
@@ -62,10 +61,10 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
     setIsSubmitting(true);
     
     try {
-      logger.info("=== INICIANDO CADASTRO DE CLIENTE ===", undefined, "ClientForm");
-      logger.info("Dados do cliente:", data, "ClientForm");
+      console.log("=== INICIANDO CADASTRO DE CLIENTE ===");
+      console.log("Dados do cliente:", data);
       
-      // Preparar dados para inserção (sem accounting_firm_id nem accountant_id - o serviço vai adicionar)
+      // Preparar dados para inserção
       const clientData = {
         name: data.name,
         cnpj: data.cnpj,
@@ -77,33 +76,58 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         accounting_firm_id: null // Cliente não tem escritório associado por padrão
       };
       
-      logger.info("Dados preparados para inserção:", clientData, "ClientForm");
+      console.log("Dados preparados para inserção:", clientData);
       
-      // Usar o serviço que já funciona com RLS
-      const clientId = await addClient(clientData);
+      // Inserir cliente no Supabase
+      const { data: insertedData, error } = await supabase
+        .from('accounting_clients')
+        .insert([clientData])
+        .select();
       
-      if (!clientId) {
-        throw new Error("Erro ao cadastrar cliente - dados não foram salvos");
+      if (error) {
+        console.error("Erro na inserção:", error);
+        throw error;
       }
       
-      logger.info(`✅ Cliente cadastrado com ID: ${clientId}`, undefined, "ClientForm");
+      console.log("Cliente inserido com sucesso:", insertedData);
       
-      // Exibir mensagem de sucesso
-      toast({
-        title: "Cliente cadastrado com sucesso",
-        description: `${data.name} foi cadastrado e está disponível no sistema.`,
-      });
-      
-      // Limpar formulário
-      form.reset();
-      
-      // Chamar callback de sucesso
-      if (onSuccess) {
-        logger.info("Chamando callback de sucesso...", undefined, "ClientForm");
-        onSuccess();
+      // Verificar se realmente foi inserido
+      if (insertedData && insertedData.length > 0) {
+        const clientId = insertedData[0].id;
+        console.log(`✅ Cliente cadastrado com ID: ${clientId}`);
+        
+        // Verificar se o cliente pode ser encontrado
+        const { data: verificationData, error: verificationError } = await supabase
+          .from('accounting_clients')
+          .select('*')
+          .eq('id', clientId)
+          .single();
+          
+        if (verificationError) {
+          console.warn("Aviso: Erro na verificação:", verificationError);
+        } else {
+          console.log("✅ Verificação: Cliente encontrado no banco:", verificationData);
+        }
+        
+        // Exibir mensagem de sucesso
+        toast({
+          title: "Cliente cadastrado com sucesso",
+          description: `${data.name} foi cadastrado e está disponível no sistema.`,
+        });
+        
+        // Limpar formulário
+        form.reset();
+        
+        // Chamar callback de sucesso
+        if (onSuccess) {
+          console.log("Chamando callback de sucesso...");
+          onSuccess();
+        }
+      } else {
+        throw new Error("Nenhum dado foi retornado após a inserção");
       }
     } catch (error: any) {
-      logger.error("❌ ERRO NO CADASTRO:", error, "ClientForm");
+      console.error("❌ ERRO NO CADASTRO:", error);
       toast({
         title: "Erro ao cadastrar cliente",
         description: error.message || "Ocorreu um erro ao salvar os dados do cliente.",
@@ -111,7 +135,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       });
     } finally {
       setIsSubmitting(false);
-      logger.info("=== FIM DO CADASTRO ===", undefined, "ClientForm");
+      console.log("=== FIM DO CADASTRO ===");
     }
   };
 
@@ -147,7 +171,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
           });
         }
       } catch (error) {
-        logger.error("Erro ao consultar CNPJ:", error, "ClientForm");
+        console.log("Erro ao consultar CNPJ:", error);
         // Não mostrar erro ao usuário, apenas não preencher automaticamente
       } finally {
         setIsLoadingCNPJ(false);

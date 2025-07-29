@@ -9,7 +9,6 @@ import { ObrigacoesCalendario } from "@/components/obrigacoes/ObrigacoesCalendar
 import { ObrigacoesList } from "@/components/obrigacoes/ObrigacoesList";
 import { ObrigacoesSummaryCards } from "@/components/obrigacoes/ObrigacoesSummaryCards";
 import { ObrigacoesDateSelector } from "@/components/obrigacoes/ObrigacoesDateSelector";
-import { EnhancedObrigacoesFiscais } from "@/components/obrigacoes/EnhancedObrigacoesFiscais";
 import { fetchObrigacoesFiscais } from "@/services/supabase/obrigacoesService";
 import { Obrigacao } from "@/types/obrigacoes";
 import { marcarObrigacoesAtrasadas } from "@/utils/obrigacoesUtils";
@@ -58,19 +57,6 @@ const ObrigacoesFiscais = () => {
     setClienteId(client.id || null);
   };
 
-  // Função para atualizar status das obrigações
-  const handleObrigacaoUpdate = (id: string, status: string) => {
-    setObrigacoes(prev => 
-      prev.map(o => 
-        o.id.toString() === id ? { ...o, status: status as "pendente" | "atrasado" | "concluido" } : o
-      )
-    );
-    toast({
-      title: "Obrigação atualizada",
-      description: `Status alterado para: ${status}`,
-    });
-  };
-
   // Calcular estatísticas para o resumo
   const pendentes = obrigacoes.filter(o => o.status === "pendente").length;
   const atrasadas = obrigacoes.filter(o => o.status === "atrasado").length;
@@ -90,33 +76,85 @@ const ObrigacoesFiscais = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-4">
-          <BackButton />
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            className="flex items-center"
-            onClick={enhancedLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BackButton />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={enhancedLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Obrigações Fiscais</h1>
+            <p className="text-muted-foreground">
+              Acompanhamento e gestão de obrigações fiscais e acessórias
+            </p>
+          </div>
+          <ClientSelector onClientSelect={handleClientSelect} />
         </div>
+
+        <ObrigacoesSummaryCards 
+          pendentes={pendentes}
+          atrasadas={atrasadas}
+          concluidas={concluidas}
+          proximaSemana={proximaSemana}
+        />
+
+        <ObrigacoesDateSelector
+          mes={mes}
+          setMes={setMes}
+          ano={ano}
+          setAno={setAno}
+        />
 
         {loading ? (
           <div className="flex items-center justify-center p-8">
-            <div className="flex items-center gap-3">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
-              <p>Carregando obrigações fiscais...</p>
-            </div>
+            <p>Carregando obrigações fiscais...</p>
           </div>
         ) : (
-          <EnhancedObrigacoesFiscais
-            obrigacoes={obrigacoes}
-            onObrigacaoUpdate={handleObrigacaoUpdate}
-            clienteId={clienteId}
-            onClientSelect={handleClientSelect}
-          />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="calendario" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Calendário
+              </TabsTrigger>
+              <TabsTrigger value="lista" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Lista
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="calendario">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Calendário de Obrigações Fiscais</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ObrigacoesCalendario 
+                    mes={mes} 
+                    ano={ano} 
+                    obrigacoes={obrigacoes}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="lista">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lista de Obrigações Fiscais</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ObrigacoesList obrigacoes={obrigacoes} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </DashboardLayout>

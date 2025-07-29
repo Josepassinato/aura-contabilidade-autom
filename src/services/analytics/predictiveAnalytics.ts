@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/utils/logger";
 
 // Tipos para análises preditivas
 export interface PredictionTimeframe {
@@ -58,7 +57,7 @@ export const PredictiveAnalyticsService = {
       
       // Para demonstração, usando dados simulados
       // Normalmente buscaria dados históricos do cliente e aplicaria algoritmo de ML
-      logger.info('Gerando previsão para cliente:', clientId, 'PredictiveAnalytics');
+      console.log('Gerando previsão para cliente:', clientId);
       
       // Simulação de resposta
       return {
@@ -89,7 +88,7 @@ export const PredictiveAnalyticsService = {
         ]
       };
     } catch (error) {
-      logger.error('Erro ao gerar previsão de fluxo de caixa:', error, 'PredictiveAnalytics');
+      console.error('Erro ao gerar previsão de fluxo de caixa:', error);
       throw error;
     }
   },
@@ -100,7 +99,7 @@ export const PredictiveAnalyticsService = {
   analyzeTaxRegimes: async (clientId: string): Promise<TaxOptimizationPrediction> => {
     try {
       // Em produção, usaria dados reais de faturamento e despesas
-      logger.info('Analisando regimes tributários para cliente:', clientId, 'PredictiveAnalytics');
+      console.log('Analisando regimes tributários para cliente:', clientId);
       
       // Simulação de resposta
       return {
@@ -122,7 +121,7 @@ export const PredictiveAnalyticsService = {
         ]
       };
     } catch (error) {
-      logger.error('Erro ao analisar regimes tributários:', error, 'PredictiveAnalytics');
+      console.error('Erro ao analisar regimes tributários:', error);
       throw error;
     }
   },
@@ -134,7 +133,7 @@ export const PredictiveAnalyticsService = {
     try {
       // Em produção, usaria algoritmos de detecção de anomalias
       // como Isolation Forest, One-Class SVM ou DBSCAN
-      logger.info('Detectando anomalias para cliente:', clientId, 'PredictiveAnalytics');
+      console.log('Detectando anomalias para cliente:', clientId, period);
       
       // Simulação de resposta
       return [
@@ -185,7 +184,7 @@ export const PredictiveAnalyticsService = {
         }
       ];
     } catch (error) {
-      logger.error('Erro ao detectar anomalias:', error, 'PredictiveAnalytics');
+      console.error('Erro ao detectar anomalias:', error);
       throw error;
     }
   },
@@ -199,7 +198,7 @@ export const PredictiveAnalyticsService = {
   ): Promise<any> => {
     try {
       // Em produção, aplicaria modelos de ML/estatísticos para projeções
-      logger.info('Gerando projeção financeira para cliente:', clientId, 'PredictiveAnalytics');
+      console.log('Gerando projeção financeira para cliente:', clientId, scenarios);
       
       // Simulação de resposta (simplificada)
       const baseValues = {
@@ -236,7 +235,7 @@ export const PredictiveAnalyticsService = {
         ]
       };
     } catch (error) {
-      logger.error('Erro ao gerar projeção financeira:', error, 'PredictiveAnalytics');
+      console.error('Erro ao gerar projeção financeira:', error);
       throw error;
     }
   },
@@ -247,7 +246,7 @@ export const PredictiveAnalyticsService = {
   getRelatedTransactions: async (anomalyId: string): Promise<any[]> => {
     try {
       // Em produção, buscaria dados no banco relacionados à anomalia
-      logger.info('Buscando transações relacionadas à anomalia:', anomalyId, 'PredictiveAnalytics');
+      console.log('Buscando transações relacionadas à anomalia:', anomalyId);
       
       // Simulação de dados relacionados
       return [
@@ -277,7 +276,7 @@ export const PredictiveAnalyticsService = {
         }
       ];
     } catch (error) {
-      logger.error('Erro ao buscar transações relacionadas:', error, 'PredictiveAnalytics');
+      console.error('Erro ao buscar transações relacionadas:', error);
       return [];
     }
   },
@@ -299,7 +298,7 @@ export const PredictiveAnalyticsService = {
     try {
       // Em uma implementação real, este método aplicaria algoritmos avançados
       // de análise para determinar se a transação pode ser processada automaticamente
-      logger.info('Analisando transação para automação do cliente:', clientId, 'PredictiveAnalytics');
+      console.log('Analisando transação para automação:', transactionData, 'do cliente:', clientId);
       
       // Simulação de análise avançada
       const mockConfidence = Math.random() * 0.3 + 0.65; // Confiança entre 65% e 95%
@@ -319,7 +318,7 @@ export const PredictiveAnalyticsService = {
         ]
       };
     } catch (error) {
-      logger.error('Erro ao analisar transação para automação:', error, 'PredictiveAnalytics');
+      console.error('Erro ao analisar transação para automação:', error);
       throw error;
     }
   }

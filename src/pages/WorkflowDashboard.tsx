@@ -2,7 +2,7 @@ import React from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useAuth } from '@/contexts/auth';
 import { Navigate } from 'react-router-dom';
-import { EnhancedWorkflowInterface } from "@/components/workflow/EnhancedWorkflowInterface";
+import { ProblemsDashboard } from "@/components/workflow/ProblemsDashboard";
 
 const WorkflowDashboardPage = () => {
   const { isAuthenticated, isAccountant, isLoading } = useAuth();
@@ -21,9 +21,7 @@ const WorkflowDashboardPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="h-[calc(100vh-4rem)]">
-        <EnhancedWorkflowInterface />
-      </div>
+      <ProblemsDashboard />
     </DashboardLayout>
   );
 };

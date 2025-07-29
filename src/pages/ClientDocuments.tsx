@@ -8,7 +8,7 @@ import { FileText, Search, Download, Eye, ArrowLeft, LogOut } from "lucide-react
 import { useClientDocuments } from "@/components/client-portal/useClientDocuments";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ClientAccessLayout } from "@/components/client-access/ClientAccessLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const ClientDocuments = () => {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ const ClientDocuments = () => {
 
   if (!clientId) {
     return (
-      <ClientAccessLayout>
+      <DashboardLayout>
         <div className="container mx-auto p-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
@@ -72,12 +72,12 @@ const ClientDocuments = () => {
             </Button>
           </div>
         </div>
-      </ClientAccessLayout>
+      </DashboardLayout>
     );
   }
 
   return (
-    <ClientAccessLayout>
+    <DashboardLayout>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -175,7 +175,7 @@ const ClientDocuments = () => {
           </CardContent>
         </Card>
       </div>
-    </ClientAccessLayout>
+    </DashboardLayout>
   );
 };
 

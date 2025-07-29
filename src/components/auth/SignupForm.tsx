@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -15,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { User, Building, Crown, UserCheck, Building2 } from 'lucide-react';
+import { User, Building } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/supabase';
@@ -68,7 +67,7 @@ const validateCNPJ = (value: string) => {
   return result === parseInt(digits.charAt(1));
 };
 
-// Schema para validação do formulário de cadastro (sem admin para cadastro público)
+// Schema para validação do formulário de cadastro
 const signupFormSchema = z.object({
   email: z.string().email({ message: "E-mail inválido" }),
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
@@ -76,9 +75,10 @@ const signupFormSchema = z.object({
   role: z.enum(['accountant', 'client'], { 
     required_error: "Selecione um tipo de usuário",
   }),
-  company: z.string().min(1, { message: "Nome da empresa é obrigatório" }),
-  cnpj: z.string().min(1, { message: "CNPJ é obrigatório" })
-    .refine(val => validateCNPJ(val), { 
+  company: z.string().optional(),
+  cnpj: z.string()
+    .optional()
+    .refine(val => !val || validateCNPJ(val), { 
       message: "CNPJ inválido"
     }),
 });
@@ -96,7 +96,7 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
       email: "",
       password: "",
       fullName: "",
-      role: "accountant",
+      role: "client",
       company: "",
       cnpj: "",
     },
@@ -110,8 +110,7 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
       const userData = {
         full_name: data.fullName,
         role: data.role as UserRole,
-        company_id: data.company,
-        cnpj: data.cnpj,
+        company_id: data.company || undefined,
       };
       
       const { error } = await signUp(data.email, data.password, userData);
@@ -123,20 +122,9 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
         });
         onSuccess();
       } else {
-        let errorMessage = error.message || "Não foi possível criar sua conta";
-        
-        // Tratar casos específicos de erro de cadastro
-        if (error.message?.includes('User already registered')) {
-          errorMessage = "Este email já está cadastrado. Tente fazer login ou use outro email.";
-        } else if (error.message?.includes('Invalid email')) {
-          errorMessage = "Email inválido. Verifique o formato do email.";
-        } else if (error.message?.includes('Password')) {
-          errorMessage = "A senha deve ter pelo menos 6 caracteres.";
-        }
-        
         toast({
           title: "Erro no cadastro",
-          description: errorMessage,
+          description: error.message || "Não foi possível criar sua conta",
           variant: "destructive",
         });
       }
@@ -218,71 +206,72 @@ export const SignupForm = ({ onSuccess }: { onSuccess: () => void }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo de Usuário</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base transition-smooth focus:shadow-glow">
-                    <SelectValue placeholder="Selecione o tipo de usuário" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-background border shadow-lg">
-                  <SelectItem value="accountant" className="cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <UserCheck className="h-4 w-4 text-blue-500" />
-                      <span>Contador</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="client" className="cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <Building2 className="h-4 w-4 text-green-500" />
-                      <span>Empresa</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  type="button"
+                  variant={field.value === 'accountant' ? 'default' : 'outline'}
+                  className="w-full justify-start"
+                  onClick={() => form.setValue('role', 'accountant')}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Contador
+                </Button>
+                <Button
+                  type="button"
+                  variant={field.value === 'client' ? 'default' : 'outline'}
+                  className="w-full justify-start"
+                  onClick={() => form.setValue('role', 'client')}
+                >
+                  <Building className="mr-2 h-4 w-4" />
+                  Cliente
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="company"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                {form.watch('role') === 'accountant' ? 'Nome do Escritório Contábil' : 'Nome da Empresa'}
-              </FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder={form.watch('role') === 'accountant' ? 'Nome do seu escritório contábil' : 'Nome da sua empresa'}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="cnpj"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>CNPJ</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="XX.XXX.XXX/XXXX-XX"
-                  {...field}
-                  onChange={handleCNPJChange}
-                />
-              </FormControl>
-              <FormDescription>
-                CNPJ obrigatório para validação
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {form.watch('role') === 'client' && (
+          <>
+            <FormField
+              control={form.control}
+              name="company"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Empresa</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Nome da sua empresa"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="cnpj"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CNPJ</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="XX.XXX.XXX/XXXX-XX"
+                      {...field}
+                      onChange={handleCNPJChange}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Digite um CNPJ válido ou deixe em branco
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
         
         <Button 
           type="submit" 

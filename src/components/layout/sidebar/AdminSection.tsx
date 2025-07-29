@@ -11,8 +11,7 @@ import {
   AlertTriangle,
   Activity,
   Shield,
-  CheckCircle2,
-  Bot
+  CheckCircle2
 } from 'lucide-react';
 
 export function AdminSection() {
@@ -53,26 +52,6 @@ export function AdminSection() {
       title: "Dashboard de Automação",
       href: "/admin/automation",
       icon: Activity,
-    },
-    {
-      title: "Motor de Automação",
-      href: "/admin/task-automation",
-      icon: Bot,
-    },
-    {
-      title: "Queue Management",
-      href: "/queue-management",
-      icon: Activity,
-    },
-    {
-      title: "Sistema Analytics",
-      href: "/sistema-analytics",
-      icon: BarChart,
-    },
-    {
-      title: "Email Service",
-      href: "/email-service",
-      icon: Mail,
     },
     {
       title: "Segurança",

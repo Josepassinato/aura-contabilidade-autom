@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { logger } from "@/utils/logger";
 import { Button } from "@/components/ui/button";
 import { consultarSaldoBancario, obterConfiguracaoBancaria } from "@/services/bancario/automacaoBancaria";
 import { toast } from "@/hooks/use-toast";
@@ -39,7 +38,7 @@ export function BancoHeader({ bancoSelecionado }: BancoHeaderProps) {
         description: `Saldo atual: R$ ${valorSaldo.toFixed(2)}`,
       });
     } catch (error) {
-      logger.error("Erro ao consultar saldo bancário", error, "BancoHeader");
+      console.error("Erro ao consultar saldo:", error);
     } finally {
       setIsLoading(false);
     }
