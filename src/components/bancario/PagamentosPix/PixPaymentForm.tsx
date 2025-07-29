@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { triggerPixPayment } from "@/services/bancario/pixService";
+import { logger } from "@/utils/logger";
 
 interface PixPaymentFormProps {
   clientId: string;
@@ -65,7 +66,7 @@ export function PixPaymentForm({ clientId, onSuccess }: PixPaymentFormProps) {
         onSuccess();
       }
     } catch (error) {
-      console.error("Erro no pagamento Pix:", error);
+      logger.error("Erro no pagamento Pix:", error, 'PixPaymentForm');
     } finally {
       setIsLoading(false);
     }

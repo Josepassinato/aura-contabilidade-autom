@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 interface GovernmentIntegrationsManagerProps {
   clientId: string;
@@ -74,7 +75,7 @@ export function GovernmentIntegrationsManager({ clientId }: GovernmentIntegratio
   const testarIntegracao = async (integracaoId: string) => {
     setIsLoading(true);
     try {
-      console.log(`Testando integração ${integracaoId}...`);
+      logger.info(`Testando integração ${integracaoId}...`, undefined, 'GovernmentIntegrationsManager');
       
       const dadosTeste = getDadosTeste(integracaoId);
       
@@ -107,7 +108,7 @@ export function GovernmentIntegrationsManager({ clientId }: GovernmentIntegratio
       });
 
     } catch (error) {
-      console.error('Erro no teste:', error);
+      logger.error('Erro no teste:', error, 'GovernmentIntegrationsManager');
       
       setTestResults(prev => ({
         ...prev,

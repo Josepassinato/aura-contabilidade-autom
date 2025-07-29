@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from "@/utils/logger";
 
 interface PaymentAlert {
   alert_id: string;
@@ -28,7 +29,7 @@ export function usePaymentAlerts() {
       
       setAlerts(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar alertas:', error);
+      logger.error('Erro ao carregar alertas:', error, 'UsePaymentAlerts');
       toast({
         title: 'Erro',
         description: 'Não foi possível carregar os alertas de pagamento.',
@@ -53,7 +54,7 @@ export function usePaymentAlerts() {
       await loadPendingAlerts();
       return true;
     } catch (error: any) {
-      console.error('Erro ao verificar pagamentos:', error);
+      logger.error('Erro ao verificar pagamentos:', error, 'UsePaymentAlerts');
       toast({
         title: 'Erro',
         description: 'Erro ao executar verificação de pagamentos.',
@@ -77,7 +78,7 @@ export function usePaymentAlerts() {
       
       return true;
     } catch (error: any) {
-      console.error('Erro ao marcar alerta como enviado:', error);
+      logger.error('Erro ao marcar alerta como enviado:', error, 'UsePaymentAlerts');
       return false;
     }
   };

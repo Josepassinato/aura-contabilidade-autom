@@ -8,6 +8,7 @@ import { AutomationRulesTable } from './AutomationRulesTable';
 import { AutomationAnalytics } from './AutomationAnalytics';
 import { AutomationTester } from './AutomationTester';
 import { AutomationRule } from '@/types/automation';
+import { logger } from "@/utils/logger";
 
 interface AutomationTabsProps {
   rules: AutomationRule[];
@@ -51,7 +52,7 @@ export const AutomationTabs: React.FC<AutomationTabsProps> = ({
               const tabsTrigger = document.querySelector('[value="rules"]') as HTMLElement;
               if (tabsTrigger) tabsTrigger.click();
             } catch (error) {
-              console.error('Error creating rule:', error);
+              logger.error('Error creating rule:', error, 'AutomationTabs');
             }
           }}
         />

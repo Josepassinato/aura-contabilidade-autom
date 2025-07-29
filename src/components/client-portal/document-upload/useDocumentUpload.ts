@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
 import { uploadFile } from "@/services/supabase/storageService";
 import { classifyDocument } from "@/services/fiscal/classificacao/documentClassifier";
+import { logger } from "@/utils/logger";
 
 export interface FileItem {
   id: string;
@@ -74,7 +75,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
           const detectedType = await detectDocumentType(fileItem.file);
           if (detectedType) {
             actualDocType = detectedType;
-            console.log(`Auto-classified document as: ${detectedType}`);
+            logger.info(`Auto-classified document as: ${detectedType}`, undefined, 'UseDocumentUpload');
           }
         }
         
@@ -159,7 +160,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
 
       return successCount > 0;
     } catch (error) {
-      console.error("Erro geral ao fazer upload:", error);
+      logger.error("Erro geral ao fazer upload:", error, 'UseDocumentUpload');
       toast({
         title: "Falha no upload",
         description: "Ocorreu um erro ao enviar os arquivos. Tente novamente.",
@@ -190,7 +191,7 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
       
       return null;
     } catch (error) {
-      console.error("Erro ao detectar tipo de documento:", error);
+      logger.error("Erro ao detectar tipo de documento:", error, 'UseDocumentUpload');
       return null;
     }
   };
@@ -198,16 +199,16 @@ export const useDocumentUpload = ({ clientId, onUploadComplete }: UseDocumentUpl
   // Process document after upload and classification
   const processDocument = async (documentId: string, filePath: string, documentType: string): Promise<void> => {
     try {
-      console.log(`Processando documento ${documentId} do tipo ${documentType}`);
+      logger.info(`Processando documento ${documentId} do tipo ${documentType}`, undefined, 'UseDocumentUpload');
       
       // For fiscal documents, use document classification service 
       if (documentType === 'nota-fiscal') {
         await classifyDocument(documentId, filePath);
       } else {
-        console.log(`Documento ${documentId} registrado para revisão manual`);
+        logger.info(`Documento ${documentId} registrado para revisão manual`, undefined, 'UseDocumentUpload');
       }
     } catch (error) {
-      console.error(`Erro ao processar documento ${documentId}:`, error);
+      logger.error(`Erro ao processar documento ${documentId}:`, error, 'UseDocumentUpload');
     }
   };
 

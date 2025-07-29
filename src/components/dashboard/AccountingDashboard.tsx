@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from "@/utils/logger";
 import { 
   FileText, 
   Calendar, 
@@ -69,7 +70,7 @@ export const AccountingDashboard = () => {
           .eq('accountant_id', user?.id);
 
         if (clientsError) {
-          console.error('Erro ao buscar clientes:', clientsError);
+          logger.error('Erro ao buscar clientes:', clientsError, 'AccountingDashboard');
           return;
         }
 
@@ -80,7 +81,7 @@ export const AccountingDashboard = () => {
           .in('client_id', clientsData?.map(c => c.id) || []);
 
         if (obrigacoesError) {
-          console.error('Erro ao buscar obrigações:', obrigacoesError);
+          logger.error('Erro ao buscar obrigações:', obrigacoesError, 'AccountingDashboard');
         }
 
         // Converter clientes para o formato esperado
@@ -108,7 +109,7 @@ export const AccountingDashboard = () => {
         setTasks(tasksList);
 
       } catch (error) {
-        console.error('Erro ao carregar dashboard:', error);
+        logger.error('Erro ao carregar dashboard:', error, 'AccountingDashboard');
       }
     };
 

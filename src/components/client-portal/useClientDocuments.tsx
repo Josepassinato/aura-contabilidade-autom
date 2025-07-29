@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSupabaseClient } from "@/lib/supabase";
 import { getFileUrl } from "@/services/supabase/storageService";
 import { Document } from "@/lib/supabase";
+import { logger } from "@/utils/logger";
 
 export const useClientDocuments = (clientId: string | null) => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -27,7 +28,7 @@ export const useClientDocuments = (clientId: string | null) => {
         const result = await query.limit(100);
         
         if (result.error) {
-          console.error("Erro ao carregar documentos:", result.error);
+          logger.error("Erro ao carregar documentos:", result.error, 'UseClientDocuments');
           setDocuments([]);
           toast({
             title: "Erro ao carregar documentos",
@@ -57,7 +58,7 @@ export const useClientDocuments = (clientId: string | null) => {
           setDocuments([]);
         }
       } else {
-        console.error("Supabase client não disponível");
+        logger.error("Supabase client não disponível", undefined, 'UseClientDocuments');
         setDocuments([]);
         toast({
           title: "Erro de conexão",
@@ -66,7 +67,7 @@ export const useClientDocuments = (clientId: string | null) => {
         });
       }
     } catch (error) {
-      console.error("Erro ao carregar documentos:", error);
+      logger.error("Erro ao carregar documentos:", error, 'UseClientDocuments');
       setDocuments([]);
       toast({
         title: "Erro ao carregar documentos",
@@ -106,7 +107,7 @@ export const useClientDocuments = (clientId: string | null) => {
         throw new Error("Não foi possível obter a URL do documento");
       }
     } catch (error) {
-      console.error("Erro ao obter URL do documento:", error);
+      logger.error("Erro ao obter URL do documento:", error, 'UseClientDocuments');
       toast({
         title: "Erro ao visualizar documento",
         description: "Não foi possível acessar este documento. Tente novamente mais tarde.",

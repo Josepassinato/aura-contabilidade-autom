@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from "@/utils/logger";
 import {
   Activity,
   AlertTriangle,
@@ -107,7 +108,7 @@ const AutomationMonitoringDashboard = () => {
       setQueueMetrics(metrics);
 
     } catch (error: any) {
-      console.error('Error loading monitoring data:', error);
+      logger.error('Error loading monitoring data:', error, 'AutomationMonitoringDashboard');
       toast({
         title: "Erro",
         description: "Falha ao carregar dados de monitoramento",
@@ -132,7 +133,7 @@ const AutomationMonitoringDashboard = () => {
       // Reload data after trigger
       await loadMonitoringData();
     } catch (error: any) {
-      console.error('Error triggering automation engine:', error);
+      logger.error('Error triggering automation engine:', error, 'AutomationMonitoringDashboard');
       toast({
         title: "Erro",
         description: "Falha ao acionar o engine de automação",
@@ -155,7 +156,7 @@ const AutomationMonitoringDashboard = () => {
       // Reload data after worker run
       await loadMonitoringData();
     } catch (error: any) {
-      console.error('Error running worker:', error);
+      logger.error('Error running worker:', error, 'AutomationMonitoringDashboard');
       toast({
         title: "Erro",
         description: "Falha ao executar worker",
