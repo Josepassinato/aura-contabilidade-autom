@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Clock, AlertCircle, RefreshCcw, Play, Trash2 } from "lucide-react";
@@ -92,7 +93,7 @@ export function PagamentosAutomaticos() {
       await reprocessarJob(jobId);
       carregarJobs();
     } catch (error) {
-      console.error("Erro ao reprocessar job:", error);
+      logger.error("Erro ao reprocessar job de pagamento", error, "PagamentosAutomaticos");
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +130,7 @@ export function PagamentosAutomaticos() {
       // Atualizar lista de jobs
       carregarJobs();
     } catch (error) {
-      console.error("Erro ao simular pagamento:", error);
+      logger.error("Erro ao simular pagamento automático", error, "PagamentosAutomaticos");
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +147,7 @@ export function PagamentosAutomaticos() {
       });
       carregarJobs();
     } catch (error) {
-      console.error("Erro na verificação manual:", error);
+      logger.error("Erro na verificação manual de pagamentos", error, "PagamentosAutomaticos");
     } finally {
       setIsLoading(false);
     }

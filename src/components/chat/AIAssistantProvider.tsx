@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 interface AIAssistantContextType {
   isOpenAIConfigured: boolean;
@@ -16,14 +17,14 @@ export function AIAssistantProvider({ children }: { children: React.ReactNode })
       const { data, error } = await supabase.functions.invoke('check-openai-secret');
       
       if (error) {
-        console.error('Error checking OpenAI configuration:', error);
+        logger.error('Erro ao verificar configuração OpenAI (provider)', error, 'AIAssistantProvider');
         setIsOpenAIConfigured(false);
         return;
       }
 
       setIsOpenAIConfigured(data?.isConfigured || false);
     } catch (error) {
-      console.error('Error checking OpenAI configuration:', error);
+      logger.error('Erro na verificação OpenAI (provider)', error, 'AIAssistantProvider');
       setIsOpenAIConfigured(false);
     }
   };

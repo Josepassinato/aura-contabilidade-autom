@@ -23,7 +23,9 @@ function App() {
         showDetails={true}
         onError={(error, errorInfo) => {
           // Log error to external service in production
-          console.error('Global app error:', error, errorInfo);
+          import('@/utils/logger').then(({ logger }) => {
+            logger.error('Erro global da aplicação', { error, errorInfo }, 'App');
+          });
         }}
       >
         <LoadingProvider>

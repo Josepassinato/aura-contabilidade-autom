@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -81,7 +82,7 @@ export function AnalyticsDashboard() {
         loadAlerts()
       ]);
     } catch (error) {
-      console.error('Erro ao carregar dados de analytics:', error);
+      logger.error('Erro ao carregar dados de analytics', error, 'AnalyticsDashboard');
       toast({
         title: "Erro",
         description: "Falha ao carregar dados de analytics",
@@ -316,7 +317,7 @@ export function AnalyticsDashboard() {
 
       await loadAnalyticsData();
     } catch (error) {
-      console.error('Erro ao coletar métricas:', error);
+      logger.error('Erro ao coletar métricas do sistema', error, 'AnalyticsDashboard');
       toast({
         title: "Erro",
         description: "Falha ao coletar métricas",

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/logger';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -51,7 +52,7 @@ export function AIAssistant() {
         const { data } = await supabase.functions.invoke('check-openai-secret');
         setIsOpenAIConfigured(data?.isConfigured || false);
       } catch (error) {
-        console.error('Error checking OpenAI configuration:', error);
+        logger.error('Erro ao verificar configuração OpenAI', error, 'AIAssistant');
         setIsOpenAIConfigured(false);
       }
     };
@@ -124,7 +125,7 @@ export function AIAssistant() {
         throw new Error(data.error || 'Erro desconhecido');
       }
     } catch (error: any) {
-      console.error('Error sending message:', error);
+      logger.error('Erro ao enviar mensagem para IA', error, 'AIAssistant');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/utils/logger";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CashFlowPrediction, TaxOptimizationPrediction, PredictiveAnalyticsService } from "@/services/analytics/predictiveAnalytics";
 import { LineChart, BarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -36,7 +37,7 @@ export function PredictiveAnalysis({ clientId }: PredictiveAnalysisProps) {
       const data = await PredictiveAnalyticsService.generateCashFlowPrediction(clientId);
       setCashFlowData(data);
     } catch (error) {
-      console.error("Erro ao carregar previsão de fluxo de caixa:", error);
+      logger.error("Erro ao carregar previsão de fluxo de caixa", error, "PredictiveAnalysis");
     } finally {
       setLoading(prev => ({ ...prev, cashFlow: false }));
     }
@@ -49,7 +50,7 @@ export function PredictiveAnalysis({ clientId }: PredictiveAnalysisProps) {
       const data = await PredictiveAnalyticsService.analyzeTaxRegimes(clientId);
       setTaxData(data);
     } catch (error) {
-      console.error("Erro ao carregar análise tributária:", error);
+      logger.error("Erro ao carregar análise tributária", error, "PredictiveAnalysis");
     } finally {
       setLoading(prev => ({ ...prev, tax: false }));
     }

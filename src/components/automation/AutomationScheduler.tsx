@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,7 +86,7 @@ const AutomationScheduler = () => {
       
       setJobs(jobsWithNextRun);
     } catch (error: any) {
-      console.error('Error loading scheduled jobs:', error);
+      logger.error('Erro ao carregar tarefas agendadas', error, 'AutomationScheduler');
       toast({
         title: "Erro",
         description: "Falha ao carregar tarefas agendadas",
@@ -148,7 +149,7 @@ const AutomationScheduler = () => {
       });
 
     } catch (error: any) {
-      console.error('Error creating scheduled job:', error);
+      logger.error('Erro ao criar tarefa agendada', error, 'AutomationScheduler');
       toast({
         title: "Erro",
         description: "Falha ao criar tarefa agendada",
@@ -177,7 +178,7 @@ const AutomationScheduler = () => {
         description: `A tarefa foi ${enabled ? 'ativada' : 'desativada'} com sucesso`
       });
     } catch (error: any) {
-      console.error('Error toggling job:', error);
+      logger.error('Erro ao alterar status da tarefa', error, 'AutomationScheduler');
       toast({
         title: "Erro",
         description: "Falha ao alterar status da tarefa",
@@ -212,7 +213,7 @@ const AutomationScheduler = () => {
       ));
 
     } catch (error: any) {
-      console.error('Error executing job:', error);
+      logger.error('Erro ao executar tarefa agendada', error, 'AutomationScheduler');
       
       // Update error count
       setJobs(prev => prev.map(j => 
@@ -247,7 +248,7 @@ const AutomationScheduler = () => {
         description: "Tarefa agendada removida com sucesso"
       });
     } catch (error: any) {
-      console.error('Error deleting job:', error);
+      logger.error('Erro ao deletar tarefa agendada', error, 'AutomationScheduler');
       toast({
         title: "Erro",
         description: "Falha ao remover tarefa",

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +33,7 @@ export function AnomalyDetector({ clientId, onAnomalySelected }: AnomalyDetector
       setAnomalies(result);
       setLastUpdated(new Date());
     } catch (error) {
-      console.error("Erro ao detectar anomalias:", error);
+      logger.error("Erro ao detectar anomalias contábeis", error, "AnomalyDetector");
     } finally {
       setLoading(false);
     }

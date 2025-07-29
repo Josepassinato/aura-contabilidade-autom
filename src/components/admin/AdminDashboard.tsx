@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -146,7 +147,7 @@ export const AdminDashboard = () => {
         });
 
       } catch (error) {
-        console.error('Erro ao buscar métricas:', error);
+        logger.error('Erro ao buscar métricas administrativas', error, 'AdminDashboard');
         // Fallback para dados mock em caso de erro
         setMetrics({
           totalFirms: 0,
@@ -214,7 +215,7 @@ export const AdminDashboard = () => {
         setAlerts(formattedAlerts.slice(0, 5));
 
       } catch (error) {
-        console.error('Erro ao buscar alertas:', error);
+        logger.error('Erro ao buscar alertas do sistema', error, 'AdminDashboard');
         setAlerts([]);
       }
     };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Loader2, Bot, Zap, Brain } from 'lucide-react';
@@ -34,7 +35,7 @@ export const AIStatusChecker = () => {
         variant: data.isConfigured ? "default" : "destructive",
       });
     } catch (error: any) {
-      console.error('Erro ao verificar IA:', error);
+      logger.error('Erro ao verificar configuração da IA', error, 'AIStatusChecker');
       toast({
         title: "Erro na verificação",
         description: error.message,
@@ -70,7 +71,7 @@ export const AIStatusChecker = () => {
         description: "Classificação automática realizada com sucesso",
       });
     } catch (error: any) {
-      console.error('Erro no teste de IA:', error);
+      logger.error('Erro no teste de classificação IA', error, 'AIStatusChecker');
       setAiTest({
         success: false,
         response: error.message

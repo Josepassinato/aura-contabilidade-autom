@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +43,7 @@ export const AutomationTester: React.FC<AutomationTesterProps> = ({ rules }) => 
       });
 
     } catch (error) {
-      console.error('Erro ao testar regra:', error);
+      logger.error('Erro ao testar regra de automação', error, 'AutomationTester');
       setTestResults(prev => ({ ...prev, [rule.id]: 'error' }));
       
       toast({

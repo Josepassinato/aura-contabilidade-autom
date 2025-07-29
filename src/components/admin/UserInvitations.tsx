@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { logger } from '@/utils/logger';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +66,7 @@ export const UserInvitations = () => {
       
       setInvitations(transformedData);
     } catch (error) {
-      console.error('Erro ao carregar convites:', error);
+      logger.error('Erro ao carregar convites de usuários', error, 'UserInvitations');
       toast({
         title: "Erro",
         description: "Não foi possível carregar os convites",
@@ -132,7 +133,7 @@ export const UserInvitations = () => {
       form.reset();
       loadInvitations();
     } catch (error: any) {
-      console.error('Erro ao criar convite:', error);
+      logger.error('Erro ao criar convite de usuário', error, 'UserInvitations');
       toast({
         title: "Erro",
         description: error.message || "Não foi possível enviar o convite",
@@ -168,7 +169,7 @@ export const UserInvitations = () => {
 
       loadInvitations();
     } catch (error) {
-      console.error('Erro ao excluir convite:', error);
+      logger.error('Erro ao excluir convite de usuário', error, 'UserInvitations');
       toast({
         title: "Erro",
         description: "Não foi possível excluir o convite",
