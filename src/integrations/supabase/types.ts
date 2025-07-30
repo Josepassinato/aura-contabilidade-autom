@@ -2783,6 +2783,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      audit_rls_access: {
+        Args: { table_name: string; operation: string; user_role?: string }
+        Returns: undefined
+      }
       calculate_next_cron_run: {
         Args: { cron_expression: string; from_time?: string }
         Returns: string
