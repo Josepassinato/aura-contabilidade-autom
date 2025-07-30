@@ -1,5 +1,6 @@
 
-import { useSupabaseQuery, useRetry } from './useSupabaseQuery';
+import { useRetry } from './useSupabaseQuery';
+import { useReferenceQuery, useOperationalQuery } from './useCachedSupabaseQuery';
 import { supabase } from '@/lib/supabase/client';
 import { PostgrestError } from '@supabase/supabase-js';
 
@@ -53,7 +54,7 @@ type FinancialData = {
 
 // Hook to fetch and cache client financial data with react-query
 export function useClientFinancialData(clientId: string | null, enabled = true) {
-  return useSupabaseQuery(
+  return useOperationalQuery(
     ['client', clientId, 'financial'],
     async () => {
       if (!clientId) return { data: null, error: null };
@@ -72,7 +73,6 @@ export function useClientFinancialData(clientId: string | null, enabled = true) 
     },
     { 
       enabled: !!clientId && enabled,
-      staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
 }
