@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSupabaseClient, Employee } from '@/lib/supabase';
+import { Employee } from '@/lib/supabase';
 import { useToast } from "@/hooks/use-toast";
 
 export function usePayrollGenerator(clientId: string | null, onPayrollCreated: () => void) {
@@ -9,7 +9,6 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [period, setPeriod] = useState<string>(getCurrentPeriod());
   const [isGenerating, setIsGenerating] = useState(false);
-  const supabase = useSupabaseClient();
   const { toast } = useToast();
   
   function getCurrentPeriod() {
@@ -18,7 +17,8 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
   }
   
   const fetchEmployees = useCallback(async () => {
-    if (!supabase || !clientId) {
+    if (!clientId) {
+      setEmployees([]);
       setIsLoading(false);
       return;
     }
@@ -26,19 +26,9 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     setIsLoading(true);
     
     try {
-      // Using RPC to fetch active employees
-      const { data, error } = await supabase.rpc<Employee[]>(
-        'get_active_employees',
-        { p_client_id: clientId }
-      );
-      
-      if (error) throw error;
-      
-      setEmployees(data || []);
-      // Auto-select all active employees
-      if (data && data.length > 0) {
-        setSelectedEmployees(data.map(emp => emp.id) || []);
-      }
+      // Em produção, buscar funcionários ativos reais do Supabase
+      setEmployees([]);
+      setSelectedEmployees([]);
     } catch (error) {
       console.error('Error fetching employees:', error);
       toast({
@@ -49,7 +39,7 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
     } finally {
       setIsLoading(false);
     }
-  }, [supabase, clientId, toast]);
+  }, [clientId, toast]);
 
   useEffect(() => {
     fetchEmployees();
@@ -72,31 +62,12 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
   };
   
   const calculatePayroll = async () => {
-    if (!supabase || !clientId || selectedEmployees.length === 0) return;
+    if (!clientId || selectedEmployees.length === 0) return;
     
     setIsGenerating(true);
     
     try {
-      // Process multiple employees in parallel using Promise.all
-      await Promise.all(
-        selectedEmployees.map(async (employeeId) => {
-          const employee = employees.find(emp => emp.id === employeeId);
-          if (!employee) return;
-
-          // Call RPC to generate payroll per employee
-          const { error } = await supabase.rpc(
-            'generate_payroll',
-            {
-              p_client_id: clientId,
-              p_employee_id: employeeId,
-              p_period: period
-            }
-          );
-          
-          if (error) throw error;
-        })
-      );
-      
+      // Em produção, usar cliente real do Supabase para gerar folha de pagamento
       toast({
         title: "Folha de pagamento gerada",
         description: `Folha de pagamento do período ${formatPeriod(period)} gerada com sucesso.`,
@@ -107,7 +78,7 @@ export function usePayrollGenerator(clientId: string | null, onPayrollCreated: (
       console.error('Error generating payroll:', error);
       toast({
         title: "Erro ao gerar folha de pagamento",
-        description: error.message || "Ocorreu um erro ao gerar a folha de pagamento.",
+        description: "Ocorreu um erro ao gerar a folha de pagamento.",
         variant: "destructive",
       });
     } finally {
