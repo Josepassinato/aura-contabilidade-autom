@@ -8,6 +8,23 @@
 import { supabase } from '@/lib/supabase/client';
 
 /**
+ * Helper para verificar se dados do Supabase são válidos
+ */
+export const isValidData = (data: any): boolean => {
+  return data && !data.error && typeof data === 'object';
+};
+
+/**
+ * Helper para extrair dados seguros do resultado do Supabase
+ */
+export const extractSafeData = (result: any): any => {
+  if (!result || result.error || !result.data) {
+    return null;
+  }
+  return result.data;
+};
+
+/**
  * Wrapper seguro para queries do Supabase que força tipos any quando necessário
  */
 export const safeSupabaseQuery = {
