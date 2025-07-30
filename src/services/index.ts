@@ -35,3 +35,6 @@ export * from './supabase/obrigacoesService';
 export * from './supabase/storageService';
 export * from './governamental/procuracaoService';
 export * from './relatorios/reportsService';
+
+// Types
+export * from '../types/pagination';

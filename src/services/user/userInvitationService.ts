@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { UserInvitation, UpdateInvitationData } from '@/types/invitations';
+import { PaginationOptions, PaginatedResponse } from '@/types/pagination';
 
 /**
  * Serviço para operações relacionadas aos convites de usuário
@@ -68,28 +69,124 @@ export class UserInvitationService {
   }
 
   /**
-   * Lista convites pendentes
+   * Lista convites pendentes com paginação
    */
-  static async getPendingInvitations() {
-    const { data, error } = await supabase
-      .from('user_invitations')
-      .select('*')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+  static async getPendingInvitations(options?: PaginationOptions): Promise<PaginatedResponse<any>> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
 
-    return { data, error };
+    const { data, error, count } = await supabase
+      .from('user_invitations')
+      .select('*', { count: 'exact' })
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    const totalPages = count ? Math.ceil(count / pageSize) : 0;
+
+    return {
+      data,
+      error,
+      count,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    };
   }
 
   /**
-   * Lista todos os convites
+   * Lista todos os convites com paginação
    */
-  static async getAllInvitations() {
-    const { data, error } = await supabase
-      .from('user_invitations')
-      .select('*')
-      .order('created_at', { ascending: false });
+  static async getAllInvitations(options?: PaginationOptions): Promise<PaginatedResponse<any>> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
 
-    return { data, error };
+    const { data, error, count } = await supabase
+      .from('user_invitations')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    const totalPages = count ? Math.ceil(count / pageSize) : 0;
+
+    return {
+      data,
+      error,
+      count,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    };
+  }
+
+  /**
+   * Lista convites filtrados por status com paginação
+   */
+  static async getInvitationsByStatus(
+    status: 'pending' | 'accepted' | 'expired',
+    options?: PaginationOptions
+  ): Promise<PaginatedResponse<any>> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
+      .from('user_invitations')
+      .select('*', { count: 'exact' })
+      .eq('status', status)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    const totalPages = count ? Math.ceil(count / pageSize) : 0;
+
+    return {
+      data,
+      error,
+      count,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    };
+  }
+
+  /**
+   * Busca convites com filtros e paginação
+   */
+  static async searchInvitations(
+    searchTerm: string,
+    options?: PaginationOptions
+  ): Promise<PaginatedResponse<any>> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
+      .from('user_invitations')
+      .select('*', { count: 'exact' })
+      .or(`email.ilike.%${searchTerm}%,invited_by_name.ilike.%${searchTerm}%`)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    const totalPages = count ? Math.ceil(count / pageSize) : 0;
+
+    return {
+      data,
+      error,
+      count,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    };
   }
 
   /**
