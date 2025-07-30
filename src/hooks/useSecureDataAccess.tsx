@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/auth/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { SecurityService, ClientsQueryService, ReportsQueryService, DocumentsQueryService } from '@/services';
 
 /**
  * Hook para garantir acesso seguro aos dados baseado no papel do usuário
@@ -29,85 +30,72 @@ export const useSecureDataAccess = () => {
   }, [isAuthenticated, userProfile]);
 
   // Função segura para buscar dados de clientes
-  const getSecureClientQuery = useCallback(() => {
+  const getSecureClientData = useCallback(async () => {
     if (!isAuthenticated || !userProfile) {
       throw new Error('Usuário não autenticado');
     }
 
-    let query = supabase
-      .from('accounting_clients')
-      .select('*');
-
-    // Se for cliente, filtrar apenas sua empresa
+    // Se for cliente, buscar apenas sua empresa
     if (userProfile.role === 'client') {
       if (!userProfile.company_id) {
         throw new Error('Cliente não possui empresa associada');
       }
-      query = query.eq('id', userProfile.company_id);
+      return await ClientsQueryService.getClientById(userProfile.company_id);
     }
+    
     // Contadores e admins podem ver todos os clientes
-
-    return query;
+    if (userProfile.role === 'accountant') {
+      return await ClientsQueryService.getAccountantClients(userProfile.id);
+    }
+    
+    // Admins veem todos
+    return await ClientsQueryService.getAllClients();
   }, [isAuthenticated, userProfile]);
 
   // Função segura para buscar relatórios
-  const getSecureReportsQuery = useCallback((clientId?: string) => {
+  const getSecureReportsData = useCallback(async (clientId?: string) => {
     if (!isAuthenticated || !userProfile) {
       throw new Error('Usuário não autenticado');
     }
-
-    let query = supabase
-      .from('generated_reports')
-      .select(`
-        *,
-        accounting_clients (
-          id,
-          name,
-          accounting_firms (
-            name,
-            cnpj,
-            phone,
-            email
-          )
-        )
-      `);
 
     // Se for cliente, filtrar apenas relatórios da própria empresa
     if (userProfile.role === 'client') {
       if (!userProfile.company_id) {
         throw new Error('Cliente não possui empresa associada');
       }
-      query = query.eq('client_id', userProfile.company_id);
-    } else if (clientId && userProfile.role !== 'admin') {
-      // Para contadores, se especificado um cliente, validar acesso
-      query = query.eq('client_id', clientId);
+      return await ReportsQueryService.getClientReports(userProfile.company_id);
     }
-
-    return query;
+    
+    // Para contadores e admins
+    if (clientId) {
+      return await ReportsQueryService.getClientReports(clientId);
+    }
+    
+    // Todos os relatórios para admins
+    return await ReportsQueryService.getAllReports();
   }, [isAuthenticated, userProfile]);
 
   // Função segura para buscar documentos
-  const getSecureDocumentsQuery = useCallback((clientId?: string) => {
+  const getSecureDocumentsData = useCallback(async (clientId?: string) => {
     if (!isAuthenticated || !userProfile) {
       throw new Error('Usuário não autenticado');
     }
-
-    let query = supabase
-      .from('client_documents')
-      .select('*');
 
     // Se for cliente, filtrar apenas documentos da própria empresa
     if (userProfile.role === 'client') {
       if (!userProfile.company_id) {
         throw new Error('Cliente não possui empresa associada');
       }
-      query = query.eq('client_id', userProfile.company_id);
-    } else if (clientId && userProfile.role !== 'admin') {
-      // Para contadores, se especificado um cliente, validar acesso
-      query = query.eq('client_id', clientId);
+      return await DocumentsQueryService.getClientDocuments(userProfile.company_id);
     }
-
-    return query;
+    
+    // Para contadores e admins
+    if (clientId) {
+      return await DocumentsQueryService.getClientDocuments(clientId);
+    }
+    
+    // Todos os documentos para admins
+    return await DocumentsQueryService.getAllDocuments();
   }, [isAuthenticated, userProfile]);
 
   // Função para validar e executar operações seguras
@@ -149,9 +137,9 @@ export const useSecureDataAccess = () => {
 
   return {
     validateClientAccess,
-    getSecureClientQuery,
-    getSecureReportsQuery,
-    getSecureDocumentsQuery,
+    getSecureClientData,
+    getSecureReportsData,
+    getSecureDocumentsData,
     executeSecureOperation,
     canGenerateReports,
     canManageClients,
@@ -159,6 +147,10 @@ export const useSecureDataAccess = () => {
     isAuthenticated,
     currentUserId: userProfile?.id,
     currentCompanyId: userProfile?.company_id,
-    userRole: userProfile?.role
+    userRole: userProfile?.role,
+    // Compatibilidade com versões antigas
+    getSecureClientQuery: () => supabase.from('accounting_clients').select('*'),
+    getSecureReportsQuery: () => supabase.from('generated_reports').select('*'),
+    getSecureDocumentsQuery: () => supabase.from('client_documents').select('*')
   };
 };

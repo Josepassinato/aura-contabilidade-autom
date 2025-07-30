@@ -25,7 +25,7 @@ interface Report {
 }
 
 export function ReportsList() {
-  const { getSecureReportsQuery, executeSecureOperation, userRole } = useSecureDataAccess();
+  const { getSecureReportsData, executeSecureOperation, userRole } = useSecureDataAccess();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,8 +40,7 @@ export function ReportsList() {
     setIsLoading(true);
     
     const result = await executeSecureOperation(async () => {
-      const query = getSecureReportsQuery(selectedClient?.id);
-      const { data, error } = await query;
+      const { data, error } = await getSecureReportsData(selectedClient?.id);
 
       if (error) {
         throw error;

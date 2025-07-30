@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { UserInvitation, UpdateInvitationData } from '@/types/invitations';
+import { AuthService, UserInvitationService, UserProfileService } from '@/services';
 
 const inviteSignupSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -55,12 +55,7 @@ export const InviteSignupForm = () => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('user_invitations')
-          .select('id, email, role, invited_by_name, expires_at')
-          .eq('token', token)
-          .eq('status', 'pending')
-          .single();
+        const { data, error } = await UserInvitationService.validateInvitation(token);
 
         if (error || !data) {
           setInviteError('Convite inválido ou expirado');
@@ -109,16 +104,14 @@ export const InviteSignupForm = () => {
     setLoading(true);
     try {
       // Criar conta no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.fullName,
-            role: invitation.role,
-          }
+      const { data: authData, error: authError } = await AuthService.signUp(
+        data.email,
+        data.password,
+        {
+          full_name: data.fullName,
+          role: invitation.role,
         }
-      });
+      );
 
       if (authError) {
         throw authError;
@@ -126,14 +119,12 @@ export const InviteSignupForm = () => {
 
       if (authData.user) {
         // Criar perfil do usuário
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            user_id: authData.user.id,
-            full_name: data.fullName,
-            email: data.email,
-            role: invitation.role,
-          });
+        const { error: profileError } = await UserProfileService.createUserProfile({
+          user_id: authData.user.id,
+          full_name: data.fullName,
+          email: data.email,
+          role: invitation.role as any,
+        });
 
         if (profileError) {
           console.error('Erro ao criar perfil:', profileError);
@@ -146,10 +137,7 @@ export const InviteSignupForm = () => {
           accepted_at: new Date().toISOString()
         };
 
-        await supabase
-          .from('user_invitations')
-          .update(updateData)
-          .eq('id', invitation.id);
+        await UserInvitationService.updateInvitationStatus(invitation.id, updateData);
 
         toast({
           title: "Conta criada com sucesso!",

@@ -6,6 +6,7 @@ import { supabase, supabaseAuth, getUserProfile } from '@/lib/supabaseService';
 import { useToast } from '@/hooks/use-toast';
 import { Session, User } from '@supabase/supabase-js';
 import { cleanupAuthState, checkForAuthLimboState } from './cleanupUtils';
+import { AuthService, UserProfileService } from '@/services';
 
 // Custom interface for mock user that has all required User properties
 interface MockUser extends SupabaseUser {
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkForAuthLimboState();
     
     // 1. Set up auth event listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    const { data: { subscription } } = AuthService.onAuthStateChange(async (event, newSession) => {
       console.log('Auth state changed:', event);
       
       // Update session and user states immediately (synchronous)
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setupMockSession(userRole || 'accountant');
         } else {
           // Check real Supabase session
-          const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+          const { data: { session: existingSession }, error } = await AuthService.getSession();
           
           if (error) {
             throw error;
@@ -117,11 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       // Fetch real profile from user_profiles table
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const { data, error } = await UserProfileService.getUserProfile(userId);
 
       if (error) {
         console.error('Error fetching user profile:', error);
@@ -193,10 +190,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       cleanupAuthState();
       
       // Use real Supabase authentication
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await AuthService.signInWithPassword(email, password);
       
       if (error) {
         // Check if it's a demo login
@@ -262,7 +256,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Try real Supabase logout
       try {
-        await supabase.auth.signOut();
+        await AuthService.signOut();
       } catch (err) {
         // Continue even if this fails
       }
@@ -312,15 +306,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
       // Use real Supabase signup
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: userData.full_name || userData.name,
-            role: userData.role || 'client',
-          }
-        }
+      const { data, error } = await AuthService.signUp(email, password, {
+        full_name: userData.full_name || userData.name,
+        role: userData.role || 'client',
       });
 
       if (error) throw error;
