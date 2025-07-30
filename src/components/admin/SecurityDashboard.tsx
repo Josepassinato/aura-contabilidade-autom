@@ -44,34 +44,41 @@ export function SecurityDashboard() {
         .limit(20);
 
       if (metricsError) throw metricsError;
-      const typedMetrics = (metricsData || []).map(item => ({
-        metric_name: item.metric_name as string,
-        metric_value: item.metric_value as number,
-        timestamp: item.timestamp as string,
-        labels: item.labels as any
-      }));
-      setMetrics(typedMetrics);
+      if (metricsData) {
+        const typedMetrics = metricsData.map((item: any) => ({
+          metric_name: item.metric_name as string,
+          metric_value: item.metric_value as number,
+          timestamp: item.timestamp as string,
+          labels: item.labels as any
+        }));
+        setMetrics(typedMetrics);
+      }
 
       // Load recent validation results - apenas campos necessários
       const { data: validationData, error: validationError } = await supabase
         .from('automated_actions_log')
         .select('metadata')
-        .eq('action_type', 'validation_service')
+        .eq('action_type', 'validation_service' as any)
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (validationError) throw validationError;
       
-      const parsedValidations = validationData?.map(log => {
-        try {
-          const metadata = log.metadata as any;
-          return metadata?.validation_result;
-        } catch {
-          return null;
-        }
-      }).filter(Boolean) || [];
+      if (validationData) {
+        const parsedValidations = validationData.map((log: any) => {
+          try {
+            if (log && log.metadata) {
+              const metadata = log.metadata as any;
+              return metadata?.validation_result;
+            }
+            return null;
+          } catch {
+            return null;
+          }
+        }).filter(Boolean) || [];
+        setValidationResults(parsedValidations);
+      }
 
-      setValidationResults(parsedValidations);
       setLastUpdate(new Date());
 
     } catch (error) {
