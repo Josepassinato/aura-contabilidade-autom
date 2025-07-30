@@ -105,83 +105,8 @@ export default function GestaoRiscos() {
 
   const loadRiskProfiles = async () => {
     try {
-      // Simulação de dados de perfis de risco
-      const mockProfiles: RiskProfile[] = [
-        {
-          id: 'profile-1',
-          client_id: 'client-1',
-          client_name: 'Empresa Teste LTDA',
-          overall_score: 72,
-          risk_level: 'medium',
-          factors: {
-            liquidity_risk: 65,
-            credit_risk: 78,
-            operational_risk: 70,
-            market_risk: 75,
-            compliance_risk: 68
-          },
-          trends: {
-            monthly_change: -5,
-            quarterly_change: -12
-          },
-          last_updated: new Date().toISOString(),
-          recommendations: [
-            'Melhorar gestão de fluxo de caixa',
-            'Diversificar base de clientes',
-            'Implementar controles internos adicionais'
-          ]
-        },
-        {
-          id: 'profile-2',
-          client_id: 'client-2',
-          client_name: 'Outro Cliente LTDA',
-          overall_score: 45,
-          risk_level: 'high',
-          factors: {
-            liquidity_risk: 85,
-            credit_risk: 60,
-            operational_risk: 40,
-            market_risk: 35,
-            compliance_risk: 45
-          },
-          trends: {
-            monthly_change: 8,
-            quarterly_change: 15
-          },
-          last_updated: new Date().toISOString(),
-          recommendations: [
-            'Urgente: Revisar posição de liquidez',
-            'Estabelecer reserva de emergência',
-            'Renegociar prazos de pagamento'
-          ]
-        },
-        {
-          id: 'profile-3',
-          client_id: 'client-3',
-          client_name: 'Cliente Exemplo LTDA',
-          overall_score: 88,
-          risk_level: 'low',
-          factors: {
-            liquidity_risk: 90,
-            credit_risk: 85,
-            operational_risk: 90,
-            market_risk: 85,
-            compliance_risk: 95
-          },
-          trends: {
-            monthly_change: 2,
-            quarterly_change: 5
-          },
-          last_updated: new Date().toISOString(),
-          recommendations: [
-            'Manter práticas atuais',
-            'Considerar expansão controlada',
-            'Monitorar tendências do mercado'
-          ]
-        }
-      ];
-      
-      setRiskProfiles(mockProfiles);
+      // Em produção, buscar perfis de risco reais do Supabase
+      setRiskProfiles([]);
     } catch (error) {
       console.error('Error loading risk profiles:', error);
     }
@@ -189,50 +114,8 @@ export default function GestaoRiscos() {
 
   const loadRiskAlerts = async () => {
     try {
-      // Simulação de alertas de risco
-      const mockAlerts: RiskAlert[] = [
-        {
-          id: 'alert-1',
-          client_id: 'client-2',
-          client_name: 'Outro Cliente LTDA',
-          risk_type: 'Liquidez',
-          severity: 'critical',
-          description: 'Índice de liquidez abaixo do limite crítico',
-          current_value: 0.8,
-          threshold_value: 1.2,
-          trend: 'deteriorating',
-          detected_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          status: 'active'
-        },
-        {
-          id: 'alert-2',
-          client_id: 'client-1',
-          client_name: 'Empresa Teste LTDA',
-          risk_type: 'Crédito',
-          severity: 'high',
-          description: 'Aumento significativo na inadimplência de clientes',
-          current_value: 15.5,
-          threshold_value: 10.0,
-          trend: 'deteriorating',
-          detected_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          status: 'active'
-        },
-        {
-          id: 'alert-3',
-          client_id: 'client-1',
-          client_name: 'Empresa Teste LTDA',
-          risk_type: 'Operacional',
-          severity: 'medium',
-          description: 'Variação nos padrões operacionais detectada',
-          current_value: 25.0,
-          threshold_value: 20.0,
-          trend: 'stable',
-          detected_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          status: 'acknowledged'
-        }
-      ];
-      
-      setRiskAlerts(mockAlerts);
+      // Em produção, buscar alertas de risco reais do Supabase
+      setRiskAlerts([]);
     } catch (error) {
       console.error('Error loading risk alerts:', error);
     }
@@ -240,19 +123,13 @@ export default function GestaoRiscos() {
 
   const loadMetrics = async () => {
     try {
-      // Calcular métricas baseadas nos dados simulados
-      const totalClients = 25;
-      const highRiskClients = 6;
-      const activeAlerts = 8;
-      const avgRiskScore = 68;
-      const portfolioHealth = 75;
-
+      // Em produção, calcular métricas baseadas nos dados reais
       setMetrics({
-        total_clients: totalClients,
-        high_risk_clients: highRiskClients,
-        active_alerts: activeAlerts,
-        avg_risk_score: avgRiskScore,
-        portfolio_health: portfolioHealth
+        total_clients: 0,
+        high_risk_clients: 0,
+        active_alerts: 0,
+        avg_risk_score: 0,
+        portfolio_health: 0
       });
     } catch (error) {
       console.error('Error loading metrics:', error);

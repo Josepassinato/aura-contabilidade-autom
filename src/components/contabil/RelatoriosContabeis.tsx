@@ -61,39 +61,8 @@ export function RelatoriosContabeis() {
 
   const loadRelatoriosGerados = async () => {
     try {
-      // Simulação de relatórios gerados (em produção viria do banco)
-      const mockRelatorios: RelatorioGerado[] = [
-        {
-          id: '1',
-          tipo: 'dre',
-          titulo: 'DRE - Janeiro 2024',
-          data_geracao: new Date().toISOString(),
-          status: 'concluido',
-          arquivo_url: '/relatorios/dre-jan-2024.pdf',
-          tamanho_arquivo: 245760,
-          cliente_nome: 'Empresa ABC Ltda'
-        },
-        {
-          id: '2',
-          tipo: 'balanco_patrimonial',
-          titulo: 'Balanço Patrimonial - Dezembro 2023',
-          data_geracao: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          status: 'concluido',
-          arquivo_url: '/relatorios/balanco-dez-2023.pdf',
-          tamanho_arquivo: 320480,
-          cliente_nome: 'Empresa ABC Ltda'
-        },
-        {
-          id: '3',
-          tipo: 'fluxo_caixa',
-          titulo: 'Fluxo de Caixa - Janeiro 2024',
-          data_geracao: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          status: 'processando',
-          cliente_nome: 'Empresa XYZ Ltda'
-        }
-      ];
-
-      setRelatoriosGerados(mockRelatorios);
+      // Em produção, buscar relatórios reais do Supabase
+      setRelatoriosGerados([]);
     } catch (error) {
       console.error('Erro ao carregar relatórios:', error);
     }

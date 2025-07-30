@@ -46,63 +46,8 @@ export function AnomalyAlerts() {
   }, []);
 
   const loadAlerts = () => {
-    // Simulando dados de alertas de anomalias
-    const mockAlerts: AnomalyAlert[] = [
-      {
-        id: '1',
-        type: 'revenue_spike',
-        severity: 'high',
-        title: 'Pico de Receita Detectado',
-        message: 'Receita 45% acima da média para Empresa Teste LTDA em Janeiro/2024',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 horas atrás
-        confidence: 0.89,
-        value: 150000,
-        expected_value: 103000,
-        is_read: false,
-        is_dismissed: false
-      },
-      {
-        id: '2',
-        type: 'duplicate_detection',
-        severity: 'critical',
-        title: 'Possível Duplicação Detectada',
-        message: 'Lançamentos duplicados identificados no período de Janeiro/2024',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 horas atrás
-        confidence: 0.95,
-        is_read: false,
-        is_dismissed: false
-      },
-      {
-        id: '3',
-        type: 'expense_anomaly',
-        severity: 'medium',
-        title: 'Padrão de Despesas Atípico',
-        message: 'Despesas seguindo padrão incomum comparado ao histórico',
-        client_name: 'Empresa Teste LTDA',
-        detected_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 horas atrás
-        confidence: 0.75,
-        value: 45000,
-        expected_value: 35000,
-        is_read: true,
-        is_dismissed: false
-      },
-      {
-        id: '4',
-        type: 'margin_drop',
-        severity: 'high',
-        title: 'Queda na Margem de Lucro',
-        message: 'Margem de lucro 15% abaixo da média histórica',
-        client_name: 'Outro Cliente LTDA',
-        detected_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 horas atrás
-        confidence: 0.82,
-        is_read: true,
-        is_dismissed: true
-      }
-    ];
-
-    setAlerts(mockAlerts);
+    // Em produção, buscar dados reais do Supabase
+    setAlerts([]);
   };
 
   const checkForNewAlerts = () => {

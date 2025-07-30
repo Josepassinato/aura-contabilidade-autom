@@ -40,58 +40,10 @@ export function useAlerts() {
         // Em um ambiente real, você buscaria do seu backend
         // await api.get('/alerts')
         
-        // Simulação de dados - agora só mostra alertas de divergência se houver dados contábeis
-        await new Promise(resolve => setTimeout(resolve, 800));
-        const mockAlerts: Alert[] = [
-          {
-            id: '1',
-            title: 'DCTF vence em 3 dias',
-            message: 'A Declaração de Débitos e Créditos Tributários Federais precisa ser enviada até 15/05/2025.',
-            type: 'prazo',
-            priority: 'alta',
-            date: new Date().toISOString(),
-            expirationDate: new Date(2025, 4, 15).toISOString(),
-            isAcknowledged: false,
-            actions: [
-              {
-                label: 'Ver detalhes',
-                action: () => window.location.href = '/obrigacoesfiscais'
-              }
-            ]
-          }
-        ];
+        // Em produção, buscar alertas reais do Supabase
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Só adiciona o alerta de divergência contábil se houver dados contábeis
-        if (hasAccountingData) {
-          mockAlerts.push({
-            id: '2',
-            title: 'Divergência encontrada em lançamentos contábeis',
-            message: 'Foram identificadas divergências entre os lançamentos contábeis e extratos bancários do cliente Tech Solutions.',
-            type: 'divergencia',
-            priority: 'alta',
-            date: new Date().toISOString(),
-            isAcknowledged: false,
-            actions: [
-              {
-                label: 'Analisar',
-                action: () => window.location.href = '/analises-preditivas'
-              }
-            ]
-          });
-        }
-        
-        // Adicione outros alertas de tipos diferentes conforme necessário
-        mockAlerts.push({
-          id: '3',
-          title: 'Documentos pendentes de análise',
-          message: 'Existem 5 documentos fiscais pendentes de análise do cliente XYZ Comércio S.A.',
-          type: 'documento',
-          priority: 'media',
-          date: new Date(Date.now() - 86400000).toISOString(),
-          isAcknowledged: true
-        });
-        
-        setAlerts(mockAlerts);
+        setAlerts([]);
       } catch (err) {
         console.error('Erro ao buscar alertas:', err);
         setError('Não foi possível carregar os alertas. Tente novamente mais tarde.');

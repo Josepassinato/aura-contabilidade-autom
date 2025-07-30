@@ -95,41 +95,8 @@ export function BalancetesManager() {
 
   const loadBalanceteItems = async (balanceteId: string) => {
     try {
-      // Simular dados dos itens do balancete (em produção viria do banco)
-      const mockItems: BalanceteItem[] = [
-        {
-          id: '1',
-          balancete_id: balanceteId,
-          conta_codigo: '1.1.1.01',
-          conta_nome: 'Caixa Geral',
-          saldo_anterior: 15000.00,
-          debitos_periodo: 25000.00,
-          creditos_periodo: 12000.00,
-          saldo_atual: 28000.00
-        },
-        {
-          id: '2',
-          balancete_id: balanceteId,
-          conta_codigo: '1.1.2.01',
-          conta_nome: 'Banco Conta Movimento',
-          saldo_anterior: 45000.00,
-          debitos_periodo: 35000.00,
-          creditos_periodo: 20000.00,
-          saldo_atual: 60000.00
-        },
-        {
-          id: '3',
-          balancete_id: balanceteId,
-          conta_codigo: '2.1.1.01',
-          conta_nome: 'Fornecedores',
-          saldo_anterior: 8000.00,
-          debitos_periodo: 5000.00,
-          creditos_periodo: 15000.00,
-          saldo_atual: 18000.00
-        }
-      ];
-
-      setBalanceteItems(mockItems);
+      // Em produção, buscar itens reais do balancete no Supabase
+      setBalanceteItems([]);
     } catch (error) {
       console.error('Erro ao carregar itens do balancete:', error);
     }
