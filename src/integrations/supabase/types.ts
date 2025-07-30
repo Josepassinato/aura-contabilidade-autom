@@ -2795,6 +2795,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_security_compliance: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_name: string
+          status: string
+          details: string
+          recommendation: string
+        }[]
+      }
       cleanup_expired_reports: {
         Args: Record<PropertyKey, never>
         Returns: number
