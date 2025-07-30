@@ -1,0 +1,117 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "project": "./tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "react-hooks",
+    "import"
+  ],
+  "rules": {
+    // Performance e Qualidade
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/prefer-const": "error",
+    "@typescript-eslint/no-explicit-any": "warn",
+    
+    // Arquitetura - Forçar uso de serviços
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/supabase/client"],
+            "message": "🚫 Acesso direto ao Supabase proibido! Use um serviço em /services/ como boundary único."
+          },
+          {
+            "group": ["@/integrations/supabase/client"],
+            "message": "🚫 Acesso direto ao Supabase proibido! Use um serviço em /services/ como boundary único."
+          },
+          {
+            "group": ["@/lib/supabase/client"],
+            "message": "🚫 Acesso direto ao Supabase proibido! Use um serviço em /services/ como boundary único."
+          }
+        ],
+        "paths": [
+          {
+            "name": "@/integrations/supabase/client",
+            "importNames": ["supabase"],
+            "message": "🚫 Import direto do supabase client proibido fora de /services/! Use useSecureServiceBoundary()."
+          }
+        ]
+      }
+    ],
+    
+    // React específico
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    
+    // Performance
+    "import/no-default-export": "off",
+    "prefer-const": "error",
+    "no-var": "error",
+    
+    // Segurança
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    
+    // Code Quality
+    "complexity": ["warn", 10],
+    "max-depth": ["warn", 4],
+    "max-lines-per-function": ["warn", 100],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    
+    // Promises
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/promise-function-async": "error",
+    "@typescript-eslint/require-await": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["src/services/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["src/hooks/useSecureServiceBoundary.tsx"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["supabase/functions/**/*"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off"
+      }
+    }
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  }
+}
