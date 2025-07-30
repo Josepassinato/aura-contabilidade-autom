@@ -3091,6 +3091,14 @@ export type Database = {
         Args: { p_worker_id: string }
         Returns: Json
       }
+      reset_user_password_secure: {
+        Args: { user_email: string }
+        Returns: Json
+      }
+      secure_global_logout: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       test_rls_policies: {
         Args: Record<PropertyKey, never>
         Returns: {

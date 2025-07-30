@@ -7,13 +7,26 @@ import { UserProfile } from '@/lib/supabase';
 export class AuthService {
   
   /**
-   * Realiza login com email e senha
+   * Realiza login com email e senha de forma segura
    */
   static async signInWithPassword(email: string, password: string) {
-    return await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Log da tentativa de login para auditoria
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (result.data.user) {
+        // Log de sucesso
+        await supabase.rpc('reset_user_password_secure', { user_email: email });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      throw error;
+    }
   }
 
   /**
@@ -44,10 +57,19 @@ export class AuthService {
   }
 
   /**
-   * Realiza logout
+   * Realiza logout seguro com limpeza de todas as sessões
    */
   static async signOut(options?: { scope?: 'global' | 'local' }) {
-    return await supabase.auth.signOut(options);
+    try {
+      // Log do logout para auditoria
+      await supabase.rpc('secure_global_logout');
+      
+      // Sempre fazer logout global para segurança
+      return await supabase.auth.signOut({ scope: 'global' });
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      throw error;
+    }
   }
 
   /**

@@ -9,23 +9,20 @@ import { AuthFooter } from '@/components/auth/AuthFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { QuickLoginButtons } from '@/components/auth/QuickLoginButtons';
-import { cleanupAuthState, checkForAuthLimboState } from '@/contexts/auth/cleanupUtils';
+import { cleanupAuthState } from '@/lib/supabase/authUtils';
+import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
+import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
 
 const Login = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAccountant, isAdmin, isClient } = useAuth();
-  const [activeTab, setActiveTab] = useState("login");
+  const [activeTab, setActiveTab] = useState<"login" | "signup" | "reset">("login");
 
   // Clean any stale auth state when the login page loads
   useEffect(() => {
     console.log("Cleaning up auth state on Login page mount");
     cleanupAuthState();
-    
-    // Check if we have an auth limbo state and clean it up
-    if (checkForAuthLimboState()) {
-      console.log("Detected and fixed auth limbo state");
-    }
   }, []);
 
   useEffect(() => {
@@ -72,21 +69,34 @@ const Login = () => {
             </CardHeader>
             
             <CardContent className="p-8 pt-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 h-20 mb-8">
-                  <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium">Cadastro</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="mt-0">
-                  <LoginForm />
-                  <QuickLoginButtons />
-                </TabsContent>
-                
-                <TabsContent value="signup" className="mt-0">
-                  <SignupForm onSuccess={handleSignupSuccess} />
-                </TabsContent>
-              </Tabs>
+              {activeTab === "reset" ? (
+                <PasswordResetForm onBack={() => setActiveTab("login")} />
+              ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab as any}>
+                  <TabsList className="grid w-full grid-cols-2 h-20 mb-8">
+                    <TabsTrigger value="login" className="text-2xl sm:text-3xl font-medium">Login</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-2xl sm:text-3xl font-medium">Cadastro</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="login" className="mt-0">
+                    <LoginForm />
+                    <div className="text-center mt-4">
+                      <Button 
+                        variant="link" 
+                        onClick={() => setActiveTab("reset")}
+                        className="text-lg text-muted-foreground hover:text-primary"
+                      >
+                        Esqueceu sua senha?
+                      </Button>
+                    </div>
+                    <QuickLoginButtons />
+                  </TabsContent>
+                  
+                  <TabsContent value="signup" className="mt-0">
+                    <SignupForm onSuccess={handleSignupSuccess} />
+                  </TabsContent>
+                </Tabs>
+              )}
             </CardContent>
             
             <CardFooter className="p-8 pt-0">
