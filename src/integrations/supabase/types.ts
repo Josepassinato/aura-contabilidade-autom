@@ -222,6 +222,60 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          changed_fields: string[] | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          operation: string
+          record_id: string | null
+          session_id: string | null
+          severity: string
+          source: string
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          operation: string
+          record_id?: string | null
+          session_id?: string | null
+          severity?: string
+          source?: string
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          operation?: string
+          record_id?: string | null
+          session_id?: string | null
+          severity?: string
+          source?: string
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       automated_actions_log: {
         Row: {
           action_type: string
@@ -2889,6 +2943,16 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_critical_event: {
+        Args: {
+          p_event_type: string
+          p_message: string
+          p_metadata?: Json
+          p_user_id?: string
+          p_severity?: string
+        }
+        Returns: string
       }
       mark_notification_read: {
         Args: { p_notification_id: string }

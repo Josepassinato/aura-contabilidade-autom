@@ -17,23 +17,47 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    const startTime = Date.now();
     console.log('📊 Iniciando coleta de métricas do sistema');
 
     const metrics = await collectSystemMetrics(supabase);
-    const performanceMetrics = await collectPerformanceMetrics(supabase);
-    const businessMetrics = await collectBusinessMetrics(supabase);
-    
-    await storeMetrics(supabase, metrics);
-    await checkAlerts(supabase, metrics);
+    console.log(`📈 Métricas de sistema coletadas: ${metrics.length}`);
 
+    const performanceMetrics = await collectPerformanceMetrics(supabase);
+    console.log(`⚡ Métricas de performance coletadas: ${performanceMetrics.length}`);
+
+    const businessMetrics = await collectBusinessMetrics(supabase);
+    console.log(`💼 Métricas de negócio coletadas: ${businessMetrics.length}`);
+    
+    const allMetrics = [...metrics, ...performanceMetrics, ...businessMetrics];
+    await storeMetrics(supabase, allMetrics);
+    await checkAlerts(supabase, allMetrics);
+
+    const executionTime = Date.now() - startTime;
     const summary = {
       system: metrics,
       performance: performanceMetrics,
       business: businessMetrics,
+      execution_time_ms: executionTime,
       timestamp: new Date().toISOString()
     };
 
-    console.log('✅ Coleta de métricas concluída');
+    // Log de auditoria da coleta
+    await supabase.rpc('log_critical_event', {
+      p_event_type: 'metrics_collection_completed',
+      p_message: `Metrics collection completed in ${executionTime}ms`,
+      p_metadata: {
+        total_metrics: allMetrics.length,
+        system_metrics: metrics.length,
+        performance_metrics: performanceMetrics.length,
+        business_metrics: businessMetrics.length,
+        execution_time_ms: executionTime,
+        function_name: 'metrics-collector'
+      },
+      p_severity: 'info'
+    });
+
+    console.log(`✅ Coleta de métricas concluída em ${executionTime}ms`);
 
     return new Response(
       JSON.stringify({ 
@@ -45,7 +69,34 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('❌ Erro na coleta de métricas:', error);
+    console.error('❌ Erro crítico na coleta de métricas:', error);
+    console.error('Detalhes do erro:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Log erro crítico na auditoria
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await supabase.rpc('log_critical_event', {
+        p_event_type: 'metrics_collection_failed',
+        p_message: `Metrics collection failed: ${error.message}`,
+        p_metadata: {
+          error_stack: error.stack,
+          function_name: 'metrics-collector',
+          timestamp: new Date().toISOString()
+        },
+        p_severity: 'critical'
+      });
+    } catch (auditError) {
+      console.error('Falha ao registrar evento de auditoria:', auditError);
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: false, 

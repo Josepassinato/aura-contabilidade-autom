@@ -130,7 +130,23 @@ serve(async (req) => {
         })
     }
 
-    console.log(`Security monitoring completed. Collected ${securityMetrics.length} metrics, ${criticalMetrics.length} critical alerts.`)
+    // Log detalhado da execução
+    console.log(`🔐 Security monitoring completed successfully:`)
+    console.log(`  - Metrics collected: ${securityMetrics.length}`)
+    console.log(`  - Critical alerts generated: ${criticalMetrics.length}`)
+    console.log(`  - Execution time: ${Date.now() - Date.now()} ms`)
+    
+    // Log de auditoria crítica
+    await supabase.rpc('log_critical_event', {
+      p_event_type: 'security_monitoring_completed',
+      p_message: `Security monitoring cycle completed with ${criticalMetrics.length} critical alerts`,
+      p_metadata: {
+        metrics_count: securityMetrics.length,
+        critical_alerts: criticalMetrics.length,
+        function_name: 'security-monitor'
+      },
+      p_severity: criticalMetrics.length > 0 ? 'critical' : 'info'
+    })
 
     return new Response(
       JSON.stringify({
@@ -147,7 +163,29 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in security monitoring:', error)
+    console.error('❌ Critical error in security monitoring:', error)
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    })
+    
+    // Log erro crítico na auditoria
+    try {
+      await supabase.rpc('log_critical_event', {
+        p_event_type: 'security_monitoring_failed',
+        p_message: `Security monitoring failed: ${error.message}`,
+        p_metadata: {
+          error_stack: error.stack,
+          function_name: 'security-monitor',
+          timestamp: new Date().toISOString()
+        },
+        p_severity: 'critical'
+      })
+    } catch (auditError) {
+      console.error('Failed to log audit event:', auditError)
+    }
+    
     return new Response(
       JSON.stringify({
         success: false,

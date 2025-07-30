@@ -5,6 +5,8 @@
  */
 
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, logSecurityEvent } from "./auditService";
+import { logger } from "@/utils/logger";
 
 // Tipos de erros que podemos tratar
 type ErrorSource = 'api' | 'database' | 'auth' | 'form' | 'unknown';
@@ -82,14 +84,30 @@ export function normalizeError(error: any): StandardError {
 /**
  * Registra erro no console e opcionalmente em serviços de monitoramento
  */
-export function logError(error: any, context?: string): void {
+export async function logError(error: any, context?: string): Promise<void> {
   const standardError = normalizeError(error);
-  console.error(
-    `[${standardError.timestamp}] ${context ? `[${context}] ` : ''}Error: ${standardError.message}`,
-    standardError.details || ''
+  
+  // Log usando o sistema unificado
+  logger.error(
+    `${context ? `[${context}] ` : ''}${standardError.message}`,
+    standardError.details,
+    context || 'ErrorHandler'
   );
   
-  // Aqui você pode adicionar integrações com serviços como Sentry, LogRocket, etc.
+  // Log crítico na auditoria para erros graves
+  if (standardError.source === 'database' || standardError.source === 'api') {
+    await logAuditEvent({
+      eventType: 'application_error',
+      message: standardError.message,
+      metadata: {
+        context,
+        source: standardError.source,
+        code: standardError.code,
+        details: standardError.details
+      },
+      severity: 'error'
+    });
+  }
 }
 
 /**

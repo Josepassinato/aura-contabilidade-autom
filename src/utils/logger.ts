@@ -83,13 +83,26 @@ class Logger {
 
   private async sendToMonitoring(entry: LogEntry): Promise<void> {
     try {
-      // Send to your monitoring service (e.g., Sentry, LogRocket, etc.)
-      // This is a placeholder implementation
-      await fetch('/api/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      });
+      // Send critical logs to Supabase metrics
+      if (entry.level === 'error') {
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(
+          'https://watophocqlcyimirzrpe.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdG9waG9jcWxjeWltaXJ6cnBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5OTUyNjQsImV4cCI6MjA2MjU3MTI2NH0.aTF2XWWUhxtrrp4V08BvM5WAGQULlppgkIhXnCSLXrg'
+        );
+
+        // Log crítico na auditoria
+        await supabase.rpc('log_critical_event', {
+          p_event_type: 'application_error',
+          p_message: entry.message,
+          p_metadata: {
+            component: entry.component,
+            data: entry.data,
+            stack: entry.data?.stack
+          },
+          p_severity: 'error'
+        });
+      }
     } catch (e) {
       // Silently fail to avoid infinite loops
     }
