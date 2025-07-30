@@ -24,10 +24,10 @@ export function SystemReadinessCheck() {
     const checks: SystemStatus[] = [];
 
     try {
-      // 1. Verificar parâmetros fiscais
+      // 1. Verificar parâmetros fiscais - apenas necessário para contagem
       const { data: fiscalParams, error: fiscalError } = await supabase
         .from('parametros_fiscais')
-        .select('*')
+        .select('id, tipo, versao')
         .eq('ativo', true);
 
       if (fiscalError) throw fiscalError;
@@ -41,10 +41,10 @@ export function SystemReadinessCheck() {
         details: fiscalParams
       });
 
-      // 2. Verificar regras de escalação
+      // 2. Verificar regras de escalação - apenas necessário para contagem
       const { data: escalationRules, error: escalationError } = await supabase
         .from('notification_escalation_rules')
-        .select('*')
+        .select('id, rule_name')
         .eq('is_active', true);
 
       if (escalationError) throw escalationError;
@@ -58,10 +58,10 @@ export function SystemReadinessCheck() {
         details: escalationRules
       });
 
-      // 3. Verificar métricas do sistema
+      // 3. Verificar métricas do sistema - apenas necessário para contagem
       const { data: systemMetrics, error: metricsError } = await supabase
         .from('system_metrics')
-        .select('*')
+        .select('metric_name')
         .in('metric_name', ['system_initialization', 'security_policies_active', 'fiscal_parameters_configured']);
 
       if (metricsError) throw metricsError;
@@ -75,10 +75,10 @@ export function SystemReadinessCheck() {
         details: systemMetrics
       });
 
-      // 4. Verificar plano de contas
+      // 4. Verificar plano de contas - apenas ID para contagem
       const { data: chartOfAccounts, error: chartError } = await supabase
         .from('plano_contas')
-        .select('*')
+        .select('id')
         .eq('ativo', true);
 
       if (chartError) throw chartError;
@@ -92,10 +92,10 @@ export function SystemReadinessCheck() {
         details: chartOfAccounts?.length
       });
 
-      // 5. Verificar centro de custos
+      // 5. Verificar centro de custos - apenas ID para contagem
       const { data: costCenters, error: costError } = await supabase
         .from('centro_custos')
-        .select('*')
+        .select('id')
         .eq('ativo', true);
 
       if (costError) throw costError;

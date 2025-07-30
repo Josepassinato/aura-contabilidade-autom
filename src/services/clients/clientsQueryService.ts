@@ -11,7 +11,7 @@ export class ClientsQueryService {
   static async getAccountantClients(accountantId: string) {
     const { data, error } = await supabase
       .from('accounting_clients')
-      .select('*')
+      .select('id, name, cnpj, email, status, regime, created_at')
       .eq('accountant_id', accountantId)
       .order('name', { ascending: true });
 
@@ -136,7 +136,7 @@ export class ClientsQueryService {
   static async getClientsByStatus(status: string) {
     const { data, error } = await supabase
       .from('accounting_clients')
-      .select('*')
+      .select('id, name, cnpj, email, regime, created_at')
       .eq('status', status)
       .order('name', { ascending: true });
 
@@ -149,7 +149,7 @@ export class ClientsQueryService {
   static async getClientsByRegime(regime: string) {
     const { data, error } = await supabase
       .from('accounting_clients')
-      .select('*')
+      .select('id, name, cnpj, email, status, created_at')
       .eq('regime', regime)
       .order('name', { ascending: true });
 

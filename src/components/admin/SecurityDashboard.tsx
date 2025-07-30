@@ -30,10 +30,10 @@ export function SecurityDashboard() {
   const loadSecurityData = async () => {
     setIsLoading(true);
     try {
-      // Load recent security metrics
+      // Load recent security metrics - apenas campos necessários
       const { data: metricsData, error: metricsError } = await supabase
         .from('system_metrics')
-        .select('*')
+        .select('metric_name, metric_value, timestamp, labels')
         .in('metric_name', [
           'failed_auth_attempts_24h',
           'rls_violations_1h',
@@ -46,10 +46,10 @@ export function SecurityDashboard() {
       if (metricsError) throw metricsError;
       setMetrics(metricsData || []);
 
-      // Load recent validation results
+      // Load recent validation results - apenas campos necessários
       const { data: validationData, error: validationError } = await supabase
         .from('automated_actions_log')
-        .select('*')
+        .select('metadata')
         .eq('action_type', 'validation_service')
         .order('created_at', { ascending: false })
         .limit(10);
