@@ -126,8 +126,8 @@ export function notifyError(error: any): void {
 /**
  * Trata erros de forma abrangente - loga e notifica
  */
-export function handleError(error: any, context?: string, shouldNotify = true): void {
-  logError(error, context);
+export async function handleError(error: any, context?: string, shouldNotify = true): Promise<void> {
+  await logError(error, context);
   
   if (shouldNotify) {
     notifyError(error);
