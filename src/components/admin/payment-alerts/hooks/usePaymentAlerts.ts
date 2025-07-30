@@ -26,7 +26,7 @@ export function usePaymentAlerts() {
       
       if (error) throw error;
       
-      setAlerts((data || []) as any);
+      setAlerts(data || []);
     } catch (error: any) {
       console.error('Erro ao carregar alertas:', error);
       toast({
@@ -67,8 +67,8 @@ export function usePaymentAlerts() {
     try {
       const { error } = await supabase
         .from('payment_alerts')
-        .update({ email_sent: true } as any)
-        .eq('id', alertId as any);
+        .update({ email_sent: true })
+        .eq('id', alertId);
       
       if (error) throw error;
       

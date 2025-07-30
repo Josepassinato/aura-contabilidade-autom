@@ -31,7 +31,7 @@ export const Documents = ({ clientId }: DocumentsProps) => {
         const { data, error } = await supabase
           .from('client_documents')
           .select('id, name, type, created_at')
-          .eq('client_id' as any, clientId as any)
+          .eq('client_id', clientId)
           .order('created_at', { ascending: false })
           .limit(3);
 
@@ -42,12 +42,12 @@ export const Documents = ({ clientId }: DocumentsProps) => {
         }
 
         if (data) {
-          const formattedDocs = (data as any).map((doc: any) => ({
-            id: (doc as any).id,
-            name: (doc as any).name,
-            type: (doc as any).type,
-            date: new Date((doc as any).created_at).toLocaleDateString('pt-BR'),
-            created_at: (doc as any).created_at
+          const formattedDocs = data.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: doc.type,
+            date: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            created_at: doc.created_at
           }));
           setDocuments(formattedDocs);
         } else {

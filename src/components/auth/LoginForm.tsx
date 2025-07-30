@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { useAuth } from '@/contexts/auth';
 import { useNavigate } from 'react-router-dom';
-import { cleanupAuthState } from '@/lib/supabase/authUtils';
+import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 import { toast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
@@ -27,7 +27,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function LoginForm() {
-  const { login } = useAuth();
+  const { enhancedLogin } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -46,12 +46,11 @@ export function LoginForm() {
       // Limpar qualquer estado de autenticação anterior para evitar conflitos
       cleanupAuthState();
       
-      // Use o método login do contexto de autenticação
-      const result = await login(data.email, data.password);
+      const result = await enhancedLogin(data.email, data.password);
       
       if (result?.success) {
         console.log('Login successful, navigating to dashboard');
-        // Navegação será tratada pelo sistema de auth
+        // Navegação será tratada pelo enhancedLogin
       } else {
         toast({
           title: 'Falha no login',

@@ -57,33 +57,38 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       const { data: documents, error: docsError } = await supabase
         .from('client_documents')
         .select('*')
-        .eq('client_id' as any, clientId as any);
+        .eq('client_id', clientId);
 
       if (docsError) throw docsError;
 
-      // Simular mensagens não lidas (temporário até tipos serem atualizados)
-      const unreadMessages = Math.floor(Math.random() * 5);
+      // Buscar mensagens não lidas
+      const { data: messages, error: messagesError } = await supabase
+        .from('client_messages')
+        .select('*')
+        .eq('client_id', clientId)
+        .eq('read_by_client', false);
 
-      // Simular obrigações fiscais (temporário até tipos serem atualizados)
-      const obligations = [
-        {
-          id: '1',
-          due_date: new Date(Date.now() + 86400000 * 15).toISOString(),
-          name: 'DCTF Mensal'
-        }
-      ];
+      // Ignorar erro se tabela não existir ainda
+      const unreadMessages = messages?.length || 0;
+
+      // Buscar obrigações fiscais
+      const { data: obligations, error: obligationsError } = await supabase
+        .from('tax_obligations')
+        .select('*')
+        .eq('client_id', clientId)
+        .gte('due_date', new Date().toISOString());
 
       // Buscar relatórios financeiros recentes
       const { data: reports, error: reportsError } = await supabase
         .from('generated_reports')
         .select('*')
-        .eq('client_id' as any, clientId as any)
+        .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(5);
 
       // Calcular métricas
       const totalDocuments = documents?.length || 0;
-      const pendingDocuments = (documents as any)?.filter((doc: any) => doc.status === 'pending').length || 0;
+      const pendingDocuments = documents?.filter(doc => doc.status === 'pending').length || 0;
       const processedDocuments = totalDocuments - pendingDocuments;
 
       // Próximo prazo
@@ -102,19 +107,19 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
 
       // Atividades recentes
       const recentActivity = [
-        ...((documents as any)?.slice(0, 3).map((doc: any) => ({
-          id: (doc as any).id,
+        ...(documents?.slice(0, 3).map(doc => ({
+          id: doc.id,
           type: 'document',
-          description: `Documento ${(doc as any).title} ${(doc as any).status === 'approved' ? 'aprovado' : 'enviado'}`,
-          date: (doc as any).created_at || '',
-          status: (doc as any).status === 'approved' ? 'success' as const : 
-                 (doc as any).status === 'pending' ? 'warning' as const : 'error' as const
+          description: `Documento ${doc.title} ${doc.status === 'approved' ? 'aprovado' : 'enviado'}`,
+          date: doc.created_at || '',
+          status: doc.status === 'approved' ? 'success' as const : 
+                 doc.status === 'pending' ? 'warning' as const : 'error' as const
         })) || []),
-        ...((reports as any)?.slice(0, 2).map((report: any) => ({
-          id: (report as any).id,
+        ...(reports?.slice(0, 2).map(report => ({
+          id: report.id,
           type: 'report',
-          description: `Relatório ${(report as any).title} gerado`,
-          date: (report as any).created_at,
+          description: `Relatório ${report.title} gerado`,
+          date: report.created_at,
           status: 'success' as const
         })) || [])
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);

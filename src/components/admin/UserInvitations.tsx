@@ -50,19 +50,19 @@ export const UserInvitations = () => {
       if (error) throw error;
       
       // Transform the data to match our UserInvitation interface
-      const transformedData: UserInvitation[] = data ? data.map((item: any) => ({
-        id: item.id as string,
-        email: item.email as string,
+      const transformedData: UserInvitation[] = (data || []).map(item => ({
+        id: item.id,
+        email: item.email,
         role: item.role as 'admin' | 'accountant' | 'client',
-        token: item.token as string,
+        token: item.token,
         status: item.status as 'pending' | 'accepted' | 'expired',
-        invited_by: item.invited_by as string | null,
-        invited_by_name: item.invited_by_name as string,
-        expires_at: item.expires_at as string,
-        accepted_at: item.accepted_at as string | null,
-        created_at: item.created_at as string,
-        updated_at: item.updated_at as string,
-      })) : [];
+        invited_by: item.invited_by,
+        invited_by_name: item.invited_by_name,
+        expires_at: item.expires_at,
+        accepted_at: item.accepted_at,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      }));
       
       setInvitations(transformedData);
     } catch (error) {
@@ -90,9 +90,9 @@ export const UserInvitations = () => {
       const { data: existingInvite } = await supabase
         .from('user_invitations')
         .select('id')
-        .eq('email', data.email as any)
-        .eq('status', 'pending' as any)
-        .maybeSingle();
+        .eq('email', data.email)
+        .eq('status', 'pending')
+        .single();
 
       if (existingInvite) {
         toast({
@@ -121,7 +121,7 @@ export const UserInvitations = () => {
 
       const { error } = await supabase
         .from('user_invitations')
-        .insert(invitationData as any);
+        .insert(invitationData);
 
       if (error) throw error;
 
@@ -158,7 +158,7 @@ export const UserInvitations = () => {
       const { error } = await supabase
         .from('user_invitations')
         .delete()
-        .eq('id', id as any);
+        .eq('id', id);
 
       if (error) throw error;
 

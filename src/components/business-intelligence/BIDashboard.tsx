@@ -118,9 +118,9 @@ export function BIDashboard() {
       .select('created_at')
       .gte('created_at', startDate.toISOString());
 
-    const activeClients = (clientsData as any)?.filter((c: any) => c.status === 'active').length || 0;
-    const newClients = (clientsData as any)?.length || 0;
-    const totalRevenue = (subscriptionsData as any)?.reduce((sum: number, sub: any) => sum + (sub.monthly_fee || 0), 0) || 0;
+    const activeClients = clientsData?.filter(c => c.status === 'active').length || 0;
+    const newClients = clientsData?.length || 0;
+    const totalRevenue = subscriptionsData?.reduce((sum, sub) => sum + (sub.monthly_fee || 0), 0) || 0;
     const reportsGenerated = reportsData?.length || 0;
 
     // Calcular métricas anteriores para comparação (período anterior)
@@ -133,7 +133,7 @@ export function BIDashboard() {
       .gte('created_at', previousStartDate.toISOString())
       .lt('created_at', previousEndDate.toISOString());
 
-    const previousActiveClients = (previousClientsData as any)?.filter((c: any) => c.status === 'active').length || 0;
+    const previousActiveClients = previousClientsData?.filter(c => c.status === 'active').length || 0;
 
     const businessMetrics: BusinessMetric[] = [
       {
@@ -207,15 +207,15 @@ export function BIDashboard() {
     const { data: clientsData } = await supabase
       .from('accounting_clients')
       .select('regime, status')
-      .eq('status' as any, 'active' as any);
+      .eq('status', 'active');
 
-    if (clientsData && (clientsData as any).length > 0) {
-      const regimeCount = (clientsData as any).reduce((acc: any, client: any) => {
+    if (clientsData && clientsData.length > 0) {
+      const regimeCount = clientsData.reduce((acc: any, client) => {
         acc[client.regime] = (acc[client.regime] || 0) + 1;
         return acc;
       }, {});
 
-      const total = (clientsData as any).length;
+      const total = clientsData.length;
       const distribution = Object.entries(regimeCount).map(([regime, count]: [string, any]) => ({
         regime: regime || 'Não informado',
         count,

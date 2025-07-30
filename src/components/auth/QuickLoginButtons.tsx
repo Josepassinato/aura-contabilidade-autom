@@ -2,11 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth';
+import { cleanupAuthState } from '@/contexts/auth/cleanupUtils';
 
 export const QuickLoginButtons = () => {
   const { enhancedLogin } = useAuth();
 
   const quickLogin = async (type: 'contador' | 'cliente' | 'admin') => {
+    // Limpar qualquer estado de autenticação anterior
+    cleanupAuthState();
+    
     let email, password;
     
     if (type === 'contador') {

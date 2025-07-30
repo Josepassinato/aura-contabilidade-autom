@@ -35,50 +35,37 @@ export function SecurityDashboard() {
         .from('system_metrics')
         .select('metric_name, metric_value, timestamp, labels')
         .in('metric_name', [
-          'failed_auth_attempts_24h' as any,
-          'rls_violations_1h' as any,
-          'active_admin_users' as any,
-          'system_health_status' as any
+          'failed_auth_attempts_24h',
+          'rls_violations_1h',
+          'active_admin_users',
+          'system_health_status'
         ])
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (metricsError) throw metricsError;
-      if (metricsData) {
-        const typedMetrics = metricsData.map((item: any) => ({
-          metric_name: item.metric_name as string,
-          metric_value: item.metric_value as number,
-          timestamp: item.timestamp as string,
-          labels: item.labels as any
-        }));
-        setMetrics(typedMetrics);
-      }
+      setMetrics(metricsData || []);
 
       // Load recent validation results - apenas campos necessários
       const { data: validationData, error: validationError } = await supabase
         .from('automated_actions_log')
         .select('metadata')
-        .eq('action_type', 'validation_service' as any)
+        .eq('action_type', 'validation_service')
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (validationError) throw validationError;
       
-      if (validationData) {
-        const parsedValidations = validationData.map((log: any) => {
-          try {
-            if (log && log.metadata) {
-              const metadata = log.metadata as any;
-              return metadata?.validation_result;
-            }
-            return null;
-          } catch {
-            return null;
-          }
-        }).filter(Boolean) || [];
-        setValidationResults(parsedValidations);
-      }
+      const parsedValidations = validationData?.map(log => {
+        try {
+          const metadata = log.metadata as any;
+          return metadata?.validation_result;
+        } catch {
+          return null;
+        }
+      }).filter(Boolean) || [];
 
+      setValidationResults(parsedValidations);
       setLastUpdate(new Date());
 
     } catch (error) {

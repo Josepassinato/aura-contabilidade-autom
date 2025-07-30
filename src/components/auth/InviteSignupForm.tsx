@@ -64,7 +64,7 @@ export const InviteSignupForm = () => {
         }
 
         // Verificar se o convite não expirou
-        if (new Date((data as any).expires_at) < new Date()) {
+        if (new Date(data.expires_at) < new Date()) {
           setInviteError('Este convite expirou');
           setValidatingInvite(false);
           return;
@@ -72,21 +72,21 @@ export const InviteSignupForm = () => {
 
         // Transform the data to match our UserInvitation interface
         const transformedInvitation: UserInvitation = {
-          id: (data as any).id,
-          email: (data as any).email,
-          role: (data as any).role as 'admin' | 'accountant' | 'client',
+          id: data.id,
+          email: data.email,
+          role: data.role as 'admin' | 'accountant' | 'client',
           token: token,
           status: 'pending',
           invited_by: null,
-          invited_by_name: (data as any).invited_by_name,
-          expires_at: (data as any).expires_at,
+          invited_by_name: data.invited_by_name,
+          expires_at: data.expires_at,
           accepted_at: null,
           created_at: '',
           updated_at: '',
         };
 
         setInvitation(transformedInvitation);
-        form.setValue('email', (data as any).email);
+        form.setValue('email', data.email);
         setValidatingInvite(false);
       } catch (error) {
         console.error('Erro ao validar convite:', error);

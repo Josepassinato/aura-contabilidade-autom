@@ -166,13 +166,13 @@ export function AnalyticsDashboard() {
     const { data } = await supabase
       .from('system_metrics')
       .select('timestamp, metric_value, metric_name')
-      .in('metric_name' as any, ['automation_avg_duration', 'automation_success_rate'] as any)
+      .in('metric_name', ['automation_avg_duration', 'automation_success_rate'])
       .gte('timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('timestamp', { ascending: true });
 
     if (data) {
       // Agrupar por hora e calcular médias
-      const hourlyData = data.reduce((acc: any, item: any) => {
+      const hourlyData = data.reduce((acc: any, item) => {
         const hour = new Date(item.timestamp).toISOString().slice(0, 13);
         if (!acc[hour]) {
           acc[hour] = { timestamp: hour, duration: [], success: [] };
@@ -210,13 +210,13 @@ export function AnalyticsDashboard() {
     const { data } = await supabase
       .from('system_metrics')
       .select('timestamp, metric_value, metric_name')
-      .in('metric_name' as any, ['active_users', 'reports_generated_24h'] as any)
+      .in('metric_name', ['active_users', 'reports_generated_24h'])
       .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .order('timestamp', { ascending: true });
 
     if (data) {
       // Agrupar por dia
-      const dailyData = data.reduce((acc: any, item: any) => {
+      const dailyData = data.reduce((acc: any, item) => {
         const day = new Date(item.timestamp).toISOString().slice(0, 10);
         if (!acc[day]) {
           acc[day] = { timestamp: day, users: [], reports: [] };
@@ -252,13 +252,13 @@ export function AnalyticsDashboard() {
     const { data } = await supabase
       .from('system_metrics')
       .select('timestamp, metric_value, metric_name')
-      .in('metric_name' as any, ['queue_pending_tasks', 'queue_processing_tasks', 'queue_completed_tasks'] as any)
+      .in('metric_name', ['queue_pending_tasks', 'queue_processing_tasks', 'queue_completed_tasks'])
       .gte('timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .order('timestamp', { ascending: true });
 
     if (data) {
       // Agrupar por hora
-      const hourlyData = data.reduce((acc: any, item: any) => {
+      const hourlyData = data.reduce((acc: any, item) => {
         const hour = new Date(item.timestamp).toISOString().slice(0, 13);
         if (!acc[hour]) {
           acc[hour] = { timestamp: hour, pending: 0, processing: 0, completed: 0 };
@@ -293,7 +293,7 @@ export function AnalyticsDashboard() {
     const { data } = await supabase
       .from('performance_alerts')
       .select('*')
-      .eq('is_resolved' as any, false as any)
+      .eq('is_resolved', false)
       .order('created_at', { ascending: false })
       .limit(10);
 

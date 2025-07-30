@@ -28,7 +28,7 @@ export function SystemReadinessCheck() {
       const { data: fiscalParams, error: fiscalError } = await supabase
         .from('parametros_fiscais')
         .select('id, tipo, versao')
-        .eq('ativo', true as any);
+        .eq('ativo', true);
 
       if (fiscalError) throw fiscalError;
 
@@ -45,7 +45,7 @@ export function SystemReadinessCheck() {
       const { data: escalationRules, error: escalationError } = await supabase
         .from('notification_escalation_rules')
         .select('id, rule_name')
-        .eq('is_active', true as any);
+        .eq('is_active', true);
 
       if (escalationError) throw escalationError;
 
@@ -62,7 +62,7 @@ export function SystemReadinessCheck() {
       const { data: systemMetrics, error: metricsError } = await supabase
         .from('system_metrics')
         .select('metric_name')
-        .in('metric_name', ['system_initialization' as any, 'security_policies_active' as any, 'fiscal_parameters_configured' as any]);
+        .in('metric_name', ['system_initialization', 'security_policies_active', 'fiscal_parameters_configured']);
 
       if (metricsError) throw metricsError;
 
@@ -79,7 +79,7 @@ export function SystemReadinessCheck() {
       const { data: chartOfAccounts, error: chartError } = await supabase
         .from('plano_contas')
         .select('id')
-        .eq('ativo', true as any);
+        .eq('ativo', true);
 
       if (chartError) throw chartError;
 
@@ -96,7 +96,7 @@ export function SystemReadinessCheck() {
       const { data: costCenters, error: costError } = await supabase
         .from('centro_custos')
         .select('id')
-        .eq('ativo', true as any);
+        .eq('ativo', true);
 
       if (costError) throw costError;
 
