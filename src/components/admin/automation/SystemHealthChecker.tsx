@@ -178,13 +178,13 @@ export function SystemHealthChecker() {
       if (error) throw error;
 
       const responseTime = Date.now() - startTime;
-      const recentLogs = data?.filter(log => {
+      const recentLogs = data?.filter((log: any) => {
         const logTime = new Date(log.started_at).getTime();
         const now = Date.now();
         return (now - logTime) < (24 * 60 * 60 * 1000); // Últimas 24h
       }) || [];
 
-      const failedRecent = recentLogs.filter(log => log.status === 'failed').length;
+      const failedRecent = recentLogs.filter((log: any) => log.status === 'failed').length;
       
       let status: 'healthy' | 'warning' | 'critical' = 'healthy';
       let message = 'Logs funcionando normalmente';
@@ -226,7 +226,7 @@ export function SystemHealthChecker() {
       .order('started_at', { ascending: false })
       .limit(5);
 
-    const hasRecentExecution = data?.some(log => {
+    const hasRecentExecution = data?.some((log: any) => {
       const logTime = new Date(log.started_at).getTime();
       const now = Date.now();
       return (now - logTime) < (2 * 60 * 60 * 1000); // Últimas 2h

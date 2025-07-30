@@ -113,7 +113,7 @@ export function VoiceAgentConfig() {
         *,
         accounting_clients (name)
       `)
-      .eq('description', 'voice_agent')
+      .eq('description', 'voice_agent' as any)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -121,7 +121,7 @@ export function VoiceAgentConfig() {
       return;
     }
 
-    setTokens((data || []).map(token => ({
+    setTokens((data || []).map((token: any) => ({
       ...token,
       client_name: token.accounting_clients?.name || 'Cliente não encontrado'
     })));
@@ -131,7 +131,7 @@ export function VoiceAgentConfig() {
     const { data, error } = await supabase
       .from('accounting_clients')
       .select('id, name, cnpj')
-      .eq('status', 'active')
+      .eq('status', 'active' as any)
       .order('name');
 
     if (error) {
@@ -177,7 +177,7 @@ export function VoiceAgentConfig() {
           }),
           expires_at: expiresAt.toISOString(),
           created_by: (await supabase.auth.getUser()).data.user?.id
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -215,8 +215,8 @@ export function VoiceAgentConfig() {
     try {
       const { error } = await supabase
         .from('client_access_tokens')
-        .update({ is_active: false })
-        .eq('id', tokenId);
+        .update({ is_active: false } as any)
+        .eq('id', tokenId as any);
 
       if (error) throw error;
 

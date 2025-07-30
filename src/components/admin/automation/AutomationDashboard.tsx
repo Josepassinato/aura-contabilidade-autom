@@ -51,7 +51,7 @@ export function AutomationDashboard() {
         .limit(50);
 
       if (error) throw error;
-      setLogs(data || []);
+      setLogs((data || []) as any);
     } catch (error: any) {
       console.error('Erro ao carregar logs:', error);
       toast({

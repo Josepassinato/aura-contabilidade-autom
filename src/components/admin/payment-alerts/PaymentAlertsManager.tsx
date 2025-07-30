@@ -38,7 +38,7 @@ export function PaymentAlertsManager() {
       
       if (error) throw error;
       
-      setAlerts(data || []);
+      setAlerts((data || []) as any);
     } catch (error: any) {
       console.error('Erro ao carregar alertas:', error);
       toast({
@@ -98,8 +98,8 @@ export function PaymentAlertsManager() {
           // Marcar email como enviado
           await supabase
             .from('payment_alerts')
-            .update({ email_sent: true })
-            .eq('id', alert.alert_id);
+            .update({ email_sent: true } as any)
+            .eq('id', alert.alert_id as any);
           
           emailsSent++;
         }
