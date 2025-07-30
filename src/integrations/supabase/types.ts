@@ -2889,6 +2889,15 @@ export type Database = {
         Args: { p_worker_id: string }
         Returns: Json
       }
+      test_rls_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          policy_name: string
+          test_result: string
+          details: Json
+        }[]
+      }
       upsert_integracao_externa: {
         Args: {
           p_client_id: string
@@ -2897,6 +2906,10 @@ export type Database = {
           p_status?: string
         }
         Returns: undefined
+      }
+      validate_rls_user_access: {
+        Args: { test_table_name: string; user_role_type: string }
+        Returns: Json
       }
     }
     Enums: {
