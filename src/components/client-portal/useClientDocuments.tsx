@@ -21,7 +21,7 @@ export const useClientDocuments = (clientId: string | null) => {
         const query = supabase
           .from('client_documents')
           .select('*')
-          .eq('client_id', clientId)
+          .eq('client_id' as any, clientId as any)
           .order('created_at', { ascending: false });
           
         const result = await query.limit(100);
@@ -38,18 +38,18 @@ export const useClientDocuments = (clientId: string | null) => {
         }
         
         if (result.data) {
-          const formattedDocs = result.data.map(doc => ({
-            id: doc.id,
-            client_id: doc.client_id,
-            title: doc.title,
-            name: doc.name,
-            type: doc.type,
-            size: doc.size || 0,
-            date: new Date(doc.created_at || doc.updated_at).toLocaleDateString('pt-BR'),
-            status: doc.status as 'pendente' | 'processado' | 'rejeitado',
-            file_path: doc.file_path,
-            created_at: doc.created_at,
-            updated_at: doc.updated_at
+          const formattedDocs = (result.data as any).map((doc: any) => ({
+            id: (doc as any).id,
+            client_id: (doc as any).client_id,
+            title: (doc as any).title,
+            name: (doc as any).name,
+            type: (doc as any).type,
+            size: (doc as any).size || 0,
+            date: new Date((doc as any).created_at || (doc as any).updated_at).toLocaleDateString('pt-BR'),
+            status: (doc as any).status as 'pendente' | 'processado' | 'rejeitado',
+            file_path: (doc as any).file_path,
+            created_at: (doc as any).created_at,
+            updated_at: (doc as any).updated_at
           }));
           
           setDocuments(formattedDocs);

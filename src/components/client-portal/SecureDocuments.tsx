@@ -64,7 +64,7 @@ export const SecureDocuments = ({ clientId }: SecureDocumentsProps) => {
       const { data: clientDocs, error } = await supabase
         .from('client_documents')
         .select('*')
-        .eq('client_id', clientId)
+        .eq('client_id' as any, clientId as any)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -77,11 +77,11 @@ export const SecureDocuments = ({ clientId }: SecureDocumentsProps) => {
         let can_view = true;
 
         // Lógica de permissões baseada no tipo de documento e role do usuário
-        if (doc.type === 'confidential' || doc.status === 'draft') {
+        if ((doc as any).type === 'confidential' || (doc as any).status === 'draft') {
           access_level = 'private';
           can_download = !isClient;
           can_view = !isClient;
-        } else if (doc.type === 'fiscal' || doc.type === 'legal') {
+        } else if ((doc as any).type === 'fiscal' || (doc as any).type === 'legal') {
           access_level = 'restricted';
           can_download = true;
           can_view = true;
@@ -90,19 +90,19 @@ export const SecureDocuments = ({ clientId }: SecureDocumentsProps) => {
         }
 
         // Clientes só podem ver documentos aprovados
-        if (isClient && doc.status !== 'approved') {
+        if (isClient && (doc as any).status !== 'approved') {
           can_view = false;
           can_download = false;
         }
 
         return {
-          id: doc.id,
-          title: doc.title,
-          name: doc.name,
-          type: doc.type,
-          status: doc.status,
-          created_at: doc.created_at || '',
-          size: doc.size,
+          id: (doc as any).id,
+          title: (doc as any).title,
+          name: (doc as any).name,
+          type: (doc as any).type,
+          status: (doc as any).status,
+          created_at: (doc as any).created_at || '',
+          size: (doc as any).size,
           access_level,
           can_download,
           can_view
@@ -203,7 +203,7 @@ export const SecureDocuments = ({ clientId }: SecureDocumentsProps) => {
       // Log de auditoria via audit_logs
       const { error } = await supabase
         .from('audit_logs')
-        .insert([{
+        .insert({
           table_name: 'client_documents',
           record_id: documentId,
           operation: `DOCUMENT_${action.toUpperCase()}`,
@@ -220,7 +220,7 @@ export const SecureDocuments = ({ clientId }: SecureDocumentsProps) => {
           },
           severity: 'info',
           source: 'client_portal'
-        }]);
+        } as any);
 
       if (error) {
         console.error('Erro ao registrar log de auditoria:', error);

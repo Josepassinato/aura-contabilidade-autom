@@ -66,7 +66,7 @@ export const ClientAccessForm = () => {
         
       const clientResult = await clientQuery.limit(100);
       
-      const clientData = clientResult.data?.filter(client => client.cnpj === normalizedCNPJ) || [];
+      const clientData = (clientResult.data as any)?.filter((client: any) => client.cnpj === normalizedCNPJ) || [];
       const clientError = clientResult.error;
       
       if (clientError || clientData.length === 0) {
@@ -82,10 +82,10 @@ export const ClientAccessForm = () => {
         
       const accessResult = await accessQuery.limit(100);
       
-      const accessData = accessResult.data?.filter(token => 
-        token.client_id === client.id && 
-        token.token === data.accessToken && 
-        token.is_active === true
+      const accessData = (accessResult.data as any)?.filter((token: any) => 
+        (token as any).client_id === (client as any).id && 
+        (token as any).token === data.accessToken && 
+        (token as any).is_active === true
       ) || [];
       const accessError = accessResult.error;
       
@@ -96,13 +96,13 @@ export const ClientAccessForm = () => {
       const access = accessData[0];
       
       // Salvar informações do cliente na sessão
-      sessionStorage.setItem('client_id', client.id);
-      sessionStorage.setItem('client_name', client.name);
-      sessionStorage.setItem('client_cnpj', client.cnpj);
+      sessionStorage.setItem('client_id', (client as any).id);
+      sessionStorage.setItem('client_name', (client as any).name);
+      sessionStorage.setItem('client_cnpj', (client as any).cnpj);
       
       toast({
         title: "Acesso autorizado",
-        description: `Bem-vindo, ${client.name}!`,
+        description: `Bem-vindo, ${(client as any).name}!`,
       });
       
       // Redirecionar para o portal do cliente

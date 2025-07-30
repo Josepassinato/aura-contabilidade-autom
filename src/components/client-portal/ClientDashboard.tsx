@@ -57,7 +57,7 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       const { data: documents, error: docsError } = await supabase
         .from('client_documents')
         .select('*')
-        .eq('client_id', clientId);
+        .eq('client_id' as any, clientId as any);
 
       if (docsError) throw docsError;
 
@@ -77,13 +77,13 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       const { data: reports, error: reportsError } = await supabase
         .from('generated_reports')
         .select('*')
-        .eq('client_id', clientId)
+        .eq('client_id' as any, clientId as any)
         .order('created_at', { ascending: false })
         .limit(5);
 
       // Calcular métricas
       const totalDocuments = documents?.length || 0;
-      const pendingDocuments = documents?.filter(doc => doc.status === 'pending').length || 0;
+      const pendingDocuments = (documents as any)?.filter((doc: any) => doc.status === 'pending').length || 0;
       const processedDocuments = totalDocuments - pendingDocuments;
 
       // Próximo prazo
@@ -102,19 +102,19 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
 
       // Atividades recentes
       const recentActivity = [
-        ...(documents?.slice(0, 3).map(doc => ({
-          id: doc.id,
+        ...((documents as any)?.slice(0, 3).map((doc: any) => ({
+          id: (doc as any).id,
           type: 'document',
-          description: `Documento ${doc.title} ${doc.status === 'approved' ? 'aprovado' : 'enviado'}`,
-          date: doc.created_at || '',
-          status: doc.status === 'approved' ? 'success' as const : 
-                 doc.status === 'pending' ? 'warning' as const : 'error' as const
+          description: `Documento ${(doc as any).title} ${(doc as any).status === 'approved' ? 'aprovado' : 'enviado'}`,
+          date: (doc as any).created_at || '',
+          status: (doc as any).status === 'approved' ? 'success' as const : 
+                 (doc as any).status === 'pending' ? 'warning' as const : 'error' as const
         })) || []),
-        ...(reports?.slice(0, 2).map(report => ({
-          id: report.id,
+        ...((reports as any)?.slice(0, 2).map((report: any) => ({
+          id: (report as any).id,
           type: 'report',
-          description: `Relatório ${report.title} gerado`,
-          date: report.created_at,
+          description: `Relatório ${(report as any).title} gerado`,
+          date: (report as any).created_at,
           status: 'success' as const
         })) || [])
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
