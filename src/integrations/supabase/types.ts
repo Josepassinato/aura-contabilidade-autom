@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       accounting_clients: {
         Row: {
+          accountant_id: string | null
           accounting_firm_id: string | null
           address: string | null
           cnpj: string
@@ -29,6 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accountant_id?: string | null
           accounting_firm_id?: string | null
           address?: string | null
           cnpj: string
@@ -42,6 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accountant_id?: string | null
           accounting_firm_id?: string | null
           address?: string | null
           cnpj?: string
@@ -55,6 +58,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "accounting_clients_accountant_id_fkey"
+            columns: ["accountant_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "accounting_clients_accounting_firm_id_fkey"
             columns: ["accounting_firm_id"]
@@ -311,6 +321,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean
+          error_count: number
+          id: string
+          last_run: string | null
+          name: string
+          success_count: number
+          trigger_conditions: Json
+          trigger_type: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          last_run?: string | null
+          name: string
+          success_count?: number
+          trigger_conditions?: Json
+          trigger_type: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          last_run?: string | null
+          name?: string
+          success_count?: number
+          trigger_conditions?: Json
+          trigger_type?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       balancetes: {
         Row: {
@@ -1121,6 +1185,45 @@ export type Database = {
           },
         ]
       }
+      integracoes_externas: {
+        Row: {
+          client_id: string
+          configuracoes: Json | null
+          created_at: string
+          credenciais: Json
+          id: string
+          proxima_sincronizacao: string | null
+          status: string
+          tipo_integracao: string
+          ultima_sincronizacao: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          configuracoes?: Json | null
+          created_at?: string
+          credenciais?: Json
+          id?: string
+          proxima_sincronizacao?: string | null
+          status?: string
+          tipo_integracao: string
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          configuracoes?: Json | null
+          created_at?: string
+          credenciais?: Json
+          id?: string
+          proxima_sincronizacao?: string | null
+          status?: string
+          tipo_integracao?: string
+          ultima_sincronizacao?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integracoes_simples_nacional: {
         Row: {
           certificado_digital: string | null
@@ -1284,6 +1387,198 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos_contabeis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logs_sincronizacao: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          erro_detalhes: Json | null
+          id: string
+          integracao_id: string
+          metadata: Json | null
+          registros_processados: number | null
+          registros_total: number | null
+          started_at: string
+          status: string
+          tipo_operacao: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          erro_detalhes?: Json | null
+          id?: string
+          integracao_id: string
+          metadata?: Json | null
+          registros_processados?: number | null
+          registros_total?: number | null
+          started_at?: string
+          status?: string
+          tipo_operacao: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          erro_detalhes?: Json | null
+          id?: string
+          integracao_id?: string
+          metadata?: Json | null
+          registros_processados?: number | null
+          registros_total?: number | null
+          started_at?: string
+          status?: string
+          tipo_operacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_sincronizacao_integracao_id_fkey"
+            columns: ["integracao_id"]
+            isOneToOne: false
+            referencedRelation: "integracoes_externas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_models: {
+        Row: {
+          client_id: string
+          created_at: string
+          feature_importance: Json | null
+          hyperparameters: Json | null
+          id: string
+          last_prediction: string | null
+          model_data: Json
+          model_id: string
+          model_type: string
+          performance_metrics: Json
+          prediction_count: number | null
+          status: string
+          training_data_size: number | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          feature_importance?: Json | null
+          hyperparameters?: Json | null
+          id?: string
+          last_prediction?: string | null
+          model_data?: Json
+          model_id: string
+          model_type: string
+          performance_metrics?: Json
+          prediction_count?: number | null
+          status?: string
+          training_data_size?: number | null
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          feature_importance?: Json | null
+          hyperparameters?: Json | null
+          id?: string
+          last_prediction?: string | null
+          model_data?: Json
+          model_id?: string
+          model_type?: string
+          performance_metrics?: Json
+          prediction_count?: number | null
+          status?: string
+          training_data_size?: number | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      ml_performance_metrics: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          measurement_date: string
+          metric_metadata: Json | null
+          metric_name: string
+          metric_value: number | null
+          model_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_metadata?: Json | null
+          metric_name: string
+          metric_value?: number | null
+          model_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          metric_metadata?: Json | null
+          metric_name?: string
+          metric_value?: number | null
+          model_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_performance_metrics_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_predictions: {
+        Row: {
+          client_id: string
+          confidence_score: number
+          created_at: string
+          feedback: string | null
+          id: string
+          input_data: Json
+          is_correct: boolean | null
+          model_id: string
+          prediction_result: Json
+          processing_time_ms: number | null
+        }
+        Insert: {
+          client_id: string
+          confidence_score: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          input_data: Json
+          is_correct?: boolean | null
+          model_id: string
+          prediction_result: Json
+          processing_time_ms?: number | null
+        }
+        Update: {
+          client_id?: string
+          confidence_score?: number
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          input_data?: Json
+          is_correct?: boolean | null
+          model_id?: string
+          prediction_result?: Json
+          processing_time_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_predictions_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
             referencedColumns: ["id"]
           },
         ]
@@ -2026,6 +2321,57 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_jobs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cron_expression: string
+          description: string | null
+          enabled: boolean
+          error_count: number
+          function_name: string
+          id: string
+          last_run: string | null
+          name: string
+          next_run: string | null
+          parameters: Json
+          success_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression: string
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          function_name: string
+          id?: string
+          last_run?: string | null
+          name: string
+          next_run?: string | null
+          parameters?: Json
+          success_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string
+          description?: string | null
+          enabled?: boolean
+          error_count?: number
+          function_name?: string
+          id?: string
+          last_run?: string | null
+          name?: string
+          next_run?: string | null
+          parameters?: Json
+          success_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_reports: {
         Row: {
           client_id: string
@@ -2345,6 +2691,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_audit: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_role: string | null
+          old_role: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_role?: string | null
+          old_role?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_role?: string | null
+          old_role?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       worker_instances: {
         Row: {
           created_at: string
@@ -2407,6 +2783,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      calculate_next_cron_run: {
+        Args: { cron_expression: string; from_time?: string }
+        Returns: string
+      }
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2418,6 +2798,10 @@ export type Database = {
       cleanup_offline_workers: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      cleanup_orphaned_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       complete_queue_task: {
         Args: {
@@ -2442,6 +2826,18 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      get_accountant_clients: {
+        Args: { accountant_user_id?: string }
+        Returns: {
+          id: string
+          name: string
+          cnpj: string
+          email: string
+          status: string
+          regime: string
+          created_at: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -2477,6 +2873,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: boolean
@@ -2484,6 +2884,15 @@ export type Database = {
       process_queue_item: {
         Args: { p_worker_id: string }
         Returns: Json
+      }
+      upsert_integracao_externa: {
+        Args: {
+          p_client_id: string
+          p_tipo_integracao: string
+          p_credenciais: Json
+          p_status?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
