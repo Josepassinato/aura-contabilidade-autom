@@ -73,11 +73,40 @@ redirect_uri = ""
 url = ""
 
 [functions]
+# Public functions - require JWT authentication  
 [functions.processar-procuracao]
-verify_jwt = true
-
-[functions.security-monitor]
 verify_jwt = true
 
 [functions.validation-service]
 verify_jwt = true
+
+[functions.generate-nlp-response]
+verify_jwt = true
+
+# Internal functions - no JWT needed (cron jobs and internal services)
+[functions.security-monitor]
+verify_jwt = false
+
+[functions.scrape-sefaz]
+verify_jwt = false
+
+[functions.metrics-collector]
+verify_jwt = false
+
+[functions.payment-alerts-processor]
+verify_jwt = false
+
+[functions.background-report-generator]
+verify_jwt = false
+
+[functions.process-scheduled-reports]
+verify_jwt = false
+
+[functions.queue-processor]
+verify_jwt = false
+
+[functions.automatic-bank-reconciliation]
+verify_jwt = false
+
+[functions.continuous-close-automation]
+verify_jwt = false

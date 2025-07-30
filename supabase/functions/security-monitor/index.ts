@@ -1,11 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { internalHeaders } from '../_shared/secure-api.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
+// Internal function - no CORS, uses SERVICE_ROLE_KEY
 interface SecurityMetric {
   metric_name: string;
   metric_type: string;
@@ -14,13 +11,16 @@ interface SecurityMetric {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  // Internal function - no OPTIONS handling needed
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }), 
+      { status: 405, headers: internalHeaders }
+    );
   }
 
   try {
-    // Initialize Supabase client
+    // Initialize Supabase client with SERVICE_ROLE_KEY for internal operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
@@ -157,7 +157,7 @@ serve(async (req) => {
         metrics: securityMetrics
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...internalHeaders },
         status: 200,
       },
     )
@@ -193,7 +193,7 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...internalHeaders },
         status: 500,
       },
     )

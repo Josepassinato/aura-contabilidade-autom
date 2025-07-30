@@ -1,14 +1,9 @@
 
-// SEFAZ Portal Scraper Edge Function
+// SEFAZ Portal Scraper Edge Function - Internal use only
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
-
-// CORS headers for browser requests
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { internalHeaders } from '../_shared/secure-api.ts'
 
 // Define necessary environment variables
 const SEFAZ_USERNAME = Deno.env.get("SEFAZ_USERNAME") || "";
@@ -18,30 +13,22 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 const SERPRO_API_KEY = Deno.env.get("SERPRO_API_KEY") || ""; // Nova variável para API do Serpro
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    });
+  // Internal function - no CORS needed
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }), 
+      { status: 405, headers: internalHeaders }
+    );
   }
 
   try {
-    // Verify we're receiving a POST request
-    if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }), 
-        { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" }}
-      );
-    }
-
     // Parse the request to get client ID and UF (state)
     const { clientId, uf = "SP" } = await req.json();
     
     if (!clientId) {
       return new Response(
         JSON.stringify({ error: "Client ID is required" }), 
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+        { status: 400, headers: internalHeaders }
       );
     }
 
@@ -51,7 +38,7 @@ serve(async (req: Request) => {
       if (!SERPRO_API_KEY) {
         return new Response(
           JSON.stringify({ error: "SERPRO API key not configured for SC integration" }), 
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+          { status: 500, headers: internalHeaders }
         );
       }
     } else {
@@ -59,7 +46,7 @@ serve(async (req: Request) => {
       if (!SEFAZ_USERNAME || !SEFAZ_PASSWORD) {
         return new Response(
           JSON.stringify({ error: "SEFAZ credentials not configured" }), 
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+          { status: 500, headers: internalHeaders }
         );
       }
     }
@@ -77,7 +64,7 @@ serve(async (req: Request) => {
     if (clientError || !clientData) {
       return new Response(
         JSON.stringify({ error: "Client not found" }), 
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+        { status: 404, headers: internalHeaders }
       );
     }
 
@@ -126,7 +113,7 @@ serve(async (req: Request) => {
       console.error("Error inserting data:", insertError);
       return new Response(
         JSON.stringify({ error: "Failed to save scraped data" }), 
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }}
+        { status: 500, headers: internalHeaders }
       );
     }
 
@@ -138,7 +125,7 @@ serve(async (req: Request) => {
       }),
       { 
         status: 200, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: internalHeaders
       }
     );
 
@@ -148,7 +135,7 @@ serve(async (req: Request) => {
       JSON.stringify({ error: error.message || "An error occurred during scraping" }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: internalHeaders
       }
     );
   }

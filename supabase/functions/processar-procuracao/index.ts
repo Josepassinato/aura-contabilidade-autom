@@ -2,12 +2,9 @@
 // Supabase Edge Function para processar procurações eletrônicas
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { corsHeaders, auth } from '../_shared/secure-api.ts'
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Public function - requires JWT authentication
 
 // Função principal que processa a procuração
 async function processarProcuracao(
@@ -241,33 +238,31 @@ async function simularEtapas(supabase: any, procuracaoId: string) {
 }
 
 serve(async (req) => {
-  // Tratamento de requisições OPTIONS para CORS
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Require JWT authentication
+  const authError = await auth.requireAuth(req);
+  if (authError) return authError;
+
   try {
-    // Criar cliente Supabase
+    // Create Supabase client with ANON key for public function
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Obter o Service Role para operações administrativas
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    // Extrair dados da requisição
+    // Extract request data
     const { procuracaoId } = await req.json();
 
     if (!procuracaoId) {
       throw new Error("ID da procuração é obrigatório");
     }
 
-    // Processar a procuração
-    const result = await processarProcuracao(supabaseAdmin, procuracaoId);
+    // Process the procuração - use ANON key with RLS for security
+    const result = await processarProcuracao(supabaseClient, procuracaoId);
 
     // Retornar resultado
     return new Response(

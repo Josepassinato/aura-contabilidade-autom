@@ -32,7 +32,7 @@ export interface ApiResponse<T = any> {
 const rateLimitStore = new Map<string, number[]>();
 
 /**
- * CORS headers for secure API responses
+ * CORS headers for secure API responses - restricted to production domains
  */
 export const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://e70f8038-29c2-4a71-9941-5c0ea55d7369.lovableproject.com',
@@ -44,6 +44,16 @@ export const corsHeaders = {
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+/**
+ * CORS headers for internal functions (cron jobs) - no CORS needed
+ */
+export const internalHeaders = {
+  'Content-Type': 'application/json',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Cache-Control': 'no-store, no-cache, must-revalidate'
 };
 
 /**
@@ -127,7 +137,7 @@ export const auth = {
 
       const token = authHeader.replace('Bearer ', '');
       
-      // Initialize Supabase client
+      // Initialize Supabase client with ANON key for JWT validation
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? ''
@@ -143,6 +153,25 @@ export const auth = {
     } catch (error) {
       return { user: null, error: 'Erro na validação do token' };
     }
+  },
+
+  /**
+   * Validate JWT token and return 401 if invalid
+   */
+  requireAuth: async (req: Request): Promise<Response | null> => {
+    const { user, error } = await auth.validateToken(req);
+    
+    if (!user || error) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', message: error || 'Token inválido' }), 
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    return null; // Success - continue processing
   },
 
   /**
@@ -166,10 +195,15 @@ export const auth = {
 export class SecureAPI {
   private supabase: any;
 
-  constructor() {
+  constructor(useServiceRole = false) {
+    // Use SERVICE_ROLE_KEY only for internal functions, ANON_KEY for public functions
+    const key = useServiceRole 
+      ? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      : Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+      
     this.supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      key
     );
   }
 
