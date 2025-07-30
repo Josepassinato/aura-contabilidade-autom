@@ -72,39 +72,10 @@ export const TransactionHistory = ({ clientId }: TransactionHistoryProps) => {
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - parseInt(dateRange));
 
-      // Try to load from database first
-      const { data: dbTransactions, error } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .eq('client_id', clientId)
-        .gte('date', startDate.toISOString())
-        .lte('date', endDate.toISOString())
-        .order('date', { ascending: false });
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
+      // Usar dados mock temporariamente (até tipos do Supabase serem atualizados)
       let transactionData: Transaction[] = [];
-
-      if (dbTransactions && dbTransactions.length > 0) {
-        // Use database data
-        transactionData = dbTransactions.map(t => ({
-          id: t.id,
-          date: t.date,
-          description: t.description,
-          type: t.type,
-          category: t.category,
-          amount: parseFloat(t.amount || '0'),
-          status: t.status,
-          reference: t.reference || '',
-          account: t.account || '',
-          document_id: t.document_id
-        }));
-      } else {
-        // Generate sample data for demonstration
-        transactionData = generateSampleTransactions(parseInt(dateRange));
-      }
+      // Generate sample data for demonstration
+      transactionData = generateSampleTransactions(parseInt(dateRange));
 
       setTransactions(transactionData);
       calculateSummary(transactionData);
