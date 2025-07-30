@@ -62,7 +62,7 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       if (docsError) throw docsError;
 
       // Buscar mensagens não lidas
-      const { data: messages, error: messagesError } = await supabase
+      const { data: messages, error: messagesError } = await (supabase as any)
         .from('client_messages')
         .select('*')
         .eq('client_id', clientId)
@@ -72,7 +72,7 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       const unreadMessages = messages?.length || 0;
 
       // Buscar obrigações fiscais
-      const { data: obligations, error: obligationsError } = await supabase
+      const { data: obligations, error: obligationsError } = await (supabase as any)
         .from('tax_obligations')
         .select('*')
         .eq('client_id', clientId)
@@ -92,7 +92,7 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       const processedDocuments = totalDocuments - pendingDocuments;
 
       // Próximo prazo
-      const nextObligation = obligations?.[0];
+      const nextObligation = obligations?.[0] as any;
       const nextDeadline = nextObligation?.due_date || null;
 
       // Simular dados financeiros (em produção, viria de integração contábil)
@@ -102,7 +102,7 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
       // Score de compliance baseado em documentos e prazos
       const complianceScore = Math.min(100, 
         (processedDocuments / Math.max(totalDocuments, 1)) * 70 + 
-        (obligations?.filter(o => new Date(o.due_date) > new Date()).length || 0) * 10
+        (obligations?.filter((o: any) => new Date(o.due_date) > new Date()).length || 0) * 10
       );
 
       // Atividades recentes

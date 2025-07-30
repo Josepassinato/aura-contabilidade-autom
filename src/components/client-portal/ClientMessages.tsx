@@ -76,7 +76,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
       setLoading(true);
 
       // First, try to get messages from the table
-      const { data: existingMessages, error } = await supabase
+      const { data: existingMessages, error } = await (supabase as any)
         .from('client_messages')
         .select('*')
         .eq('client_id', clientId)
@@ -87,7 +87,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
       }
 
       if (existingMessages && existingMessages.length > 0) {
-        setMessages(existingMessages);
+        setMessages(existingMessages as any);
         // Mark messages as read by client
         await markMessagesAsRead();
       } else {
@@ -132,9 +132,9 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
 
   const markMessagesAsRead = async () => {
     try {
-      await supabase
+      await (supabase as any)
         .from('client_messages')
-        .update({ read_by_client: true })
+        .update({ read_by_client: true } as any)
         .eq('client_id', clientId)
         .eq('read_by_client', false);
     } catch (error) {
@@ -163,7 +163,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
       };
 
       // Try to insert into database
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('client_messages')
         .insert([{
           client_id: clientId,
@@ -174,7 +174,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
           read_by_accountant: message.read_by_accountant,
           priority: message.priority,
           category: message.category
-        }]);
+        } as any]);
 
       if (error && error.code !== 'PGRST116') {
         throw error;

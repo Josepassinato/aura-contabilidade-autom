@@ -73,7 +73,7 @@ export const TransactionHistory = ({ clientId }: TransactionHistoryProps) => {
       startDate.setDate(endDate.getDate() - parseInt(dateRange));
 
       // Try to load from database first
-      const { data: dbTransactions, error } = await supabase
+      const { data: dbTransactions, error } = await (supabase as any)
         .from('financial_transactions')
         .select('*')
         .eq('client_id', clientId)
@@ -89,7 +89,7 @@ export const TransactionHistory = ({ clientId }: TransactionHistoryProps) => {
 
       if (dbTransactions && dbTransactions.length > 0) {
         // Use database data
-        transactionData = dbTransactions.map(t => ({
+        transactionData = (dbTransactions as any[]).map(t => ({
           id: t.id,
           date: t.date,
           description: t.description,
