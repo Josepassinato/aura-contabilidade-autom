@@ -43,8 +43,9 @@ export const UserInvitations = () => {
     try {
       const { data, error } = await supabase
         .from('user_invitations')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, email, role, status, created_at, expires_at, token, invited_by, invited_by_name, accepted_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(25);
 
       if (error) throw error;
       

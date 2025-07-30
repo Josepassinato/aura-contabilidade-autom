@@ -52,11 +52,11 @@ export function useSmartNotifications() {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select('id, title, message, type, priority, category, is_read, created_at, metadata')
         .eq('user_id', user.id)
         .order('priority', { ascending: true })
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(25);
 
       if (error) throw error;
       setNotifications((data || []) as SmartNotification[]);

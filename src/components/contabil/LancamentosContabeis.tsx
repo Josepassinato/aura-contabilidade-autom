@@ -100,19 +100,22 @@ export function LancamentosContabeis() {
       const [lancamentosResponse, contasResponse, centrosResponse] = await Promise.all([
         supabase
           .from('lancamentos_contabeis')
-          .select('*')
-          .order('data_lancamento', { ascending: false }),
+          .select('id, numero_lancamento, data_lancamento, data_competencia, historico, valor_total, tipo_documento, numero_documento, origem, status, observacoes, client_id, created_at')
+          .order('data_lancamento', { ascending: false })
+          .limit(50),
         supabase
           .from('plano_contas')
           .select('id, codigo, nome, aceita_lancamento')
           .eq('aceita_lancamento', true)
           .eq('ativo', true)
-          .order('codigo'),
+          .order('codigo')
+          .limit(200),
         supabase
           .from('centro_custos')
           .select('id, codigo, nome')
           .eq('ativo', true)
           .order('codigo')
+          .limit(100)
       ]);
 
       if (lancamentosResponse.error) throw lancamentosResponse.error;

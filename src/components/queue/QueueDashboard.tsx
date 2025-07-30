@@ -140,7 +140,7 @@ export function QueueDashboard() {
   const loadTasks = async () => {
     const { data } = await supabase
       .from('processing_queue')
-      .select('*')
+      .select('id, process_type, status, priority, created_at, scheduled_at, started_at, completed_at, retry_count, max_retries, worker_id, client_id, parameters, error_details')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -150,8 +150,9 @@ export function QueueDashboard() {
   const loadWorkers = async () => {
     const { data } = await supabase
       .from('worker_instances')
-      .select('*')
-      .order('last_heartbeat', { ascending: false });
+      .select('id, worker_id, function_name, status, current_task_count, max_concurrent_tasks, last_heartbeat, metadata')
+      .order('last_heartbeat', { ascending: false })
+      .limit(25);
 
     setWorkers(data || []);
   };
