@@ -35,16 +35,22 @@ export function SecurityDashboard() {
         .from('system_metrics')
         .select('metric_name, metric_value, timestamp, labels')
         .in('metric_name', [
-          'failed_auth_attempts_24h',
-          'rls_violations_1h',
-          'active_admin_users',
-          'system_health_status'
+          'failed_auth_attempts_24h' as any,
+          'rls_violations_1h' as any,
+          'active_admin_users' as any,
+          'system_health_status' as any
         ])
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (metricsError) throw metricsError;
-      setMetrics(metricsData || []);
+      const typedMetrics = (metricsData || []).map(item => ({
+        metric_name: item.metric_name as string,
+        metric_value: item.metric_value as number,
+        timestamp: item.timestamp as string,
+        labels: item.labels as any
+      }));
+      setMetrics(typedMetrics);
 
       // Load recent validation results - apenas campos necessários
       const { data: validationData, error: validationError } = await supabase
