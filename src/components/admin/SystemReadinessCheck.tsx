@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, Activity, Database, Shield, Users } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase/client';
+import { SystemStatusGrid, SystemStatus } from './system/SystemStatusGrid';
+import { OverallStatusAlert } from './system/OverallStatusAlert';
+import { NextStepsCard } from './system/NextStepsCard';
 
-interface SystemStatus {
-  component: string;
-  status: 'ok' | 'warning' | 'error';
-  message: string;
-  details?: any;
-}
+type OverallStatus = 'ready' | 'partial' | 'not_ready';
 
 export function SystemReadinessCheck() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus[]>([]);
@@ -183,24 +178,6 @@ export function SystemReadinessCheck() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'ok': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      default: return <Activity className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ok': return 'text-green-600 bg-green-50 border-green-200';
-      case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'error': return 'text-red-600 bg-red-50 border-red-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -220,109 +197,11 @@ export function SystemReadinessCheck() {
         </Button>
       </div>
 
-      {/* Overall Status */}
-      <Alert className={
-        overallStatus === 'ready' ? 'border-green-200 bg-green-50' :
-        overallStatus === 'partial' ? 'border-yellow-200 bg-yellow-50' :
-        'border-red-200 bg-red-50'
-      }>
-        {overallStatus === 'ready' ? (
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        ) : (
-          <AlertTriangle className={`h-4 w-4 ${overallStatus === 'partial' ? 'text-yellow-600' : 'text-red-600'}`} />
-        )}
-        <AlertTitle className={
-          overallStatus === 'ready' ? 'text-green-800' :
-          overallStatus === 'partial' ? 'text-yellow-800' :
-          'text-red-800'
-        }>
-          Sistema {
-            overallStatus === 'ready' ? 'Pronto para Uso' :
-            overallStatus === 'partial' ? 'Parcialmente Pronto' :
-            'Não Pronto'
-          }
-        </AlertTitle>
-        <AlertDescription className={
-          overallStatus === 'ready' ? 'text-green-700' :
-          overallStatus === 'partial' ? 'text-yellow-700' :
-          'text-red-700'
-        }>
-          {overallStatus === 'ready' && 'Todos os componentes críticos estão funcionando. O sistema está pronto para uso em produção.'}
-          {overallStatus === 'partial' && 'A maioria dos componentes está funcionando. Algumas funcionalidades podem ter limitações.'}
-          {overallStatus === 'not_ready' && 'Componentes críticos apresentam problemas. Resolva os erros antes do uso em produção.'}
-        </AlertDescription>
-      </Alert>
+      <OverallStatusAlert status={overallStatus} />
 
-      {/* Component Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {systemStatus.map((check, index) => (
-          <Card key={index} className={`border ${getStatusColor(check.status)}`}>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2">
-                  {getStatusIcon(check.status)}
-                  {check.component}
-                </span>
-                <Badge variant={
-                  check.status === 'ok' ? 'default' :
-                  check.status === 'warning' ? 'secondary' : 'destructive'
-                }>
-                  {check.status.toUpperCase()}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm">{check.message}</p>
-              {check.details && (
-                <details className="mt-2">
-                  <summary className="text-xs text-muted-foreground cursor-pointer">
-                    Ver detalhes
-                  </summary>
-                  <pre className="text-xs mt-1 p-2 bg-gray-100 rounded overflow-auto max-h-20">
-                    {JSON.stringify(check.details, null, 2)}
-                  </pre>
-                </details>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <SystemStatusGrid systemStatus={systemStatus} />
 
-      {/* Next Steps */}
-      {overallStatus === 'ready' && (
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="text-green-800">Próximos Passos para Uso Real</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="list-decimal list-inside space-y-2 text-green-700">
-              <li>Fazer login como administrador usando os botões de acesso rápido</li>
-              <li>Acessar o Dashboard de Segurança em /admin/security</li>
-              <li>Configurar clientes reais no sistema</li>
-              <li>Executar validações iniciais</li>
-              <li>Monitorar métricas de segurança regularmente</li>
-            </ol>
-          </CardContent>
-        </Card>
-      )}
-
-      {overallStatus !== 'ready' && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-yellow-800">Ações Recomendadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-yellow-700">
-              {systemStatus.filter(s => s.status === 'error').map((check, i) => (
-                <li key={i}>Resolver erro em: {check.component}</li>
-              ))}
-              {systemStatus.filter(s => s.status === 'warning').map((check, i) => (
-                <li key={i}>Melhorar: {check.component}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <NextStepsCard status={overallStatus} systemStatus={systemStatus} />
     </div>
   );
 }
