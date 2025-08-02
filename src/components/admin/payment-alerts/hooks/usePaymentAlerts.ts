@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { handleError } from '@/services/errorHandlingService';
 
 interface PaymentAlert {
   alert_id: string;
@@ -28,12 +29,7 @@ export function usePaymentAlerts() {
       
       setAlerts(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar alertas:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar os alertas de pagamento.',
-        variant: 'destructive',
-      });
+      await handleError(error, 'usePaymentAlerts.loadPendingAlerts');
     } finally {
       setIsLoading(false);
     }
@@ -53,12 +49,7 @@ export function usePaymentAlerts() {
       await loadPendingAlerts();
       return true;
     } catch (error: any) {
-      console.error('Erro ao verificar pagamentos:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao executar verificação de pagamentos.',
-        variant: 'destructive',
-      });
+      await handleError(error, 'usePaymentAlerts.checkOverduePayments');
       return false;
     }
   };
@@ -77,7 +68,7 @@ export function usePaymentAlerts() {
       
       return true;
     } catch (error: any) {
-      console.error('Erro ao marcar alerta como enviado:', error);
+      await handleError(error, 'usePaymentAlerts.markAlertAsSent', false);
       return false;
     }
   };

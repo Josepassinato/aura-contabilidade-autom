@@ -35,31 +35,40 @@ export function OnboardingModal() {
   };
 
   return (
-    <Dialog open={isOnboardingActive} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto"
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={isOnboardingActive} onOpenChange={skipOnboarding}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="absolute right-4 top-4 z-50">
           <Button
             variant="ghost"
             size="sm"
             onClick={skipOnboarding}
             className="text-muted-foreground hover:text-foreground"
+            title="Fechar assistente de configuração"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
         <DialogHeader className="space-y-4 pr-8">
-          <div className="flex items-center gap-2">
-            <DialogTitle className="text-xl">{currentStepData?.title}</DialogTitle>
-            <Badge variant="outline">
-              {currentStep + 1} de {steps.length}
-            </Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DialogTitle className="text-xl">{currentStepData?.title}</DialogTitle>
+              <Badge variant="outline">
+                {currentStep + 1} de {steps.length}
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={skipOnboarding}
+              className="text-xs"
+            >
+              Pular Tutorial
+            </Button>
           </div>
           
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Progresso do Setup</span>
+              <span>Progresso da Configuração</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />

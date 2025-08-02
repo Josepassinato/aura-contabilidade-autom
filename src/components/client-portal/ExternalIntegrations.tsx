@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { Link2, Database, ShieldCheck } from "lucide-react";
+import { Link2, Database, ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ExternalIntegrationsProps {
@@ -81,13 +81,22 @@ export const ExternalIntegrations = ({ clientId }: ExternalIntegrationsProps) =>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 text-amber-800">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="font-medium">Recurso em Desenvolvimento</span>
+          </div>
+          <p className="text-sm text-amber-700 mt-1">
+            Esta funcionalidade está sendo desenvolvida e será disponibilizada em breve.
+          </p>
+        </div>
         <p className="text-sm text-muted-foreground mb-4">
           Conecte seus sistemas de gestão para sincronização automática de dados contábeis.
         </p>
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" disabled>
               <Database className="mr-2 h-4 w-4" />
               Conectar Sistema Externo
             </Button>

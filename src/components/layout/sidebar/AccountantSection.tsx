@@ -31,7 +31,7 @@ export function AccountantSection() {
             <SidebarMenuButton asChild isActive={isActive('/relatorios')}>
               <Link to="/relatorios">
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
-                <span>Relatórios Financeiros</span>
+                <span>Relatórios Gerenciais</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -55,7 +55,7 @@ export function AccountantSection() {
             <SidebarMenuButton asChild isActive={isActive('/classificacao-reconciliacao')}>
               <Link to="/classificacao-reconciliacao">
                 <Layers className="h-4 w-4 mr-2" />
-                <span>Classificação e Reconciliação</span>
+                <span>Conciliação Contábil</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -111,7 +111,7 @@ export function AccountantSection() {
             <SidebarMenuButton asChild isActive={isActive('/workflow-dashboard')}>
               <Link to="/workflow-dashboard">
                 <Activity className="h-4 w-4 mr-2" />
-                <span>Dashboard de Problemas</span>
+                <span>Monitoramento</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -145,6 +145,22 @@ export function AccountantSection() {
                 <Settings2Icon className="h-4 w-4 mr-2" />
                 <span>Auditoria Inteligente</span>
               </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/alertas-pagamento')}>
+              <Link to="/alertas-pagamento">
+                <Activity className="h-4 w-4 mr-2" />
+                <span>Alertas de Pagamento</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <div className="flex items-center cursor-not-allowed opacity-50">
+                <Activity className="h-4 w-4 mr-2" />
+                <span>Gestão de Riscos</span>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

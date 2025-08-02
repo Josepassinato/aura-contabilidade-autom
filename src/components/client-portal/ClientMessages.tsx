@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { handleError } from '@/services/errorHandlingService';
 
 interface Message {
   id: string;
@@ -98,12 +99,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
       localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(sampleMessages));
 
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error);
-      toast({
-        title: "Erro ao carregar mensagens",
-        description: "Não foi possível carregar as mensagens",
-        variant: "destructive"
-      });
+      await handleError(error, 'ClientMessages.loadMessages');
     } finally {
       setLoading(false);
     }
@@ -153,12 +149,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
       });
 
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: "Não foi possível enviar a mensagem",
-        variant: "destructive"
-      });
+      await handleError(error, 'ClientMessages.sendMessage');
     } finally {
       setSending(false);
     }
