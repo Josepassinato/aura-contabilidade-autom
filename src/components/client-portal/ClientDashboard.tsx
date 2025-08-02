@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   FileText, 
   Calendar, 
@@ -10,10 +11,10 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  MessageSquare
+  MessageSquare,
+  WifiOff
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface DashboardMetrics {
   totalDocuments: number;
@@ -41,111 +42,195 @@ interface ClientDashboardProps {
 export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   useEffect(() => {
     if (clientId) {
       loadDashboardMetrics();
+    } else {
+      setDemoMetrics();
     }
   }, [clientId]);
+
+  const setDemoMetrics = () => {
+    setLoading(false);
+    setIsOfflineMode(true);
+    
+    const demoMetrics: DashboardMetrics = {
+      totalDocuments: 12,
+      pendingDocuments: 3,
+      processedDocuments: 9,
+      nextDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      monthlyRevenue: 85000,
+      monthlyExpenses: 52000,
+      unreadMessages: 2,
+      complianceScore: 87,
+      overdueTasks: 1,
+      recentActivity: [
+        {
+          id: '1',
+          type: 'document',
+          description: 'Documento de nota fiscal enviado',
+          date: new Date().toISOString(),
+          status: 'success'
+        },
+        {
+          id: '2', 
+          type: 'report',
+          description: 'Relatório mensal gerado',
+          date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          status: 'success'
+        },
+        {
+          id: '3',
+          type: 'document',
+          description: 'Documento pendente de aprovação',
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'warning'
+        }
+      ]
+    };
+    
+    setMetrics(demoMetrics);
+  };
 
   const loadDashboardMetrics = async () => {
     try {
       setLoading(true);
+      setIsOfflineMode(false);
 
-      // Buscar documentos do cliente
-      const { data: documents, error: docsError } = await supabase
-        .from('client_documents')
-        .select('*')
-        .eq('client_id', clientId);
+      // Buscar dados com graceful degradation
+      const [documentsResult, messagesResult, obligationsResult, reportsResult] = await Promise.allSettled([
+        fetchDocumentsSafe(),
+        fetchMessagesSafe(),
+        fetchObligationsSafe(),
+        fetchReportsSafe()
+      ]);
 
-      if (docsError) throw docsError;
+      // Processar resultados seguros
+      const documents = documentsResult.status === 'fulfilled' ? documentsResult.value : [];
+      const messages = messagesResult.status === 'fulfilled' ? messagesResult.value : [];
+      const obligations = obligationsResult.status === 'fulfilled' ? obligationsResult.value : [];
+      const reports = reportsResult.status === 'fulfilled' ? reportsResult.value : [];
 
-      // Buscar mensagens não lidas
-      const { data: messages, error: messagesError } = await (supabase as any)
-        .from('client_messages')
-        .select('*')
-        .eq('client_id', clientId)
-        .eq('read_by_client', false);
+      // Se não há dados reais, usar demo
+      const hasRealData = documents.length > 0 || reports.length > 0;
+      if (!hasRealData) {
+        console.warn('Nenhum dado real encontrado, usando dados demo');
+        setDemoMetrics();
+        return;
+      }
 
-      // Ignorar erro se tabela não existir ainda
-      const unreadMessages = messages?.length || 0;
-
-      // Buscar obrigações fiscais
-      const { data: obligations, error: obligationsError } = await (supabase as any)
-        .from('tax_obligations')
-        .select('*')
-        .eq('client_id', clientId)
-        .gte('due_date', new Date().toISOString());
-
-      // Buscar relatórios financeiros recentes
-      const { data: reports, error: reportsError } = await supabase
-        .from('generated_reports')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      // Calcular métricas
-      const totalDocuments = documents?.length || 0;
-      const pendingDocuments = documents?.filter(doc => doc.status === 'pending').length || 0;
+      // Calcular métricas reais
+      const totalDocuments = documents.length;
+      const pendingDocuments = documents.filter((doc: any) => doc.status === 'pending').length;
       const processedDocuments = totalDocuments - pendingDocuments;
-
-      // Próximo prazo
-      const nextObligation = obligations?.[0] as any;
-      const nextDeadline = nextObligation?.due_date || null;
-
-      // Simular dados financeiros (em produção, viria de integração contábil)
-      const monthlyRevenue = Math.random() * 100000 + 50000;
+      
+      const nextObligation = obligations[0];
+      const nextDeadline = nextObligation?.prazo || null;
+      
+      // Dados financeiros simulados
+      const monthlyRevenue = 75000 + Math.random() * 50000;
       const monthlyExpenses = monthlyRevenue * (0.6 + Math.random() * 0.2);
-
-      // Score de compliance baseado em documentos e prazos
+      
       const complianceScore = Math.min(100, 
-        (processedDocuments / Math.max(totalDocuments, 1)) * 70 + 
-        (obligations?.filter((o: any) => new Date(o.due_date) > new Date()).length || 0) * 10
+        (processedDocuments / Math.max(totalDocuments, 1)) * 70 + 30
       );
 
-      // Atividades recentes
       const recentActivity = [
-        ...(documents?.slice(0, 3).map(doc => ({
+        ...documents.slice(0, 3).map((doc: any) => ({
           id: doc.id,
           type: 'document',
-          description: `Documento ${doc.title} ${doc.status === 'approved' ? 'aprovado' : 'enviado'}`,
-          date: doc.created_at || '',
-          status: doc.status === 'approved' ? 'success' as const : 
-                 doc.status === 'pending' ? 'warning' as const : 'error' as const
-        })) || []),
-        ...(reports?.slice(0, 2).map(report => ({
+          description: `Documento ${doc.title || doc.file_name || 'processado'}`,
+          date: doc.created_at,
+          status: 'success' as const
+        })),
+        ...reports.slice(0, 2).map((report: any) => ({
           id: report.id,
-          type: 'report',
+          type: 'report', 
           description: `Relatório ${report.title} gerado`,
           date: report.created_at,
           status: 'success' as const
-        })) || [])
+        }))
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
       setMetrics({
         totalDocuments,
-        pendingDocuments,
+        pendingDocuments, 
         processedDocuments,
         nextDeadline,
         monthlyRevenue,
         monthlyExpenses,
-        unreadMessages,
+        unreadMessages: messages.length,
         complianceScore,
         overdueTasks: pendingDocuments,
         recentActivity
       });
 
     } catch (error) {
-      console.error('Erro ao carregar métricas:', error);
-      toast({
-        title: "Erro ao carregar dashboard",
-        description: "Não foi possível carregar as métricas do cliente",
-        variant: "destructive"
-      });
+      console.error('Erro ao carregar métricas, usando dados demo:', error);
+      setDemoMetrics();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDocumentsSafe = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('client_documents')
+        .select('*')
+        .eq('client_id', clientId);
+      
+      if (error) return [];
+      return data || [];
+    } catch (error) {
+      return [];
+    }
+  };
+
+  const fetchMessagesSafe = async () => {
+    try {
+      // Usar query raw para evitar problemas de tipagem
+      const { data, error } = await (supabase as any).rpc('get_client_unread_messages', {
+        client_id: clientId
+      });
+      
+      if (error) return [];
+      return data || [];
+    } catch (error) {
+      return [];
+    }
+  };
+
+  const fetchObligationsSafe = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('obrigacoes_fiscais')
+        .select('*')
+        .eq('client_id', clientId)
+        .gte('prazo', new Date().toISOString().split('T')[0]);
+      
+      if (error) return [];
+      return data || [];
+    } catch (error) {
+      return [];
+    }
+  };
+
+  const fetchReportsSafe = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('generated_reports')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) return [];
+      return data || [];
+    } catch (error) {
+      return [];
     }
   };
 
@@ -194,6 +279,16 @@ export const ClientDashboard = ({ clientId }: ClientDashboardProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Modo offline/demo alert */}
+      {isOfflineMode && (
+        <Alert>
+          <WifiOff className="h-4 w-4" />
+          <AlertDescription>
+            Exibindo dados de demonstração. Conecte-se ao banco de dados para ver informações reais.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Métricas principais */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

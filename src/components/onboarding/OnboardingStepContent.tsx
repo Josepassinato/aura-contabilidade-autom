@@ -1,15 +1,20 @@
-import React from 'react';
-import { Sparkles, User, Users, Plug, PartyPopper } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, User, Users, Plug, PartyPopper, AlertCircle, CheckCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useOnboarding } from './OnboardingProvider';
+import { useClientValidation } from '@/hooks/useClientValidation';
+import { ClientForm } from '@/components/clients/ClientForm';
 
 interface OnboardingStepContentProps {
   stepId: string;
 }
 
 export function OnboardingStepContent({ stepId }: OnboardingStepContentProps) {
-  const { completeStep } = useOnboarding();
+  const { completeStep, nextStep, skipStep } = useOnboarding();
+  const { hasClients, clientCount, isLoading, checkClients, validateCanProceed, confirmSkipStep } = useClientValidation();
+  const [showClientForm, setShowClientForm] = useState(false);
 
   const renderStepContent = () => {
     switch (stepId) {
@@ -89,38 +94,106 @@ export function OnboardingStepContent({ stepId }: OnboardingStepContentProps) {
                 </p>
               </div>
             </div>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Configure seu Cliente</CardTitle>
-                <CardDescription>
-                  Adicione as informações básicas do seu cliente
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span>Dados básicos da empresa</span>
+
+            {/* Status dos clientes */}
+            {isLoading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Verificando clientes...</p>
+              </div>
+            ) : hasClients ? (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Perfeito! Você já tem {clientCount} cliente{clientCount !== 1 ? 's' : ''} cadastrado{clientCount !== 1 ? 's' : ''}. 
+                  Pode continuar para o próximo passo.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Você ainda não tem clientes cadastrados. Adicione pelo menos um cliente para continuar.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Opções de ação */}
+            {!showClientForm ? (
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">O que você gostaria de fazer?</CardTitle>
+                    <CardDescription>
+                      Escolha uma das opções abaixo para continuar
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button 
+                      onClick={() => setShowClientForm(true)} 
+                      className="w-full flex items-center gap-2"
+                      variant={hasClients ? "outline" : "default"}
+                    >
+                      <Plus className="h-4 w-4" />
+                      {hasClients ? "Adicionar Outro Cliente" : "Adicionar Primeiro Cliente"}
+                    </Button>
+                    
+                    {hasClients && (
+                      <Button 
+                        onClick={() => completeStep('first-client')} 
+                        className="w-full"
+                      >
+                        Continuar com os Clientes Existentes
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      onClick={async () => {
+                        if (!hasClients) {
+                          confirmSkipStep();
+                          // Aguarda um momento para a mensagem aparecer
+                          setTimeout(() => {
+                            completeStep('first-client');
+                          }, 2000);
+                        } else {
+                          completeStep('first-client');
+                        }
+                      }}
+                      variant="ghost" 
+                      className="w-full"
+                    >
+                      {hasClients ? "Prosseguir" : "Pular Este Passo (Adicionar Depois)"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Adicionar Cliente</CardTitle>
+                  <CardDescription>
+                    Preencha as informações básicas do cliente
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ClientForm 
+                    onSuccess={() => {
+                      setShowClientForm(false);
+                      checkClients(); // Revalidar a lista de clientes
+                    }}
+                  />
+                  <div className="mt-4">
+                    <Button 
+                      onClick={() => setShowClientForm(false)} 
+                      variant="ghost" 
+                      className="w-full"
+                    >
+                      Cancelar
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span>Regime tributário</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span>Informações de contato</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span>Configurações iniciais</span>
-                  </div>
-                </div>
-                <Button onClick={() => completeStep('first-client')} className="w-full">
-                  Adicionar Cliente
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
 
