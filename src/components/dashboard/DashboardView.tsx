@@ -16,6 +16,7 @@ import { LoadingOverlay, FeedbackMessage } from '@/components/ui/feedback';
 import { DeleteConfirmation } from '@/components/ui/confirmation';
 import { successToast, actionToasts, loadingToast, errorToast } from '@/lib/toast';
 import { getDemoData, clearDemoData } from '@/data/demoData';
+import { DemoDataManager } from '@/components/demo/DemoDataManager';
 
 export const DashboardView = () => {
   const { enhancedLogout } = useAuth();
@@ -251,6 +252,9 @@ export const DashboardView = () => {
           </Card>
         </div>
       </div>
+
+        {/* Demo Data Manager */}
+        <DemoDataManager onDataLoaded={() => window.location.reload()} />
 
       {/* Componentes de Onboarding */}
       {showOnboarding && (

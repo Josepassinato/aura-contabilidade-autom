@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DollarSign, WifiOff } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
+import { getDemoData, isDemoMode } from '@/data/demoData';
 
 interface FinancialSummaryProps {
   clientId: string;
@@ -23,39 +25,77 @@ export const FinancialSummary = ({ clientId }: FinancialSummaryProps) => {
     taxesDue: 'R$ 0,00'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isInDemoMode, setIsInDemoMode] = useState(false);
 
   useEffect(() => {
     const loadFinancialData = async () => {
       if (!clientId) return;
 
       setIsLoading(true);
-      try {
-        // Buscar dados financeiros reais do cliente
-        // Como não temos uma tabela específica de dados financeiros ainda,
-        // vamos mostrar valores zerados até que seja implementada
+      
+      // Verificar se estamos em modo demo
+      if (isDemoMode()) {
+        setIsInDemoMode(true);
+        const demoData = getDemoData();
+        const transactions = demoData.transactions || [];
+        
+        // Calcular métricas dos dados demo
+        const revenues = transactions.filter(t => t.type === 'receita');
+        const expenses = transactions.filter(t => t.type === 'despesa');
+        
+        const totalRevenue = revenues.reduce((sum, t) => sum + t.amount, 0);
+        const totalExpenses = Math.abs(expenses.reduce((sum, t) => sum + t.amount, 0));
+        const profit = totalRevenue - totalExpenses;
+        const taxesDue = totalRevenue * 0.08; // Simulação de 8% de impostos
+        
         const formatter = new Intl.NumberFormat('pt-BR', {
           style: 'currency',
           currency: 'BRL'
         });
         
         setData({
-          revenue: formatter.format(0),
-          expenses: formatter.format(0),
-          profit: formatter.format(0),
-          taxesDue: formatter.format(0)
+          revenue: formatter.format(totalRevenue),
+          expenses: formatter.format(totalExpenses),
+          profit: formatter.format(profit),
+          taxesDue: formatter.format(taxesDue)
         });
-      } catch (error) {
-        console.error("Erro ao carregar dados financeiros:", error);
-      } finally {
+        
         setIsLoading(false);
+        return;
       }
+      
+      // Como a tabela financial_transactions não existe ainda, mostrar zeros por padrão
+      const formatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+      
+      setData({
+        revenue: formatter.format(0),
+        expenses: formatter.format(0),
+        profit: formatter.format(0),
+        taxesDue: formatter.format(0)
+      });
+      
+      setIsLoading(false);
     };
 
     loadFinancialData();
   }, [clientId]);
 
   return (
-    <Card>
+    <div className="space-y-4">
+      {/* Modo demo alert */}
+      {isInDemoMode && (
+        <Alert>
+          <WifiOff className="h-4 w-4" />
+          <AlertDescription>
+            Exibindo dados financeiros de demonstração.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <DollarSign className="h-5 w-5" />
@@ -83,5 +123,6 @@ export const FinancialSummary = ({ clientId }: FinancialSummaryProps) => {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 };

@@ -48,26 +48,6 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
   useEffect(() => {
     if (clientId) {
       loadMessages();
-      // Set up realtime subscription
-      const subscription = supabase
-        .channel(`client_messages:${clientId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'client_messages',
-            filter: `client_id=eq.${clientId}`
-          },
-          () => {
-            loadMessages();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
     }
   }, [clientId]);
 
@@ -75,49 +55,48 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
     try {
       setLoading(true);
 
-      // First, try to get messages from the table
-      const { data: existingMessages, error } = await (supabase as any)
-        .from('client_messages')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false });
-
-      if (error && error.code !== 'PGRST116') { // Ignore "table not found" error
-        throw error;
+      // Tentar carregar mensagens salvas no localStorage primeiro  
+      const savedMessages = localStorage.getItem(`client_messages_${clientId}`);
+      if (savedMessages) {
+        try {
+          const parsed = JSON.parse(savedMessages);
+          setMessages(parsed);
+          return;
+        } catch (error) {
+          console.warn('Erro ao carregar mensagens salvas:', error);
+        }
       }
 
-      if (existingMessages && existingMessages.length > 0) {
-        setMessages(existingMessages as any);
-        // Mark messages as read by client
-        await markMessagesAsRead();
-      } else {
-        // Create sample messages for demonstration
-        const sampleMessages: Message[] = [
-          {
-            id: '1',
-            sender_type: 'accountant',
-            sender_name: 'Contador Responsável',
-            message: 'Bem-vindo ao portal! Estou aqui para ajudar com suas questões contábeis.',
-            read_by_client: false,
-            read_by_accountant: true,
-            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            priority: 'medium',
-            category: 'geral'
-          },
-          {
-            id: '2',
-            sender_type: 'accountant',
-            sender_name: 'Contador Responsável',
-            message: 'Lembre-se de enviar os documentos fiscais do mês até o dia 15. Qualquer dúvida, estarei disponível.',
-            read_by_client: false,
-            read_by_accountant: true,
-            created_at: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-            priority: 'high',
-            category: 'fiscal'
-          }
-        ];
-        setMessages(sampleMessages);
-      }
+      // Se não há mensagens salvas, criar mensagens de exemplo
+      const sampleMessages: Message[] = [
+        {
+          id: '1',
+          sender_type: 'accountant',
+          sender_name: 'Contador Responsável',
+          message: 'Bem-vindo ao portal! Estou aqui para ajudar com suas questões contábeis.',
+          read_by_client: false,
+          read_by_accountant: true,
+          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+          priority: 'medium',
+          category: 'geral'
+        },
+        {
+          id: '2',
+          sender_type: 'accountant',
+          sender_name: 'Contador Responsável',
+          message: 'Lembre-se de enviar os documentos fiscais do mês até o dia 15. Qualquer dúvida, estarei disponível.',
+          read_by_client: false,
+          read_by_accountant: true,
+          created_at: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
+          priority: 'high',
+          category: 'fiscal'
+        }
+      ];
+      
+      setMessages(sampleMessages);
+      // Salvar mensagens de exemplo para persistência
+      localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(sampleMessages));
+
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
       toast({
@@ -131,15 +110,12 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
   };
 
   const markMessagesAsRead = async () => {
-    try {
-      await (supabase as any)
-        .from('client_messages')
-        .update({ read_by_client: true } as any)
-        .eq('client_id', clientId)
-        .eq('read_by_client', false);
-    } catch (error) {
-      console.error('Erro ao marcar mensagens como lidas:', error);
-    }
+    // Marcar mensagens como lidas no localStorage
+    const updatedMessages = messages.map(msg => 
+      msg.sender_type === 'accountant' ? { ...msg, read_by_client: true } : msg
+    );
+    setMessages(updatedMessages);
+    localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(updatedMessages));
   };
 
   const sendMessage = async () => {
@@ -148,8 +124,7 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
     try {
       setSending(true);
 
-      // For demo purposes, we'll add the message to local state
-      // In production, this would go through the database
+      // Criar nova mensagem
       const message: Message = {
         id: Date.now().toString(),
         sender_type: 'client',
@@ -162,26 +137,12 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
         category: messageCategory
       };
 
-      // Try to insert into database
-      const { error } = await (supabase as any)
-        .from('client_messages')
-        .insert([{
-          client_id: clientId,
-          sender_type: message.sender_type,
-          sender_name: message.sender_name,
-          message: message.message,
-          read_by_client: message.read_by_client,
-          read_by_accountant: message.read_by_accountant,
-          priority: message.priority,
-          category: message.category
-        } as any]);
+      // Adicionar à lista local e salvar no localStorage
+      const updatedMessages = [message, ...messages];
+      setMessages(updatedMessages);
+      localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(updatedMessages));
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      // Add to local state for immediate feedback
-      setMessages(prev => [message, ...prev]);
+      // Limpar campos
       setNewMessage('');
       setMessageCategory('geral');
       setMessagePriority('medium');
