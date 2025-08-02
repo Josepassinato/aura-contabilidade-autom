@@ -6,7 +6,7 @@ import { DocumentsTable } from './DocumentsTable';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
-import { LogOut, Sparkles, Plus, HelpCircle, Calendar, FileText } from 'lucide-react';
+import { LogOut, Sparkles, Plus, HelpCircle, Calendar, FileText, Bot } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
 import { Link } from 'react-router-dom';
 import { OnboardingWelcome } from '@/components/onboarding/OnboardingWelcome';
@@ -165,6 +165,12 @@ export const DashboardView = () => {
               <HelpCircle className="h-4 w-4" />
               Ajuda
             </Button>
+            <Link to="/ai-agent-hub">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Bot className="h-4 w-4" />
+                AI Agent Hub
+              </Button>
+            </Link>
             <Link to="/ux-demo">
               <Button variant="gradient" className="flex items-center gap-2 shadow-glow">
                 <Sparkles className="h-4 w-4" />
@@ -201,6 +207,46 @@ export const DashboardView = () => {
             upcomingDeadlines={0}
           />
         </div>
+
+        {/* Chat with AI Card */}
+        <Card className="interactive-card bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-purple-500/20" data-tour="ai-chat">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg shadow-sm">
+                  <Bot className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Chat with AI</CardTitle>
+                  <CardDescription>
+                    Converse com assistentes especializados em imigração
+                  </CardDescription>
+                </div>
+              </div>
+              <Link to="/ai-agent-hub">
+                <Button size="sm" className="flex items-center gap-2">
+                  <Bot className="h-4 w-4" />
+                  Abrir Hub
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Immigration Assistant - Ativo
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Document Analyzer - Ativo
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Agentes prontos para ajudar com documentação, estratégias de casos e análises inteligentes.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Calendário e Documentos */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">

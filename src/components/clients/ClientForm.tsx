@@ -64,6 +64,12 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
       console.log("=== INICIANDO CADASTRO DE CLIENTE ===");
       console.log("Dados do cliente:", data);
       
+      // Obter o ID do usuário atual como contador
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
       // Preparar dados para inserção
       const clientData = {
         name: data.name,
@@ -73,6 +79,7 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
         address: data.address || null,
         regime: data.regime,
         status: "active" as const,
+        accountant_id: user.id, // Usar o ID do usuário atual como contador
         accounting_firm_id: null // Cliente não tem escritório associado por padrão
       };
       

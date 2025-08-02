@@ -67,14 +67,32 @@ export class DocumentsQueryService {
     size?: number;
     status?: string;
   }) {
+    // Garantir que todos os campos obrigatórios estejam presentes
+    const documentData = {
+      client_id: document.client_id,
+      name: document.name,
+      title: document.title || document.name,
+      type: document.type,
+      file_path: document.file_path,
+      size: document.size || 0,
+      status: document.status || 'uploaded',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('Inserindo documento:', documentData);
+
     const { data, error } = await supabase
       .from('client_documents')
-      .insert({
-        title: document.title || document.name,
-        ...document
-      })
+      .insert([documentData])
       .select()
       .single();
+
+    if (error) {
+      console.error('Erro ao inserir documento:', error);
+    } else {
+      console.log('Documento inserido com sucesso:', data);
+    }
 
     return { data, error };
   }
