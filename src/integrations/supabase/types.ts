@@ -723,6 +723,48 @@ export type Database = {
           },
         ]
       }
+      client_messages: {
+        Row: {
+          attachments: string[] | null
+          category: string
+          client_id: string
+          created_at: string
+          id: string
+          message: string
+          priority: string
+          read_by_accountant: boolean
+          read_by_client: boolean
+          sender_name: string
+          sender_type: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          category?: string
+          client_id: string
+          created_at?: string
+          id?: string
+          message: string
+          priority?: string
+          read_by_accountant?: boolean
+          read_by_client?: boolean
+          sender_name: string
+          sender_type: string
+        }
+        Update: {
+          attachments?: string[] | null
+          category?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          priority?: string
+          read_by_accountant?: boolean
+          read_by_client?: boolean
+          sender_name?: string
+          sender_type?: string
+        }
+        Relationships: []
+      }
       closing_checklist_items: {
         Row: {
           actual_minutes: number | null
@@ -1067,6 +1109,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financial_transactions: {
+        Row: {
+          account: string | null
+          amount: number
+          category: string
+          client_id: string
+          created_at: string
+          date: string
+          description: string
+          document_id: string | null
+          id: string
+          reference: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          account?: string | null
+          amount: number
+          category: string
+          client_id: string
+          created_at?: string
+          date: string
+          description: string
+          document_id?: string | null
+          id?: string
+          reference?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          account?: string | null
+          amount?: number
+          category?: string
+          client_id?: string
+          created_at?: string
+          date?: string
+          description?: string
+          document_id?: string | null
+          id?: string
+          reference?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       firm_monthly_statistics: {
         Row: {
@@ -2667,6 +2757,45 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_obligations: {
+        Row: {
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          name: string
+          priority: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          name: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          name?: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_invitations: {
         Row: {
           accepted_at: string | null
@@ -2960,6 +3089,14 @@ export type Database = {
       }
       process_queue_item: {
         Args: { p_worker_id: string }
+        Returns: Json
+      }
+      reset_user_password_secure: {
+        Args: { user_email: string }
+        Returns: Json
+      }
+      secure_global_logout: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       test_rls_policies: {
