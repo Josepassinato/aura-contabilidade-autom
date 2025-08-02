@@ -25,7 +25,6 @@ import DadosTeste from '../pages/DadosTeste';
 import AlertasPagamento from '../pages/AlertasPagamento';
 import AuditoriaInteligente from '../pages/AuditoriaInteligente';
 import GestaoRiscos from '../pages/GestaoRiscos';
-import AIAgentHub from '../pages/AIAgentHub';
 
 // Export an array of Route elements
 export const protectedRoutes = [
@@ -137,11 +136,6 @@ export const protectedRoutes = [
   <Route key="gestao-riscos" path="/gestao-riscos" element={
     <ProtectedRoute>
       <GestaoRiscos />
-    </ProtectedRoute>
-  } />,
-  <Route key="ai-agent-hub" path="/ai-agent-hub" element={
-    <ProtectedRoute>
-      <AIAgentHub />
     </ProtectedRoute>
   } />,
 ];
