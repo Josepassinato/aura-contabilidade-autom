@@ -9,6 +9,8 @@ import WorkflowDashboard from '../pages/WorkflowDashboard';
 import MonthlyClosing from '../pages/MonthlyClosing';
 import Settings from '../pages/Settings';
 import QRCodeManager from '../components/QRCodeManager';
+import QueueManagement from "@/pages/QueueManagement";
+import Reports from "@/pages/Reports";
 
 // Export an array of Route elements
 export const accountantRoutes = [
@@ -45,6 +47,16 @@ export const accountantRoutes = [
   <Route key="settings" path="/settings" element={
     <AccountantRoute>
       <Settings />
+    </AccountantRoute>
+  } />,
+  <Route key="queue-management" path="/queue-management" element={
+    <AccountantRoute>
+      <QueueManagement />
+    </AccountantRoute>
+  } />,
+  <Route key="reports" path="/reports" element={
+    <AccountantRoute>
+      <Reports />
     </AccountantRoute>
   } />,
 ];

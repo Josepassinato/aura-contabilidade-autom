@@ -1,91 +1,182 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import React from 'react';
+import { AlertCircle, X, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
-}
-
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
+  errorInfo?: any;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; onReset: () => void }>;
+  onError?: (error: Error) => void;
+}
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-    this.props.onError?.(error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('ErrorBoundary capturou um erro:', error, errorInfo);
+    this.setState({ errorInfo });
+    this.props.onError?.(error);
   }
 
-  private handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
+  handleReset = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
-  private handleGoHome = () => {
-    window.location.href = '/';
-  };
-
-  public render() {
+  render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return this.props.fallback;
+        const FallbackComponent = this.props.fallback;
+        return <FallbackComponent error={this.state.error!} onReset={this.handleReset} />;
       }
 
-      return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
-              <CardTitle className="text-xl">Algo deu errado</CardTitle>
-              <CardDescription>
-                Ocorreu um erro inesperado. Nossa equipe foi notificada e está trabalhando para resolver.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="rounded-lg bg-destructive/10 p-3 text-sm">
-                  <p className="font-medium text-destructive">Erro de desenvolvimento:</p>
-                  <p className="mt-1 text-destructive/80">{this.state.error.message}</p>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <Button onClick={this.handleReset} variant="outline" className="flex-1">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Tentar Novamente
-                </Button>
-                <Button onClick={this.handleGoHome} className="flex-1">
-                  <Home className="mr-2 h-4 w-4" />
-                  Início
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      );
+      return <DefaultErrorFallback error={this.state.error!} onReset={this.handleReset} />;
     }
 
     return this.props.children;
   }
 }
 
-// Hook para error boundaries funcionais
+// Componente de fallback padrão
+const DefaultErrorFallback = ({ error, onReset }: { error: Error; onReset: () => void }) => (
+  <div className="min-h-[400px] flex items-center justify-center p-4">
+    <div className="max-w-md w-full space-y-4">
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Ops! Algo deu errado</AlertTitle>
+        <AlertDescription className="mt-2">
+          {error.message || "Ocorreu um erro inesperado"}
+        </AlertDescription>
+      </Alert>
+      
+      <div className="flex gap-2">
+        <Button onClick={onReset} variant="outline" className="flex-1">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Tentar novamente
+        </Button>
+        <Button onClick={() => window.location.reload()} variant="secondary">
+          Recarregar página
+        </Button>
+      </div>
+
+      {process.env.NODE_ENV === 'development' && (
+        <details className="mt-4">
+          <summary className="cursor-pointer text-sm text-muted-foreground">
+            Detalhes técnicos
+          </summary>
+          <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
+            {error.stack}
+          </pre>
+        </details>
+      )}
+    </div>
+  </div>
+);
+
+// Hook para capturar erros assíncronos
 export const useErrorHandler = () => {
-  return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error('Error handled:', error, errorInfo);
-    // Aqui você pode enviar o erro para um serviço de monitoramento
+  const [error, setError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    if (error) {
+      throw error;
+    }
+  }, [error]);
+
+  return (error: Error) => {
+    setError(error);
   };
+};
+
+// Componente para exibir erros específicos de contexto
+export const ContextualError = ({
+  error,
+  context,
+  onRetry,
+  onDismiss
+}: {
+  error: string | Error;
+  context: 'upload' | 'ai' | 'integration' | 'auth' | 'network';
+  onRetry?: () => void;
+  onDismiss?: () => void;
+}) => {
+  const getContextMessage = (context: string) => {
+    switch (context) {
+      case 'upload':
+        return 'Erro no upload do arquivo';
+      case 'ai':
+        return 'Erro na integração com IA';
+      case 'integration':
+        return 'Erro na integração externa';
+      case 'auth':
+        return 'Erro de autenticação';
+      case 'network':
+        return 'Erro de conexão';
+      default:
+        return 'Erro no sistema';
+    }
+  };
+
+  const getContextAdvice = (context: string) => {
+    switch (context) {
+      case 'upload':
+        return 'Verifique se o arquivo não está corrompido e tente novamente.';
+      case 'ai':
+        return 'O serviço de IA pode estar temporariamente indisponível.';
+      case 'integration':
+        return 'Verifique as configurações de integração e credenciais.';
+      case 'auth':
+        return 'Sua sessão pode ter expirado. Faça login novamente.';
+      case 'network':
+        return 'Verifique sua conexão com a internet.';
+      default:
+        return 'Tente novamente ou contate o suporte.';
+    }
+  };
+
+  const errorMessage = typeof error === 'string' ? error : error.message;
+
+  return (
+    <Alert variant="destructive" className="mb-4">
+      <AlertCircle className="h-4 w-4" />
+      <div className="flex-1">
+        <AlertTitle className="flex items-center justify-between">
+          {getContextMessage(context)}
+          {onDismiss && (
+            <Button variant="ghost" size="sm" onClick={onDismiss}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </AlertTitle>
+        <AlertDescription className="mt-2">
+          <p className="mb-2">{errorMessage}</p>
+          <p className="text-sm text-muted-foreground">{getContextAdvice(context)}</p>
+        </AlertDescription>
+      </div>
+      
+      {onRetry && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onRetry}
+          className="ml-2 mt-2"
+        >
+          <RefreshCw className="mr-1 h-3 w-3" />
+          Tentar novamente
+        </Button>
+      )}
+    </Alert>
+  );
 };

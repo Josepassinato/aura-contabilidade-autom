@@ -139,10 +139,10 @@ export const ReportsCenter = () => {
   const downloadReport = async (reportId: string, fileName: string) => {
     try {
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/download-report?id=${reportId}`,
+        `/functions/v1/download-report?id=${reportId}`,
         {
           headers: {
-            'Authorization': `Bearer ${supabase.supabaseKey}`
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdG9waG9jcWxjeWltaXJ6cnBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5OTUyNjQsImV4cCI6MjA2MjU3MTI2NH0.aTF2XWWUhxtrrp4V08BvM5WAGQULlppgkIhXnCSLXrg'}`
           }
         }
       );
