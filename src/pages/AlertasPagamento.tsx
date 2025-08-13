@@ -48,7 +48,10 @@ export default function AlertasPagamento() {
     total_revenue_at_risk: 0
   });
   const [loading, setLoading] = useState(true);
-
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'warning_10_days' | 'warning_5_days' | 'final_notice'>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   useEffect(() => {
     loadPaymentAlerts();
     loadStatistics();
@@ -201,22 +204,54 @@ export default function AlertasPagamento() {
     );
   }
 
-  const overdueAlerts = alerts.filter(alert => alert.days_until_due < 0);
-  const upcomingAlerts = alerts.filter(alert => alert.days_until_due >= 0);
+  const filterFn = (a: PaymentAlert) =>
+    a.client_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (typeFilter === 'all' || a.alert_type === typeFilter);
 
+  const filteredAll = alerts.filter(filterFn);
+  const overdueAlerts = filteredAll.filter(alert => alert.days_until_due < 0);
+  const upcomingAlerts = filteredAll.filter(alert => alert.days_until_due >= 0);
+  const totalPages = Math.max(1, Math.ceil(filteredAll.length / pageSize));
+  const start = (page - 1) * pageSize;
+  const currentPageAlerts = filteredAll.slice(start, start + pageSize);
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Alertas de Pagamento</h1>
-          <p className="text-muted-foreground">
-            Monitoramento automático de vencimentos e inadimplência
-          </p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Alertas de Pagamento</h1>
+            <p className="text-muted-foreground">Monitoramento automático de vencimentos e inadimplência</p>
+          </div>
+          <Button onClick={triggerPaymentCheck} className="gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Executar Verificação
+          </Button>
         </div>
-        <Button onClick={triggerPaymentCheck} className="gap-2">
-          <AlertTriangle className="h-4 w-4" />
-          Executar Verificação
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            className="border rounded px-3 py-2 text-sm"
+            placeholder="Buscar por cliente..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+          />
+          <select
+            className="border rounded px-3 py-2 text-sm"
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value as any); setPage(1); }}
+          >
+            <option value="all">Todos os tipos</option>
+            <option value="warning_10_days">Aviso 10 dias</option>
+            <option value="warning_5_days">Aviso 5 dias</option>
+            <option value="final_notice">Aviso Final</option>
+          </select>
+          <select
+            className="border rounded px-3 py-2 text-sm"
+            value={pageSize}
+            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+          >
+            {[10,20,50].map(n => <option key={n} value={n}>{n}/página</option>)}
+          </select>
+        </div>
       </div>
 
       {/* Estatísticas */}
@@ -455,7 +490,7 @@ export default function AlertasPagamento() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {alerts.length === 0 ? (
+              {filteredAll.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
                   <p className="text-muted-foreground">
@@ -463,60 +498,69 @@ export default function AlertasPagamento() {
                   </p>
                 </div>
               ) : (
-                <ScrollArea className="h-96">
-                  <div className="space-y-3">
-                    {alerts.map((alert) => (
-                      <div key={alert.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold">{alert.client_name}</h3>
-                              <Badge variant={getAlertSeverity(alert.days_until_due)}>
-                                {alert.days_until_due < 0 
-                                  ? `${Math.abs(alert.days_until_due)} dias em atraso`
-                                  : alert.days_until_due === 0 
-                                    ? 'Vence hoje'
-                                    : `${alert.days_until_due} dias`
-                                }
-                              </Badge>
+                <>
+                  <ScrollArea className="h-96">
+                    <div className="space-y-3">
+                      {currentPageAlerts.map((alert) => (
+                        <div key={alert.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-semibold">{alert.client_name}</h3>
+                                <Badge variant={getAlertSeverity(alert.days_until_due)}>
+                                  {alert.days_until_due < 0 
+                                    ? `${Math.abs(alert.days_until_due)} dias em atraso`
+                                    : alert.days_until_due === 0 
+                                      ? 'Vence hoje'
+                                      : `${alert.days_until_due} dias`
+                                  }
+                                </Badge>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">Email:</span>
+                                  <div>{alert.client_email}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Vencimento:</span>
+                                  <div>{formatDate(alert.payment_due_date)}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Tipo de Alerta:</span>
+                                  <div>{getAlertTypeLabel(alert.alert_type)}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Enviado:</span>
+                                  <div>{getTimeAgo(alert.alert_sent_date)}</div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Email:</span>
-                                <div>{alert.client_email}</div>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Vencimento:</span>
-                                <div>{formatDate(alert.payment_due_date)}</div>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Tipo de Alerta:</span>
-                                <div>{getAlertTypeLabel(alert.alert_type)}</div>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Enviado:</span>
-                                <div>{getTimeAgo(alert.alert_sent_date)}</div>
-                              </div>
+                            <div className="flex items-center gap-2">
+                              {alert.email_sent ? (
+                                <Badge variant="secondary" className="gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  Enviado
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Pendente
+                                </Badge>
+                              )}
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {alert.email_sent ? (
-                              <Badge variant="secondary" className="gap-1">
-                                <Mail className="h-3 w-3" />
-                                Enviado
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="gap-1">
-                                <Clock className="h-3 w-3" />
-                                Pendente
-                              </Badge>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </ScrollArea>
+                  <div className="flex items-center justify-between mt-3 text-sm">
+                    <span className="text-muted-foreground">Página {page} de {totalPages}</span>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Anterior</Button>
+                      <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Próxima</Button>
+                    </div>
                   </div>
-                </ScrollArea>
+                </>
               )}
             </CardContent>
           </Card>

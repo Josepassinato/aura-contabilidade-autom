@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,8 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
-
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (clientId) {
       loadMessages();
@@ -55,63 +56,41 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
   const loadMessages = async () => {
     try {
       setLoading(true);
+      const { data, error } = await supabase
+        .from('client_messages')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false });
 
-      // Tentar carregar mensagens salvas no localStorage primeiro  
-      const savedMessages = localStorage.getItem(`client_messages_${clientId}`);
-      if (savedMessages) {
-        try {
-          const parsed = JSON.parse(savedMessages);
-          setMessages(parsed);
-          return;
-        } catch (error) {
-          console.warn('Erro ao carregar mensagens salvas:', error);
-        }
-      }
-
-      // Se não há mensagens salvas, criar mensagens de exemplo
-      const sampleMessages: Message[] = [
-        {
-          id: '1',
-          sender_type: 'accountant',
-          sender_name: 'Contador Responsável',
-          message: 'Bem-vindo ao portal! Estou aqui para ajudar com suas questões contábeis.',
-          read_by_client: false,
-          read_by_accountant: true,
-          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          priority: 'medium',
-          category: 'geral'
-        },
-        {
-          id: '2',
-          sender_type: 'accountant',
-          sender_name: 'Contador Responsável',
-          message: 'Lembre-se de enviar os documentos fiscais do mês até o dia 15. Qualquer dúvida, estarei disponível.',
-          read_by_client: false,
-          read_by_accountant: true,
-          created_at: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-          priority: 'high',
-          category: 'fiscal'
-        }
-      ];
-      
-      setMessages(sampleMessages);
-      // Salvar mensagens de exemplo para persistência
-      localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(sampleMessages));
-
+      if (error) throw error;
+      setMessages((data as Message[]) || []);
     } catch (error) {
       await handleError(error, 'ClientMessages.loadMessages');
+      toast({
+        title: 'Erro ao carregar mensagens',
+        description: 'Não foi possível carregar suas conversas. Tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const markMessagesAsRead = async () => {
-    // Marcar mensagens como lidas no localStorage
-    const updatedMessages = messages.map(msg => 
-      msg.sender_type === 'accountant' ? { ...msg, read_by_client: true } : msg
-    );
-    setMessages(updatedMessages);
-    localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(updatedMessages));
+    try {
+      await supabase
+        .from('client_messages')
+        .update({ read_by_client: true })
+        .eq('client_id', clientId)
+        .eq('sender_type', 'accountant')
+        .eq('read_by_client', false);
+
+      setMessages(prev => prev.map(msg =>
+        msg.sender_type === 'accountant' ? { ...msg, read_by_client: true } : msg
+      ));
+    } catch (error) {
+      await handleError(error, 'ClientMessages.markMessagesAsRead', false);
+    }
   };
 
   const sendMessage = async () => {
@@ -120,36 +99,71 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
     try {
       setSending(true);
 
-      // Criar nova mensagem
-      const message: Message = {
-        id: Date.now().toString(),
-        sender_type: 'client',
-        sender_name: sessionStorage.getItem('client_name') || 'Cliente',
-        message: newMessage,
-        read_by_client: true,
-        read_by_accountant: false,
-        created_at: new Date().toISOString(),
-        priority: messagePriority,
-        category: messageCategory
-      };
+      // Verificar sessão
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast({
+          title: 'Sessão necessária',
+          description: 'É necessário estar autenticado para enviar mensagens.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      // Adicionar à lista local e salvar no localStorage
-      const updatedMessages = [message, ...messages];
-      setMessages(updatedMessages);
-      localStorage.setItem(`client_messages_${clientId}`, JSON.stringify(updatedMessages));
+      // Upload do anexo (opcional)
+      let attachments: string[] | undefined;
+      if (selectedFile) {
+        const path = `${clientId}/${Date.now()}_${selectedFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('client-messages')
+          .upload(path, selectedFile, { upsert: false });
+        if (uploadError) throw uploadError;
+        attachments = [path];
+      }
+
+      // Inserir mensagem no banco
+      const { data, error } = await supabase
+        .from('client_messages')
+        .insert([
+          {
+            client_id: clientId,
+            sender_type: 'client',
+            sender_name: sessionStorage.getItem('client_name') || 'Cliente',
+            message: newMessage,
+            priority: messagePriority,
+            category: messageCategory,
+            read_by_client: true,
+            attachments,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Atualizar UI
+      if (data) {
+        setMessages(prev => [data as Message, ...prev]);
+      }
 
       // Limpar campos
       setNewMessage('');
       setMessageCategory('geral');
       setMessagePriority('medium');
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
 
       toast({
-        title: "Mensagem enviada",
-        description: "Sua mensagem foi enviada para o contador"
+        title: 'Mensagem enviada',
+        description: 'Sua mensagem foi enviada para o contador.'
       });
-
     } catch (error) {
       await handleError(error, 'ClientMessages.sendMessage');
+      toast({
+        title: 'Falha ao enviar',
+        description: 'Não foi possível enviar a mensagem. Tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
       setSending(false);
     }
@@ -233,11 +247,25 @@ export const ClientMessages = ({ clientId }: ClientMessagesProps) => {
             rows={4}
           />
           
-          <div className="flex justify-between">
-            <Button variant="outline" size="sm">
-              <Paperclip className="h-4 w-4 mr-2" />
-              Anexar Arquivo
-            </Button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                <Paperclip className="h-4 w-4 mr-2" />
+                Anexar Arquivo
+              </Button>
+              {selectedFile && (
+                <span className="text-xs text-muted-foreground">{selectedFile.name}</span>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  const file = e.target.files?.[0] || null;
+                  setSelectedFile(file);
+                }}
+              />
+            </div>
             <Button 
               onClick={sendMessage}
               disabled={sending || !newMessage.trim()}

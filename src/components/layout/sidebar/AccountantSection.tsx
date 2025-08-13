@@ -156,11 +156,11 @@ export function AccountantSection() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <div className="flex items-center cursor-not-allowed opacity-50">
+            <SidebarMenuButton asChild isActive={isActive('/gestao-riscos')}>
+              <Link to="/gestao-riscos">
                 <Activity className="h-4 w-4 mr-2" />
                 <span>Gestão de Riscos</span>
-              </div>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
