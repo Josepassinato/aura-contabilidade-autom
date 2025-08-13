@@ -14,6 +14,7 @@ import ReportTemplates from '@/pages/admin/ReportTemplates';
 import ReportScheduler from '@/pages/admin/ReportScheduler';
 import SecurityManagement from '@/pages/admin/SecurityManagement';
 import SystemStatus from '@/pages/admin/SystemStatus';
+import Compliance from '@/pages/Compliance';
 
 const adminRoutes = [
   <Route key="customer-management" path="/admin/customer-management" element={<AdminRoute component={CustomerManagement} />} />,
@@ -28,6 +29,7 @@ const adminRoutes = [
   <Route key="report-scheduler" path="/admin/report-scheduler" element={<AdminRoute component={ReportScheduler} />} />,
   <Route key="security-management" path="/admin/security" element={<AdminRoute component={SecurityManagement} />} />,
   <Route key="system-status" path="/admin/system-status" element={<AdminRoute component={SystemStatus} />} />,
+  <Route key="compliance" path="/compliance" element={<AdminRoute component={Compliance} />} />,
 ];
 
 export { adminRoutes };
