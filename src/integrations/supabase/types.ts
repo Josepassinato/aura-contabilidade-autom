@@ -2974,6 +2974,10 @@ export type Database = {
         Args: { cron_expression: string; from_time?: string }
         Returns: string
       }
+      check_lgpd_compliance: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       check_overdue_payments: {
         Args: Record<PropertyKey, never>
         Returns: undefined
