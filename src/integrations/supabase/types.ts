@@ -3087,6 +3087,10 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: boolean
       }
+      nightly_classification_maintenance: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       process_queue_item: {
         Args: { p_worker_id: string }
         Returns: Json
